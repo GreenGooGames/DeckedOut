@@ -54,6 +54,10 @@ Binaries/*
 Plugins/*/Binaries/*
 */Plugins/*/Binaries/*
 
+# Pre-Compiled binaries for art
+!*/UnrealEditor-DeckedOut.dll
+!*/UnrealEditor-DeckedOut.pdb
+
 # Builds
 Build/*
 */Build/*
