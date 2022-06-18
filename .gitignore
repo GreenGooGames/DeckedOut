@@ -49,14 +49,12 @@ SourceArt/**/*.tga
 */SourceArt/**/*.tga
 
 # Binary Files
-Binaries/*
-*/Binaries/*
-Plugins/*/Binaries/*
-*/Plugins/*/Binaries/*
-
-# Pre-Compiled binaries for art
-!*/UnrealEditor-DeckedOut.dll
-!*/UnrealEditor-DeckedOut.pdb
+#Binaries/*
+#*/Binaries/*
+#Plugins/*/Binaries/*
+#*/Plugins/*/Binaries/*
+#!**/UnrealEditor-DeckedOut.dll
+!**/*.dll
 
 # Builds
 Build/*
