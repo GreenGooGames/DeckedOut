@@ -1,11 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "InventoryComponent.h"
+#include "DeckedOut/Components/Inventory/InventoryComponent.h"
 
-FStoredItemData::FStoredItemData(const FItemData& InItemData, const int32 InStackSize)
+FStoredItemData::FStoredItemData(const FItemData& ItemData, const int32 InStackSize)
 {
-	ItemData = InItemData;
+	ItemId = ItemData.Id;
+	Name = ItemData.Name;
+	Description = ItemData.Description;
+	DisplayTexture = ItemData.DisplayTexture;
+
 	StackSize = InStackSize;
 }
 
@@ -19,10 +23,9 @@ UInventoryComponent::UInventoryComponent()
 	// ...
 }
 
-bool UInventoryComponent::RetrieveItems(const int32 ItemId, const int32 Amount, FItemData& OutItemData, int32& OutRetrievedAmount)
+bool UInventoryComponent::RetrieveItems(const int32 ItemId, const int32 Amount, int32& OutRetrievedAmount)
 {
 	// Ensure the OutValues are Zero'ed.
-	OutItemData = FItemData();
 	OutRetrievedAmount = 0;
 
 	// Search if the requested item exist in the inventory.
@@ -37,7 +40,6 @@ bool UInventoryComponent::RetrieveItems(const int32 ItemId, const int32 Amount, 
 		if (OutRetrievedAmount > 0)
 		{
 			StoredItems[Index].StackSize -= OutRetrievedAmount;
-			OutItemData = StoredItems[Index].ItemData;
 
 			// Check if the inventory is empty for the requested item.
 			if (StoredItems[Index].StackSize <= 0)
@@ -80,7 +82,7 @@ int32 UInventoryComponent::FindIndexOfStoredItemData(const int32 ItemId) const
 {
 	const int32 Index = StoredItems.IndexOfByPredicate([ItemId](const FStoredItemData& StoredItemData)
 	{
-		return StoredItemData.ItemData.Id == ItemId;
+		return StoredItemData.ItemId == ItemId;
 	});
 
 	return Index;

@@ -10,10 +10,16 @@
 // [Koen Goossens] TODO: Add a stacksize limit.
 struct FStoredItemData
 {
-	FItemData ItemData = FItemData();
+	// ItemData equivalents.
+	int32 ItemId = -1;
+	FText Name = FText();
+	FText Description = FText();
+	TObjectPtr<UTexture2D> DisplayTexture = nullptr;
+
+	// Inventory Data.
 	int32 StackSize = -1;
 
-	FStoredItemData(const FItemData& InItemData, const int32 InStackSize);
+	FStoredItemData(const FItemData& ItemData, const int32 InStackSize);
 };
 
 UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -26,7 +32,7 @@ public:
 	UInventoryComponent();
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool RetrieveItems(const int32 ItemId, const int32 Amount, FItemData& OutItemData, int32& OutRetrievedAmount);
+	virtual bool RetrieveItems(const int32 ItemId, const int32 Amount, int32& OutRetrievedAmount);
 	UFUNCTION(BlueprintCallable)
 	virtual bool StoreItem(const FItemData& ItemData, const int32 Amount);
 

@@ -19,6 +19,8 @@ public:
 	// Sets default values for this actor's properties
 	AItem();
 
+	void SetItemData(const FItemData& InItemData);
+
 protected:
 	// The visual representation of the Item in the world.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

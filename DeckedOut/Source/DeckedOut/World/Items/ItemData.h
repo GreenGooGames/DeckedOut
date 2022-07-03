@@ -14,11 +14,18 @@ struct FItemData
 {
 	GENERATED_BODY()
 
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 Id = INVALID_ItemId;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FText Name = FText();
-
-	TSubclassOf<AItem> Blueprint = nullptr;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FText Description = FText();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<AItem> Blueprint = nullptr;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UTexture2D> DisplayTexture;
 
 	bool IsDataValid() const;
 };
