@@ -20,7 +20,7 @@ AItem::AItem()
 	Volume->SetSimulatePhysics(true);
 	Volume->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	Volume->SetEnableGravity(true);
-	Volume->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
+	Volume->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 	Volume->InitSphereRadius(Mesh->Bounds.SphereRadius);
 
 	Mesh->SetupAttachment(Volume);
