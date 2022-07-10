@@ -37,25 +37,22 @@ bool UInteractionComponent::GatherInteractableActors(const FVector& Origin, cons
 {
 	OutInteractableActors.Empty();
 
-	// [Koen Goossens] Add an Interactable object type query and set it automatically if the InteractableInterface is inherited.
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
-
 	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(GetOwner());
-
-	UClass* const ActorClassFilter = AActor::StaticClass();
-	TArray<AActor*> OutActors;
+	TArray<FHitResult> OutHits;
 	
-	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), Origin, Radius, ObjectTypes, ActorClassFilter, ActorsToIgnore, OutActors);
+	UKismetSystemLibrary::SphereTraceMulti(
+		GetWorld(),
+		Origin, Origin, Radius,
+		UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel1), false,
+		ActorsToIgnore, EDrawDebugTrace::None, OutHits, true);
 
-	for (AActor* const Actor : OutActors)
+	for (const FHitResult& Hit : OutHits)
 	{
-		const IInteractableInterface* const Interactable = Cast<IInteractableInterface>(Actor);
+		const IInteractableInterface* const Interactable = Cast<IInteractableInterface>(Hit.GetActor());
 
 		if (Interactable && Interactable->IsInteractable())
 		{
-			OutInteractableActors.Add(Actor);
+			OutInteractableActors.Add(Hit.GetActor());
 		}
 	}
 

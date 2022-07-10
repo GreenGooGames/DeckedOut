@@ -2,12 +2,14 @@
 
 #pragma once
 #include "DeckedOut/Components/Interaction/InteractableInterface.h"
-#include "DeckedOut/Components/Loot/LootComponent.h"
 #include "DeckedOut/World/Items/CompassTargetInterface.h"
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "TreasureChest.generated.h"
+
+class ULootComponent;
+class UItemDataAsset;
 
 UCLASS(Blueprintable)
 class DECKEDOUT_API ATreasureChest : public AActor, public IInteractableInterface, public ICompassTargetInterface
@@ -19,6 +21,14 @@ public:
 	ATreasureChest();
 
 protected:
+	// The visual representation of the Item in the world.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UStaticMeshComponent> Mesh = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<ULootComponent> LootComponent = nullptr;
+
+
 	// [Koen Goossens] TODO: This should be a gameplay tag as that will be easier to manage.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TSoftObjectPtr<UItemDataAsset>> CompatibleKeys;

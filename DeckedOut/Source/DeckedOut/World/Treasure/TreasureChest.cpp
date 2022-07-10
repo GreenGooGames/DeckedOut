@@ -4,6 +4,7 @@
 #include "DeckedOut/World/Treasure/TreasureChest.h"
 
 #include "DeckedOut/Components/Inventory/InventoryComponent.h"
+#include "DeckedOut/Components/Loot/LootComponent.h"
 #include "DeckedOut/World/Items/ItemDataAsset.h"
 
 // Sets default values
@@ -12,6 +13,12 @@ ATreasureChest::ATreasureChest()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("Mesh"), false);
+	LootComponent = CreateDefaultSubobject<ULootComponent>(FName("LootComponent"), false);
+
+	SetRootComponent(Mesh);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 }
 
 #pragma region IInteractableInterface
@@ -51,15 +58,13 @@ bool ATreasureChest::StartInteraction(const TObjectPtr<AController> InstigatorCo
 			if (NumRetrievedItems > 0)
 			{
 				// Drop the loot.
-				ULootComponent* const OwnerLootComponent = FindComponentByClass<ULootComponent>();
-
-				if (IsValid(OwnerLootComponent))
+				if (IsValid(LootComponent))
 				{
-					OwnerLootComponent->DropLoot();
-
 					bIsInteractable = false;
 
-					// [Koen Goossens] TODO: Destroy thjis actor trough the Object manager.
+					LootComponent->DropLoot();
+
+					// [Koen Goossens] TODO: Destroy this actor trough the Object manager.
 					Destroy();
 
 					return true;

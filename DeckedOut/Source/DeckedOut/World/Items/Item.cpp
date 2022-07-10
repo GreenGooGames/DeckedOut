@@ -13,18 +13,13 @@ AItem::AItem()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	Volume = CreateDefaultSubobject<USphereComponent>(FName("Volume"), false);
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("Mesh"), false);
 
-	SetRootComponent(Volume);
-	Volume->SetSimulatePhysics(true);
-	Volume->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	Volume->SetEnableGravity(true);
-	Volume->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-	Volume->InitSphereRadius(Mesh->Bounds.SphereRadius);
-
-	Mesh->SetupAttachment(Volume);
-	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SetRootComponent(Mesh);
+	Mesh->SetSimulatePhysics(true);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	Mesh->SetEnableGravity(true);
+	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 }
 
 void AItem::SetItemData(const FItemData& InItemData)

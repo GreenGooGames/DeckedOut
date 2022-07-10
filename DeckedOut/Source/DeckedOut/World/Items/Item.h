@@ -26,10 +26,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> Mesh = nullptr;
 	
-	// The physics volume that bounds the item.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<USphereComponent> Volume = nullptr;
-
 	FItemData ItemData = FItemData();
 	
 #pragma region IInteractableInterface
