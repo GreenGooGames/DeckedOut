@@ -31,8 +31,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetItemsDataTable(const TSoftObjectPtr<UDataTable>& InItemsDataTable);
 
+	// Spawn an item in the world from a template.
 	UFUNCTION(BlueprintCallable)
 	bool SpawnItem(const int32 ItemId, const FTransform& SpawnTransform);
+	bool SpawnItem(const int32 ItemId, const FTransform& SpawnTransform, const TMap<FString, ItemUniqueDataType>& ItemData);
+
 	UFUNCTION(BlueprintCallable)
 	bool DespawnItem(const TSoftObjectPtr<AItem>& Item);
 

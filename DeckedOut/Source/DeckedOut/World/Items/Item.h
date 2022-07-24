@@ -20,6 +20,7 @@ public:
 	AItem();
 
 	void SetItemData(const FItemData& InItemData);
+	virtual bool WriteUniqueData(const TMap<FString, ItemUniqueDataType>& UniqueData) { return true; };
 
 protected:
 	// The visual representation of the Item in the world.
@@ -28,6 +29,8 @@ protected:
 	
 	FItemData ItemData = FItemData();
 	
+	virtual TMap<FString, ItemUniqueDataType> GenerateUniqueData() { return TMap<FString, ItemUniqueDataType>(); };
+
 #pragma region IInteractableInterface
 public:
 	virtual bool IsInteractable() const override;

@@ -23,9 +23,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float InteractableAngle = 180.0f;
 
-protected:
-	UFUNCTION(BlueprintCallable)
 	bool TryInteract(const FTransform& OriginTransform, const FVector& Offset = FVector::ZeroVector) const;
+
+protected:
 	bool GatherInteractableActors(const FVector& Origin, const float Radius, TArray<TObjectPtr<AActor>>& OutInteractableActors) const;
 
 	IInteractableInterface* GetBestInteractableTarget(TArray<TObjectPtr<AActor>>& InteractableObjects, const FTransform& OriginTransform) const;

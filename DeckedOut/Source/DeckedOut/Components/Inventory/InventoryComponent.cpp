@@ -3,16 +3,6 @@
 
 #include "DeckedOut/Components/Inventory/InventoryComponent.h"
 
-FStoredItemData::FStoredItemData(const FItemData& ItemData, const int32 InStackSize)
-{
-	ItemId = ItemData.Id;
-	Name = ItemData.Name;
-	Description = ItemData.Description;
-	DisplayTexture = ItemData.DisplayTexture;
-
-	StackSize = InStackSize;
-}
-
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
 {
@@ -23,7 +13,7 @@ UInventoryComponent::UInventoryComponent()
 	// ...
 }
 
-bool UInventoryComponent::RetrieveItems(const int32 ItemId, const int32 Amount, int32& OutRetrievedAmount)
+bool UInventoryComponent::RetrieveItems(const int32 ItemId, const int32 Amount, int32& OutRetrievedAmount, TMap<FString, ItemUniqueDataType>& OutUniqueData)
 {
 	// Ensure the OutValues are Zero'ed.
 	OutRetrievedAmount = 0;
@@ -40,6 +30,7 @@ bool UInventoryComponent::RetrieveItems(const int32 ItemId, const int32 Amount, 
 		if (OutRetrievedAmount > 0)
 		{
 			StoredItems[Index].StackSize -= OutRetrievedAmount;
+			OutUniqueData = StoredItems[Index].UniqueData;
 
 			// Check if the inventory is empty for the requested item.
 			if (StoredItems[Index].StackSize <= 0)
@@ -55,22 +46,25 @@ bool UInventoryComponent::RetrieveItems(const int32 ItemId, const int32 Amount, 
 	return false;
 }
 
-bool UInventoryComponent::StoreItem(const FItemData& ItemData, const int32 Amount)
+bool UInventoryComponent::StoreItem(const FItemData& ItemData, const TMap<FString, ItemUniqueDataType> UniqueData, const int32 Amount)
 {
 	if (ItemData.IsDataValid() && Amount > 0)
 	{
-		// Search if the requested item exist in the inventory.
-		const int32 Index = FindIndexOfStoredItemData(ItemData.Id);
+		const bool bIsUniqueItem = UniqueData.Num() > 0;
 
-		// If the item exist increase the stack size otherwise, create a new entry.
-		if (Index != INDEX_NONE)
+		if (!bIsUniqueItem)
 		{
-			StoredItems[Index].StackSize += Amount;
+			// Search if the requested item exist in the inventory.
+			const int32 Index = FindIndexOfStoredItemData(ItemData.Id);
+
+			// If the item exist increase the stack size otherwise, create a new entry.
+			if (Index != INDEX_NONE)
+			{
+				StoredItems[Index].StackSize += Amount;
+			}
 		}
-		else
-		{
-			StoredItems.Add(FStoredItemData(ItemData, Amount));
-		}
+
+		StoredItems.Add(FItemData_Inventory(ItemData, Amount));
 
 		return true;
 	}
@@ -80,9 +74,9 @@ bool UInventoryComponent::StoreItem(const FItemData& ItemData, const int32 Amoun
 
 int32 UInventoryComponent::FindIndexOfStoredItemData(const int32 ItemId) const
 {
-	const int32 Index = StoredItems.IndexOfByPredicate([ItemId](const FStoredItemData& StoredItemData)
+	const int32 Index = StoredItems.IndexOfByPredicate([ItemId](const FItemData_Inventory& StoredItemData)
 	{
-		return StoredItemData.ItemId == ItemId;
+		return StoredItemData.Id == ItemId;
 	});
 
 	return Index;

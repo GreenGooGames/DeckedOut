@@ -13,7 +13,14 @@ void UItemManagerSubsystem::SetItemsDataTable(const TSoftObjectPtr<UDataTable>& 
 
 bool UItemManagerSubsystem::SpawnItem(const int32 ItemId, const FTransform& SpawnTransform)
 {
+	return SpawnItem(ItemId, SpawnTransform, TMap<FString, ItemUniqueDataType>());
+}
+
+bool UItemManagerSubsystem::SpawnItem(const int32 ItemId, const FTransform& SpawnTransform, const TMap<FString, ItemUniqueDataType>& ItemData)
+{
+	// [Koen Goossens] TODO: Async spawning
 	// [Koen Goossens] TODO: This approach of loading each DataAsset to check if the ID is the same is not scaleable!
+	// 
 	// Load the datatable if not loaded.
 	if (const UDataTable* const ItemsDataTableRaw = ItemsDataTable.Get())
 	{
@@ -48,6 +55,7 @@ bool UItemManagerSubsystem::SpawnItem(const int32 ItemId, const FTransform& Spaw
 			
 			SpawnedItems.Add(GetWorld()->SpawnActor<AItem>(ItemClass, SpawnTransform));
 			SpawnedItems.Last()->SetItemData(ItemDataAsset->ItemData);
+			SpawnedItems.Last()->WriteUniqueData(ItemData);
 
 			return true;
 		}

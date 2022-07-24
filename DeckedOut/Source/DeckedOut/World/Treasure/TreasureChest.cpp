@@ -5,6 +5,7 @@
 
 #include "DeckedOut/Components/Inventory/InventoryComponent.h"
 #include "DeckedOut/Components/Loot/LootComponent.h"
+#include "DeckedOut/World/Items/Item.h"
 #include "DeckedOut/World/Items/ItemDataAsset.h"
 
 // Sets default values
@@ -48,7 +49,9 @@ bool ATreasureChest::StartInteraction(const TObjectPtr<AController> InstigatorCo
 				if (IsValid(KeyRaw))
 				{
 					// [Koen Goossens] TODO: First check if there are enough keys, for now the number is set to 1.
-					if (InstigatorInventory->RetrieveItems(KeyRaw->ItemData.Id, NumKeysRequired, NumRetrievedItems))
+					// [Koen Goossens] TODO: Check for the correct key, requires implementation to find a specific item in the inventory trough its unique data.
+					TMap<FString, ItemUniqueDataType> KeyUniqueData;
+					if (InstigatorInventory->RetrieveItems(KeyRaw->ItemData.Id, NumKeysRequired, NumRetrievedItems, KeyUniqueData))
 					{
 						break;
 					}

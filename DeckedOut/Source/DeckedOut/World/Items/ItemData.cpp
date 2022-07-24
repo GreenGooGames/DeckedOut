@@ -3,12 +3,21 @@
 
 #include "ItemData.h"
 
-#include "Item.h"
+#include "DeckedOut/World/Items/Item.h"
 
 bool FItemData::IsDataValid() const
 {
 	const bool bIsValidId = Id != INVALID_ItemId;
 	const bool bIsValidBlueprint = IsValid(Blueprint.GetDefaultObject());
 
-	return bIsValidId && bIsValidBlueprint;
+	return bIsValidId;
+}
+
+FItemData_Inventory::FItemData_Inventory(const FItemData& ItemData, const int32 Amount)
+{
+	Id = ItemData.Id;
+	Name = ItemData.Name;
+	Description = ItemData.Description;
+	DisplayTexture = ItemData.DisplayTexture;
+	StackSize = Amount;
 }

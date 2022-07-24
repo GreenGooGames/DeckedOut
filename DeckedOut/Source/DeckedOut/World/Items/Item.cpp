@@ -39,7 +39,7 @@ bool AItem::StartInteraction(const TObjectPtr<AController> InstigatorController)
 	{
 		if (UInventoryComponent* const Inventory = InstigatorController->FindComponentByClass<UInventoryComponent>())
 		{
-			if (Inventory->StoreItem(ItemData, 1))
+			if (Inventory->StoreItem(ItemData, GenerateUniqueData(), 1))
 			{
 				bIsInteractable = false;
 				UItemManagerSubsystem* const ItemManagerSubsystem = GetWorld()->GetSubsystem<UItemManagerSubsystem>();

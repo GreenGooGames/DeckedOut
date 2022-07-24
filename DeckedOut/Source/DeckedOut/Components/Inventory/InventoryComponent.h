@@ -7,21 +7,6 @@
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
-// [Koen Goossens] TODO: Add a stacksize limit.
-struct FStoredItemData
-{
-	// ItemData equivalents.
-	int32 ItemId = -1;
-	FText Name = FText();
-	FText Description = FText();
-	TObjectPtr<UTexture2D> DisplayTexture = nullptr;
-
-	// Inventory Data.
-	int32 StackSize = -1;
-
-	FStoredItemData(const FItemData& ItemData, const int32 InStackSize);
-};
-
 UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DECKEDOUT_API UInventoryComponent : public UActorComponent
 {
@@ -31,14 +16,12 @@ public:
 	// Sets default values for this component's properties
 	UInventoryComponent();
 
-	UFUNCTION(BlueprintCallable)
-	virtual bool RetrieveItems(const int32 ItemId, const int32 Amount, int32& OutRetrievedAmount);
-	UFUNCTION(BlueprintCallable)
-	virtual bool StoreItem(const FItemData& ItemData, const int32 Amount);
+	virtual bool RetrieveItems(const int32 ItemId, const int32 Amount, int32& OutRetrievedAmount, TMap<FString, ItemUniqueDataType>& OutUniqueData);
+	virtual bool StoreItem(const FItemData& ItemData, const TMap<FString, ItemUniqueDataType> UniqueData, const int32 Amount);
 
 protected:
 	// [Koen Goossens] TODO: Add inventory space limit.
-	TArray<FStoredItemData> StoredItems;
+	TArray<FItemData_Inventory> StoredItems;
 
 	int32 FindIndexOfStoredItemData(const int32 ItemId) const;
 };
