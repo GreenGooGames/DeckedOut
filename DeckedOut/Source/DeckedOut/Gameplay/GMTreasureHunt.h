@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DeckedOutGameMode.h"
+#include "DeckedOut/DeckedOutGameMode.h"
 #include "GMTreasureHunt.generated.h"
 
 /**

@@ -11,12 +11,12 @@ void UItemManagerSubsystem::SetItemsDataTable(const TSoftObjectPtr<UDataTable>& 
 	}
 }
 
-bool UItemManagerSubsystem::SpawnItem(const int32 ItemId, const FTransform& SpawnTransform)
+TSoftObjectPtr<AItem> UItemManagerSubsystem::SpawnItem(const int32 ItemId, const FTransform& SpawnTransform)
 {
 	return SpawnItem(ItemId, SpawnTransform, TMap<FString, ItemUniqueDataType>());
 }
 
-bool UItemManagerSubsystem::SpawnItem(const int32 ItemId, const FTransform& SpawnTransform, const TMap<FString, ItemUniqueDataType>& ItemData)
+TSoftObjectPtr<AItem> UItemManagerSubsystem::SpawnItem(const int32 ItemId, const FTransform& SpawnTransform, const TMap<FString, ItemUniqueDataType>& ItemData)
 {
 	// [Koen Goossens] TODO: Async spawning
 	// [Koen Goossens] TODO: This approach of loading each DataAsset to check if the ID is the same is not scaleable!
@@ -52,16 +52,21 @@ bool UItemManagerSubsystem::SpawnItem(const int32 ItemId, const FTransform& Spaw
 		if (IsValid(ItemDataAsset) && ItemDataAsset->ItemData.IsDataValid())
 		{
 			UClass* const ItemClass = ItemDataAsset->ItemData.Blueprint;
-			
-			SpawnedItems.Add(GetWorld()->SpawnActor<AItem>(ItemClass, SpawnTransform));
-			SpawnedItems.Last()->SetItemData(ItemDataAsset->ItemData);
-			SpawnedItems.Last()->WriteUniqueData(ItemData);
+			AItem* const SpawnedItem = GetWorld()->SpawnActor<AItem>(ItemClass, SpawnTransform);
 
-			return true;
+			if (SpawnedItem)
+			{
+				SpawnedItem->SetItemData(ItemDataAsset->ItemData);
+				SpawnedItem->WriteUniqueData(ItemData);
+
+				SpawnedItems.Add(SpawnedItem);
+			}
+
+			return SpawnedItem;
 		}
 	}
 
-	return false;
+	return nullptr;
 }
 
 bool UItemManagerSubsystem::DespawnItem(const TSoftObjectPtr<AItem>& Item)

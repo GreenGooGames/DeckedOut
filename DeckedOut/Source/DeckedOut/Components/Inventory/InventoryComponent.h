@@ -23,5 +23,8 @@ protected:
 	// [Koen Goossens] TODO: Add inventory space limit.
 	TArray<FItemData_Inventory> StoredItems;
 
+	// [Koen Goossens] TODO: Add an instanced Actor Inventory:
+	// TArray<TObjectPtr<AActor>> InstancedInventory;
+
 	int32 FindIndexOfStoredItemData(const int32 ItemId) const;
 };

@@ -20,6 +20,9 @@ public:
 	AItem();
 
 	void SetItemData(const FItemData& InItemData);
+	FItemData GetItemData() const { return ItemData; };
+	
+	virtual bool ReadUniqueData(TMap<FString, ItemUniqueDataType>& OutUniqueData) const { return true; };
 	virtual bool WriteUniqueData(const TMap<FString, ItemUniqueDataType>& UniqueData) { return true; };
 
 protected:

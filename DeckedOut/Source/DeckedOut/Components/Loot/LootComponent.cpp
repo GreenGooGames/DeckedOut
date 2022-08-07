@@ -42,8 +42,9 @@ bool ULootComponent::DropLoot() const
 				if (IsValid(ItemManagerSubsystem))
 				{
 					const FTransform& SpawnTransform = GetOwner()->GetActorTransform();
+					const TSoftObjectPtr<AItem> SpawnedItem = ItemManagerSubsystem->SpawnItem(ItemDataAsset->ItemData.Id, SpawnTransform);
 
-					const bool bIsLootSpawned = ItemManagerSubsystem->SpawnItem(ItemDataAsset->ItemData.Id, SpawnTransform);
+					const bool bIsLootSpawned = IsValid(SpawnedItem.Get());
 
 					return bIsLootSpawned;
 				}

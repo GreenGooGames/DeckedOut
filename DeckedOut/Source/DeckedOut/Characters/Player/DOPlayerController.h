@@ -27,6 +27,8 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	int32 DEBUG_ItemToDropId = 0;
 
+	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; };
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInventoryComponent> InventoryComponent = nullptr;
