@@ -32,8 +32,9 @@ protected:
 	
 	FItemData ItemData = FItemData();
 	
+	virtual void SetupComponents(const bool bIsOnSpawn);
 	virtual TMap<FString, ItemUniqueDataType> GenerateUniqueData() { return TMap<FString, ItemUniqueDataType>(); };
-
+	
 #pragma region IInteractableInterface
 public:
 	virtual bool IsInteractable() const override;

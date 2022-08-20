@@ -16,15 +16,22 @@ AItem::AItem()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("Mesh"), false);
 
 	SetRootComponent(Mesh);
-	Mesh->SetSimulatePhysics(true);
-	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	Mesh->SetEnableGravity(true);
-	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+
+	SetupComponents(true);
 }
 
 void AItem::SetItemData(const FItemData& InItemData)
 {
 	ItemData = InItemData;
+}
+
+void AItem::SetupComponents(const bool bIsOnSpawn)
+{
+	Mesh->SetSimulatePhysics(bIsOnSpawn);
+	Mesh->SetCollisionEnabled(bIsOnSpawn ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
+	Mesh->SetEnableGravity(bIsOnSpawn);
+	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+
 }
 
 #pragma region IInteractableInterface

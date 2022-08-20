@@ -58,7 +58,6 @@ void ADOPlayerCharacter::DEBUG_EquipCompass()
 	{
 		// Equip the compass.
 		EquipmentManager->Equip(Compass, EEquipmentSlot::LeftHand);
-		Compass->SetActorRelativeLocation(FVector::ZeroVector);
 	}
 }
 

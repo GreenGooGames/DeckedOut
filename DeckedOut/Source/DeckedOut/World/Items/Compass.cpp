@@ -49,3 +49,15 @@ bool ACompass::WriteUniqueData(const TMap<FString, ItemUniqueDataType>& UniqueDa
 
 	return false;
 }
+
+#pragma region IEquipableInterface
+void ACompass::OnEquip()
+{
+	SetupComponents(false);
+}
+
+void ACompass::OnUnequip()
+{
+
+}
+#pragma endregion

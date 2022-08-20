@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DeckedOut/World/Items/EquipableInterface.h"
 #include "DeckedOut/World/Items/Item.h"
+
 #include "Compass.generated.h"
 
 const FString TargetLocationDataName = "TargetLocation";
@@ -14,7 +16,7 @@ class UArrowComponent;
  * 
  */
 UCLASS(Blueprintable)
-class DECKEDOUT_API ACompass : public AItem
+class DECKEDOUT_API ACompass : public AItem, public IEquipableInterface
 {
 	GENERATED_BODY()
 
@@ -32,4 +34,11 @@ protected:
 	FVector TargetLocation = FVector::ZeroVector;
 
 	virtual TMap<FString, ItemUniqueDataType> GenerateUniqueData() override;
+
+#pragma region IEquipableInterface
+public:
+	virtual void OnEquip() override;
+	virtual void OnUnequip() override;
+
+#pragma endregion
 };

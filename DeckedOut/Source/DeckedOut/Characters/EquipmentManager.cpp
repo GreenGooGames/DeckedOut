@@ -2,6 +2,8 @@
 
 
 #include "DeckedOut/Characters/EquipmentManager.h"
+#include "DeckedOut/Characters/Player/DOPlayerCharacter.h"
+#include "DeckedOut/World/Items/EquipableInterface.h"
 
 // Sets default values for this component's properties
 UEquipmentManager::UEquipmentManager()
@@ -38,6 +40,13 @@ bool UEquipmentManager::Equip(TSoftObjectPtr<AActor>& Actor, const EEquipmentSlo
 		return false;
 	}
 
+	// Is this an equipable object?
+	IEquipableInterface* const EquipableInterface = Cast<IEquipableInterface>(ToEquipActor);
+	if (EquipableInterface == nullptr)
+	{
+		return false;
+	}
+
 	// Is the requested slot setup?
 	if (!EquipedObjects.Contains(RequestedSlot))
 	{
@@ -53,8 +62,26 @@ bool UEquipmentManager::Equip(TSoftObjectPtr<AActor>& Actor, const EEquipmentSlo
 
 	// Equip the Object.
 	EquipedObjects[AvailableSlot] = Actor;
-	AActor* const AttachParent = GetOwner();
-	Actor->AttachToActor(AttachParent, FAttachmentTransformRules::SnapToTargetIncludingScale, SocketMapping[AvailableSlot]);
+	ADOPlayerCharacter* const Player = Cast<ADOPlayerCharacter>(GetOwner());
+
+	// [Koen Goossens] TODO: Make this non player specific.
+	if (Player)
+	{
+		USkeletalMeshComponent* const AttachComponent = Player->GetMesh();
+		
+		if (AttachComponent)
+		{
+			const FName SocketName = SocketMapping[AvailableSlot];
+
+			if (SocketName != NAME_None)
+			{			
+				const FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
+				ToEquipActor->AttachToComponent(AttachComponent, AttachmentRules, SocketName);
+
+				EquipableInterface->OnEquip();
+			}
+		}
+	}
 
 	return true;
 }
@@ -69,6 +96,12 @@ bool UEquipmentManager::Unequip(TSoftObjectPtr<AActor>& Actor)
 		{
 			EquipmentSlotData.Value = nullptr;
 			bHasUnequipedItem = true;
+
+			IEquipableInterface* const EquipableInterface = Cast<IEquipableInterface>(Actor.Get());
+			if (EquipableInterface)
+			{
+				EquipableInterface->OnUnequip();
+			}
 		}
 	}
 
