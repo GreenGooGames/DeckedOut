@@ -2,7 +2,7 @@
 
 
 #include "DeckedOut/Characters/EquipmentManager.h"
-#include "DeckedOut/Characters/Player/DOPlayerCharacter.h"
+#include "DeckedOut/DeckedOutCharacter.h"
 #include "DeckedOut/World/Items/EquipableInterface.h"
 
 // Sets default values for this component's properties
@@ -62,16 +62,15 @@ bool UEquipmentManager::Equip(TSoftObjectPtr<AActor>& Actor, const EEquipmentSlo
 
 	// Equip the Object.
 	EquipedObjects[AvailableSlot] = Actor;
-	ADOPlayerCharacter* const Player = Cast<ADOPlayerCharacter>(GetOwner());
+	const ADeckedOutCharacter* const Owner = Cast<ADeckedOutCharacter>(GetOwner());
 
-	// [Koen Goossens] TODO: Make this non player specific.
-	if (Player)
+	if (Owner)
 	{
-		USkeletalMeshComponent* const AttachComponent = Player->GetMesh();
+		USkeletalMeshComponent* const AttachComponent = Owner->GetMesh();
 		
 		if (AttachComponent)
 		{
-			const FName SocketName = SocketMapping[AvailableSlot];
+			const FName& SocketName = SocketMapping[AvailableSlot];
 
 			if (SocketName != NAME_None)
 			{			
