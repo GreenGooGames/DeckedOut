@@ -13,6 +13,8 @@ class ADeckedOutGameMode : public AGameModeBase
 
 public:
 	ADeckedOutGameMode();
+
+	virtual void PostLogin(APlayerController* NewPlayer) override;
 };
 
 

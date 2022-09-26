@@ -8,6 +8,7 @@
 
 class UInventoryComponent;
 class UInteractionComponent;
+class UBaseUIWidget;
 
 /**
  * 
@@ -28,10 +29,19 @@ public:
 	int32 DEBUG_ItemToDropId = 0;
 
 	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; };
+	
+	void ShowUI();
+	TObjectPtr<UBaseUIWidget> GetUIInstance() const { return UIInstance; };
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInventoryComponent> InventoryComponent = nullptr;
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInteractionComponent> InteractionComponent = nullptr;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSoftClassPtr<UBaseUIWidget> UIClass = nullptr;
+
+private:
+	TObjectPtr<UBaseUIWidget> UIInstance = nullptr;
 };

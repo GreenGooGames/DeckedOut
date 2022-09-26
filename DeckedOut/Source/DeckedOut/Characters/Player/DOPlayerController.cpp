@@ -6,6 +6,7 @@
 #include "Components/InputComponent.h"
 #include "DeckedOut/Components/Interaction/InteractionComponent.h"
 #include "DeckedOut/Components/Inventory/InventoryComponent.h"
+#include "DeckedOut/UI/Base/BaseUIWidget.h"
 #include "DeckedOut/World/Items/ItemData.h"
 #include "DeckedOut/World/Items/ItemManagerSubsystem.h"
 
@@ -44,5 +45,22 @@ void ADOPlayerController::DEBUG_DropItem()
 	{
 		UItemManagerSubsystem* const ItemManagerSubsystem = GetWorld()->GetSubsystem<UItemManagerSubsystem>();
 		ItemManagerSubsystem->SpawnItem(DEBUG_ItemToDropId, GetPawn()->GetActorTransform());
+	}
+}
+
+void ADOPlayerController::ShowUI()
+{
+	// [Koen Goossens] TODO: Async loading
+	TSubclassOf<UBaseUIWidget> UIClassRaw = UIClass.LoadSynchronous();
+
+	if (UIClassRaw)
+	{
+		UIInstance = CreateWidget<UBaseUIWidget>(GetWorld(), UIClassRaw);
+
+		if (UIInstance)
+		{
+			UIInstance->ActivateWidget();
+			UIInstance->AddToViewport();
+		}
 	}
 }

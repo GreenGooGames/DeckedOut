@@ -2,6 +2,8 @@
 
 #include "DeckedOutGameMode.h"
 #include "DeckedOutCharacter.h"
+#include "DeckedOut/Characters/Player/DOPlayerController.h"
+
 #include "UObject/ConstructorHelpers.h"
 
 ADeckedOutGameMode::ADeckedOutGameMode()
@@ -11,5 +13,17 @@ ADeckedOutGameMode::ADeckedOutGameMode()
 	if (PlayerPawnBPClass.Class != NULL)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
+	}
+}
+
+void ADeckedOutGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+
+	ADOPlayerController* const PlayerController = Cast<ADOPlayerController>(NewPlayer);
+
+	if (IsValid(PlayerController))
+	{
+		PlayerController->ShowUI();
 	}
 }
