@@ -30,7 +30,7 @@ protected:
 #pragma region BoundActions
 protected:
 	// Input action to close the GameMenu.
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = Input, meta = (RowType = CommonInputActionDataBase))
 	FDataTableRowHandle ExitInputActionData;
 
 private:

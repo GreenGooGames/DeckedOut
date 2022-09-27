@@ -14,12 +14,12 @@ void UMenuSwitcherWidget::NativeOnInitialized()
 
 	if (PreviousButton)
 	{
-		PreviousButton->OnPressed().AddUObject(this, &UMenuSwitcherWidget::OnPreviousButtonPressed);
+		PreviousButton->OnClicked().AddUObject(this, &UMenuSwitcherWidget::OnPreviousButtonPressed);
 	}
-
+	
 	if (NextButton)
 	{
-		NextButton->OnPressed().AddUObject(this, &UMenuSwitcherWidget::OnNextButtonPressed);
+		NextButton->OnClicked().AddUObject(this, &UMenuSwitcherWidget::OnNextButtonPressed);
 	}
 }
 

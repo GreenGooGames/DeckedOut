@@ -27,11 +27,11 @@ protected:
 #pragma region BoundActions
 protected:
 	// Input action to select the current focused item.
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = Input, meta = (RowType = CommonInputActionDataBase))
 	FDataTableRowHandle SelectInputActionData;
 	
 	// Input action to sort the Inventory.
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = Input, meta = (RowType = CommonInputActionDataBase))
 	FDataTableRowHandle SortInputActionData;
 
 private:

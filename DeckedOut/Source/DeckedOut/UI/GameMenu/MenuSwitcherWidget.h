@@ -40,5 +40,4 @@ private:
 	void OnNextButtonPressed();
 	UFUNCTION()
 	void OnMenuVisibilityChanged(int32 VisibleWidgetIndex);
-
 };
