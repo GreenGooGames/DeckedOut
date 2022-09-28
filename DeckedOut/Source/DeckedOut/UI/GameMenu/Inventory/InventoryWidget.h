@@ -7,11 +7,10 @@
 #include "Engine/DataTable.h"
 #include "Input/UIActionBindingHandle.h"
 
-#include "Templates/UnrealTemplate.h"
-#include "UObject/WeakObjectPtrTemplates.h"
-#include "UObject/ObjectKey.h"
-
 #include "InventoryWidget.generated.h"
+
+class UCommonTileView;
+class UInventorySlotWidget;
 
 /**
  * 
@@ -23,6 +22,13 @@ class DECKEDOUT_API UInventoryWidget : public UCommonActivatableWidget
 
 protected:
 	virtual void NativeOnInitialized() override;
+	virtual void NativeOnActivated() override;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UCommonTileView> TileView = nullptr;
+
+	void ConstructInventoryView();
+	void SetupInventoryView();
 
 #pragma region BoundActions
 protected:

@@ -24,6 +24,6 @@ void ADeckedOutGameMode::PostLogin(APlayerController* NewPlayer)
 
 	if (IsValid(PlayerController))
 	{
-		PlayerController->ShowUI();
+		PlayerController->ShowPrimaryGameLayout();
 	}
 }

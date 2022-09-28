@@ -10,7 +10,13 @@ UInventoryComponent::UInventoryComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
-	// ...
+}
+
+void UInventoryComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	StoredItems.SetNum(NumInventorySlots, true);
 }
 
 bool UInventoryComponent::RetrieveItems(const int32 ItemId, const int32 Amount, int32& OutRetrievedAmount, TMap<FString, ItemUniqueDataType>& OutUniqueData)
@@ -35,8 +41,8 @@ bool UInventoryComponent::RetrieveItems(const int32 ItemId, const int32 Amount, 
 			// Check if the inventory is empty for the requested item.
 			if (StoredItems[Index].StackSize <= 0)
 			{
-				// Remove the entry, keep order.
-				StoredItems.RemoveAt(Index, 1, true);
+				// Zero the entry.
+				StoredItems[Index] = FItemData_Inventory();
 			}
 
 			return true;
@@ -46,30 +52,47 @@ bool UInventoryComponent::RetrieveItems(const int32 ItemId, const int32 Amount, 
 	return false;
 }
 
-bool UInventoryComponent::StoreItem(const FItemData& ItemData, const TMap<FString, ItemUniqueDataType> UniqueData, const int32 Amount)
+bool UInventoryComponent::StoreItem(const FItemData& ItemData, const TMap<FString, ItemUniqueDataType>& UniqueData, const int32 Amount)
 {
+	int32 IndexToStore = INDEX_NONE;
+
 	if (ItemData.IsDataValid() && Amount > 0)
 	{
-		const bool bIsUniqueItem = UniqueData.Num() > 0;
+		// Check if the item is stackable and exist in the inventory.
+		const bool bIsUniqueItem = UniqueData.Num() > 0;	// Unique items cannot be stacked.
 
 		if (!bIsUniqueItem)
 		{
-			// Search if the requested item exist in the inventory.
-			const int32 Index = FindIndexOfStoredItemData(ItemData.Id);
-
-			// If the item exist increase the stack size otherwise, create a new entry.
-			if (Index != INDEX_NONE)
-			{
-				StoredItems[Index].StackSize += Amount;
-			}
+			IndexToStore = FindIndexOfStoredItemData(ItemData.Id);
 		}
 
-		StoredItems.Add(FItemData_Inventory(ItemData, Amount));
+		// Store the item in the inventory.
+		if (IndexToStore == INDEX_NONE)
+		{
+			// Find the first available slot to store the Item.
+			IndexToStore = FindFirstAvailableSlot();
 
-		return true;
+			// Check that a valid index has been found, otherwise the inventory is full!
+			if (IndexToStore != INDEX_NONE)
+			{
+				StoredItems[IndexToStore] = FItemData_Inventory(ItemData, Amount);
+			}
+		}
+		else
+		{
+			StoredItems[IndexToStore].StackSize += Amount;
+		}
 	}
 
-	return false;
+	// If an index has been found, assume the item has been stored in the inventory.
+	const bool bIsIndexFound = IndexToStore != INDEX_NONE;
+
+	return bIsIndexFound;
+}
+
+const TArray<FItemData_Inventory>& UInventoryComponent::GetStoredItems() const
+{
+	return StoredItems;
 }
 
 int32 UInventoryComponent::FindIndexOfStoredItemData(const int32 ItemId) const
@@ -80,4 +103,15 @@ int32 UInventoryComponent::FindIndexOfStoredItemData(const int32 ItemId) const
 	});
 
 	return Index;
+}
+
+int32 UInventoryComponent::FindFirstAvailableSlot() const
+{
+	const int32 Index = StoredItems.IndexOfByPredicate([](const FItemData_Inventory& StoredItemData)
+		{
+			return StoredItemData.Id == INVALID_ItemId;
+		});
+
+	return Index;
+
 }

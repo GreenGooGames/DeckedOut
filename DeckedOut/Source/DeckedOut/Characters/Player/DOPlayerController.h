@@ -8,7 +8,7 @@
 
 class UInventoryComponent;
 class UInteractionComponent;
-class UBaseUIWidget;
+class UPrimaryGameLayout;
 
 /**
  * 
@@ -30,8 +30,8 @@ public:
 
 	UInventoryComponent* GetInventoryComponent() const { return InventoryComponent; };
 	
-	void ShowUI();
-	TObjectPtr<UBaseUIWidget> GetUIInstance() const { return UIInstance; };
+	void ShowPrimaryGameLayout();
+	TObjectPtr<UPrimaryGameLayout> GetPrimaryGameLayout() const { return PrimaryGameLayoutInstance; };
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
@@ -40,8 +40,8 @@ protected:
 	TObjectPtr<UInteractionComponent> InteractionComponent = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSoftClassPtr<UBaseUIWidget> UIClass = nullptr;
+	TSoftClassPtr<UPrimaryGameLayout> PrimaryGameLayoutClass = nullptr;
 
 private:
-	TObjectPtr<UBaseUIWidget> UIInstance = nullptr;
+	TObjectPtr<UPrimaryGameLayout> PrimaryGameLayoutInstance = nullptr;
 };

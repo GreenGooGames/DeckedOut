@@ -2,6 +2,11 @@
 
 
 #include "DeckedOut/UI/GameMenu/Inventory/InventoryWidget.h"
+
+#include "CommonTileView.h"
+#include "DeckedOut/Components/Inventory/InventoryComponent.h"
+#include "DeckedOut/Characters/Player/DOPlayerController.h"
+#include "DeckedOut/UI/GameMenu/Inventory/InventorySlotWidget.h"
 #include "Input/CommonUIInputTypes.h"
 
 void UInventoryWidget::NativeOnInitialized()
@@ -9,6 +14,65 @@ void UInventoryWidget::NativeOnInitialized()
 	Super::NativeOnInitialized();
 
 	RegisterBoundInputActions();
+	ConstructInventoryView();
+}
+
+void UInventoryWidget::NativeOnActivated()
+{
+	Super::NativeOnActivated();
+
+	SetupInventoryView();
+}
+
+void UInventoryWidget::ConstructInventoryView()
+{
+	const ADOPlayerController* const PlayerController = GetOwningPlayer<ADOPlayerController>();
+
+	if (PlayerController)
+	{
+		const UInventoryComponent* const InventoryComponent = PlayerController->GetInventoryComponent();
+		
+		if (InventoryComponent)
+		{
+			const TArray<FItemData_Inventory>& StoredItems = InventoryComponent->GetStoredItems();
+
+			for (const FItemData_Inventory& Item : StoredItems)
+			{
+				UInventorySlotWidget* const SlotWidget = CreateWidget<UInventorySlotWidget>(GetWorld(), TileView->GetEntryWidgetClass());
+
+				if (SlotWidget)
+				{
+					SlotWidget->SetupDisplayData(Item);
+					TileView->AddItem(SlotWidget);
+				}
+			}
+		}
+	}
+}
+
+void UInventoryWidget::SetupInventoryView()
+{
+	const ADOPlayerController* const PlayerController = GetOwningPlayer<ADOPlayerController>();
+
+	if (PlayerController)
+	{
+		const UInventoryComponent* const InventoryComponent = PlayerController->GetInventoryComponent();
+
+		if (InventoryComponent)
+		{
+			const TArray<FItemData_Inventory>& StoredItems = InventoryComponent->GetStoredItems();
+
+			for (int32 i = 0; i < StoredItems.Num(); i++)
+			{
+				UInventorySlotWidget* const SlotWidget = Cast<UInventorySlotWidget>(TileView->GetItemAt(i));
+
+				if (SlotWidget)
+				{
+					SlotWidget->SetupDisplayData(StoredItems[i]);
+				}
+			}
+		}
+	}
 }
 
 #pragma region BoundActions

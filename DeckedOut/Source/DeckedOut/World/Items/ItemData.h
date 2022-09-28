@@ -45,7 +45,7 @@ public:
 	FText Name = FText();
 	FText Description = FText();
 
-	TObjectPtr<UTexture2D> DisplayTexture;
+	TObjectPtr<UTexture2D> DisplayTexture = nullptr;
 
 	int32 StackSize = -1;
 	TMap<FString, ItemUniqueDataType> UniqueData = TMap<FString, ItemUniqueDataType>();

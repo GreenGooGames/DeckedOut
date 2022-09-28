@@ -6,7 +6,7 @@
 #include "Components/InputComponent.h"
 #include "DeckedOut/Components/Interaction/InteractionComponent.h"
 #include "DeckedOut/Components/Inventory/InventoryComponent.h"
-#include "DeckedOut/UI/Base/BaseUIWidget.h"
+#include "DeckedOut/UI/Base/PrimaryGameLayout.h"
 #include "DeckedOut/World/Items/ItemData.h"
 #include "DeckedOut/World/Items/ItemManagerSubsystem.h"
 
@@ -48,19 +48,18 @@ void ADOPlayerController::DEBUG_DropItem()
 	}
 }
 
-void ADOPlayerController::ShowUI()
+void ADOPlayerController::ShowPrimaryGameLayout()
 {
 	// [Koen Goossens] TODO: Async loading
-	TSubclassOf<UBaseUIWidget> UIClassRaw = UIClass.LoadSynchronous();
+	TSubclassOf<UPrimaryGameLayout> PrimaryGameLayoutClassRaw = PrimaryGameLayoutClass.LoadSynchronous();
 
-	if (UIClassRaw)
+	if (PrimaryGameLayoutClassRaw)
 	{
-		UIInstance = CreateWidget<UBaseUIWidget>(GetWorld(), UIClassRaw);
+		PrimaryGameLayoutInstance = CreateWidget<UPrimaryGameLayout>(GetWorld(), PrimaryGameLayoutClassRaw);
 
-		if (UIInstance)
+		if (PrimaryGameLayoutInstance)
 		{
-			UIInstance->ActivateWidget();
-			UIInstance->AddToViewport();
+			PrimaryGameLayoutInstance->AddToViewport();
 		}
 	}
 }

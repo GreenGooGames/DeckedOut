@@ -4,7 +4,7 @@
 #include "DeckedOut/UI/Gameplay/GameplayWidget.h"
 
 #include "DeckedOut/Characters/Player/DOPlayerController.h"
-#include "DeckedOut/UI/Base/BaseUIWidget.h"
+#include "DeckedOut/UI/Base/PrimaryGameLayout.h"
 #include "Input/CommonUIInputTypes.h"
 
 void UGameplayWidget::NativeOnInitialized()
@@ -33,11 +33,11 @@ void UGameplayWidget::HandleOpenGameMenuAction() const
 
 	if (PlayerController)
 	{
-		UBaseUIWidget* const UIInstance = PlayerController->GetUIInstance();
+		UPrimaryGameLayout* const PrimaryGameLayoutInstance = PlayerController->GetPrimaryGameLayout();
 
-		if (UIInstance)
+		if (PrimaryGameLayoutInstance)
 		{
-			UIInstance->PushWidgetToMainStack(GameMenuClass);
+			PrimaryGameLayoutInstance->PushWidgetToMainStack(GameMenuClass);
 		}
 	}
 }

@@ -6,7 +6,7 @@
 #include "CommonActivatableWidget.h"
 #include "MenuSwitcherWidget.generated.h"
 
-class UCommonButtonBase;
+class UCommonTextButton;
 class UCommonTextBlock;
 class UCommonVisibilitySwitcher;
 
@@ -23,9 +23,9 @@ public:
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UCommonButtonBase> PreviousButton = nullptr;
+	TObjectPtr<UCommonTextButton> PreviousButton = nullptr;
 	UPROPERTY(meta = (BindWidget))
-	TObjectPtr<UCommonButtonBase> NextButton = nullptr;
+	TObjectPtr<UCommonTextButton> NextButton = nullptr;
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UCommonTextBlock> MenuNameText = nullptr;
 

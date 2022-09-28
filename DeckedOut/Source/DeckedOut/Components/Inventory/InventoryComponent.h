@@ -16,15 +16,23 @@ public:
 	// Sets default values for this component's properties
 	UInventoryComponent();
 
+	virtual void BeginPlay() override;
+
 	virtual bool RetrieveItems(const int32 ItemId, const int32 Amount, int32& OutRetrievedAmount, TMap<FString, ItemUniqueDataType>& OutUniqueData);
-	virtual bool StoreItem(const FItemData& ItemData, const TMap<FString, ItemUniqueDataType> UniqueData, const int32 Amount);
+	virtual bool StoreItem(const FItemData& ItemData, const TMap<FString, ItemUniqueDataType>& UniqueData, const int32 Amount);
+
+	int32 GetInventorySize() const { return NumInventorySlots; }
+	const TArray<FItemData_Inventory>& GetStoredItems() const;
 
 protected:
-	// [Koen Goossens] TODO: Add inventory space limit.
+	// The maximum amount of slots in the inventory.
+	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
+	int32 NumInventorySlots = 0;
 	TArray<FItemData_Inventory> StoredItems;
 
 	// [Koen Goossens] TODO: Add an instanced Actor Inventory:
 	// TArray<TObjectPtr<AActor>> InstancedInventory;
 
 	int32 FindIndexOfStoredItemData(const int32 ItemId) const;
+	int32 FindFirstAvailableSlot() const;
 };

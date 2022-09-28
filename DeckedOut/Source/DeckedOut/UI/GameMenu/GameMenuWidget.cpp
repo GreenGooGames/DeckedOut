@@ -5,7 +5,7 @@
 
 #include "CommonVisibilitySwitcher.h"
 #include "DeckedOut/Characters/Player/DOPlayerController.h"
-#include "DeckedOut/UI/Base/BaseUIWidget.h"
+#include "DeckedOut/UI/Base/PrimaryGameLayout.h"
 #include "DeckedOut/UI/GameMenu/MenuSwitcherWidget.h"
 #include "Input/CommonUIInputTypes.h"
 
@@ -45,11 +45,11 @@ void UGameMenuWidget::HandleExitAction()
 
 	if (PlayerController)
 	{
-		UBaseUIWidget* const UIInstance = PlayerController->GetUIInstance();
+		UPrimaryGameLayout* const PrimaryGameLayoutInstance = PlayerController->GetPrimaryGameLayout();
 
-		if (UIInstance)
+		if (PrimaryGameLayoutInstance)
 		{
-			UIInstance->PopWidgetFromMainStack(*this);
+			PrimaryGameLayoutInstance->PopWidgetFromMainStack(*this);
 		}
 	}
 }
