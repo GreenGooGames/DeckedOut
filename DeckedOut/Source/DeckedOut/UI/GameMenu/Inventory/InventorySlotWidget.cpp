@@ -10,13 +10,21 @@ void UInventorySlotWidget::SetupDisplayData(const FItemData_Inventory& ItemData)
 {
 	if (DisplayImage)
 	{
-		// [Koen Goossens] TODO: This doesn't seem to work, the texture displayed remains unchanged. (The BP call (SetBrushFromTexture) does work investigate the BP method).
-		//		Its also possible that the default image finishes laoding after this has executed and then overrides.
 		UTexture2D* const DisplayTexture = ItemData.DisplayTexture.Get();
 
 		if (DisplayTexture)
 		{
 			DisplayImage->SetBrushFromTexture(DisplayTexture);
 		}
+	}
+}
+
+void UInventorySlotWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
+{
+	UInventorySlotWidget* const ListItem = Cast<UInventorySlotWidget>(ListItemObject);
+
+	if (ListItem)
+	{
+		DisplayImage->SetBrush(ListItem->DisplayImage->Brush);
 	}
 }

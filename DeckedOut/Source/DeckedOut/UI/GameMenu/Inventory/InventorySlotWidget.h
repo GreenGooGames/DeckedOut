@@ -25,4 +25,7 @@ public:
 protected:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	TObjectPtr<UCommonLazyImage> DisplayImage = nullptr;
+
+	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
+
 };
