@@ -2,6 +2,6 @@
 	"BuildId": "19505902",
 	"Modules": 
 	{
-		"DeckedOut": "UnrealEditor-DeckedOut.dll"
+		"Tartarus": "UnrealEditor-Tartarus.dll"
 	}
 }
