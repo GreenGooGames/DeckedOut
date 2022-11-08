@@ -15,7 +15,6 @@ UTartarusInventoryComponent::UTartarusInventoryComponent()
 	// ...
 }
 
-
 // Called when the game starts
 void UTartarusInventoryComponent::BeginPlay()
 {
@@ -129,4 +128,3 @@ int32 UTartarusInventoryComponent::FindItem(const int32 ItemId) const
 
 	return INDEX_NONE;
 }
-

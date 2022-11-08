@@ -18,6 +18,7 @@ public:
 	ATartarusItemBase();
 
 	void SetReferenceId(const int32 ItemReferenceId) { ReferenceId = ItemReferenceId; }
+	int32 GetReferenceId() { return ReferenceId; }
 
 protected:
 	// The visual representation of the Item in the world.

@@ -12,6 +12,13 @@ void UTartarusInventorySlotWidget::SetDisplayTexture(UTexture2D* Texture)
 		if (Texture)
 		{
 			DisplayImage->SetBrushFromTexture(Texture);
+
+			// Reset Tint Aplha value to 1.0f
+			DisplayImage->Brush.TintColor = FSlateColor(FColor::White);
+		}
+		else
+		{
+			DisplayImage->SetBrush(EmptySlotBrush);
 		}
 	}
 }

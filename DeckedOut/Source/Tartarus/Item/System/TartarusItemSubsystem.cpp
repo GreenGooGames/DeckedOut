@@ -40,6 +40,7 @@ bool UTartarusItemSubsystem::DespawnItem(ATartarusItemBase* const ToDespawn)
 }
 
 #pragma region ASyncLoading
+#pragma region SpawnItem
 FGuid UTartarusItemSubsystem::ASyncRequestSpawnItem(const int32 ItemId, const FTransform& SpawnTransform, FItemSpawnRequestCompletedEvent& OnRequestCompletedEvent)
 {
 	// Get the AsyncLoader.
@@ -51,17 +52,12 @@ FGuid UTartarusItemSubsystem::ASyncRequestSpawnItem(const int32 ItemId, const FT
 		return FGuid();
 	}
 	
-	// Prepare the callback for when the request completes.
-	FAsyncLoadAssetRequestCompletedEvent OnRequestCompleted;
-	OnRequestCompleted.AddUObject(this, &UTartarusItemSubsystem::HandleDataTableLoaded);
-	
-	FGuid AsyncLoadRequestId = AssetManager.AsyncRequestLoadAsset(ItemDataTable.ToSoftObjectPath(), OnRequestCompleted);
-	
-	if (!AsyncLoadRequestId.IsValid())
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), __FUNCTION__);
-		return FGuid();
-	}
+	// Create a callback for when the item table is loaded.
+	FLoadItemTableRequestCompletedEvent OnItemTableLoaded;
+	OnItemTableLoaded.AddUObject(this, &ThisClass::HandleItemTableLoadCompleted);
+
+	// Create a request to start loading the Item Table.
+	const FGuid AsyncLoadRequestId = ASyncRequestLoadItemTable(OnItemTableLoaded);
 
 	// Setup the request for this spawn.
 	FItemSpawnRequestInfo SpawnRequest = FItemSpawnRequestInfo(OnRequestCompletedEvent, ItemId, SpawnTransform);
@@ -72,7 +68,7 @@ FGuid UTartarusItemSubsystem::ASyncRequestSpawnItem(const int32 ItemId, const FT
 	return SpawnRequest.GetRequestId();
 }
 
-void UTartarusItemSubsystem::HandleRequestSuccess(const FItemSpawnRequestInfo* const SuccessRequest, TWeakObjectPtr<ATartarusItemBase> SpawnedItem)
+void UTartarusItemSubsystem::HandleSpawnItemRequestSuccess(const FItemSpawnRequestInfo* const SuccessRequest, TWeakObjectPtr<ATartarusItemBase> SpawnedItem)
 {
 	if (!SuccessRequest)
 	{
@@ -83,7 +79,7 @@ void UTartarusItemSubsystem::HandleRequestSuccess(const FItemSpawnRequestInfo* c
 	SpawnRequests.RemoveSingleSwap(*SuccessRequest);
 }
 
-void UTartarusItemSubsystem::HandleRequestFailed(const FItemSpawnRequestInfo* const FailedRequest)
+void UTartarusItemSubsystem::HandleSpawnItemRequestFailed(const FItemSpawnRequestInfo* const FailedRequest)
 {
 	if (!FailedRequest)
 	{
@@ -94,7 +90,7 @@ void UTartarusItemSubsystem::HandleRequestFailed(const FItemSpawnRequestInfo* co
 	SpawnRequests.RemoveSingleSwap(*FailedRequest);
 }
 
-void UTartarusItemSubsystem::HandleDataTableLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle)
+void UTartarusItemSubsystem::HandleItemTableLoadCompleted(FGuid ASyncLoadRequestId, TWeakObjectPtr<UDataTable> ItemTable)
 {
 	// Get the request that is being handled.
 	FItemSpawnRequestInfo* const CurrentRequest = SpawnRequests.FindByPredicate([&ASyncLoadRequestId](const FItemSpawnRequestInfo& Request)
@@ -108,24 +104,22 @@ void UTartarusItemSubsystem::HandleDataTableLoaded(FGuid ASyncLoadRequestId, TSh
 		return;
 	}
 	
-	// Get a reference to the DataTable that got loaded.
-	UDataTable* const Datatable = Cast<UDataTable>(AssetHandle.Get()->GetLoadedAsset());
-	
-	if (!IsValid(Datatable))
+	// Verify the table is loaded.	
+	if (!IsValid(ItemTable.Get()))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Item failed: datatable was not loaded!"), __FUNCTION__);
-		HandleRequestFailed(CurrentRequest);
+		HandleSpawnItemRequestFailed(CurrentRequest);
 
 		return;
 	}
 	
 	// Get the Item that was requestes from the DataTable
-	FItemTableRow* const ItemDefinition = FindItemRow(Datatable, CurrentRequest->GetItemId());
+	FItemTableRow* const ItemDefinition = FindItemRow(ItemTable.Get(), CurrentRequest->GetItemId());
 	
 	if (!ItemDefinition)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Item failed: Item was not found in the DataTable!"), __FUNCTION__);
-		HandleRequestFailed(CurrentRequest);
+		HandleSpawnItemRequestFailed(CurrentRequest);
 
 		return;
 	}
@@ -136,7 +130,7 @@ void UTartarusItemSubsystem::HandleDataTableLoaded(FGuid ASyncLoadRequestId, TSh
 	if (!ItemLoadRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Item failed: Could not load the item async!"), __FUNCTION__);
-		HandleRequestFailed(CurrentRequest);
+		HandleSpawnItemRequestFailed(CurrentRequest);
 		
 		return;
 	}
@@ -157,7 +151,7 @@ FGuid UTartarusItemSubsystem::AsyncRequestLoadItem(const FItemTableRow* const It
 
 	// Prepare the callback for when the request completes.
 	FAsyncLoadAssetRequestCompletedEvent OnRequestCompleted;
-	OnRequestCompleted.AddUObject(this, &UTartarusItemSubsystem::HandleBlueprintLoaded);
+	OnRequestCompleted.AddUObject(this, &UTartarusItemSubsystem::HandleItemLoaded);
 
 	FGuid AsyncLoadRequestId = AssetManager.AsyncRequestLoadAsset(ItemDefinition->Blueprint.ToSoftObjectPath(), OnRequestCompleted);
 
@@ -170,7 +164,7 @@ FGuid UTartarusItemSubsystem::AsyncRequestLoadItem(const FItemTableRow* const It
 	return AsyncLoadRequestId;
 }
 
-void UTartarusItemSubsystem::HandleBlueprintLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle)
+void UTartarusItemSubsystem::HandleItemLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle)
 {
 	// Get the request that is being handled.
 	FItemSpawnRequestInfo* const CurrentRequest = SpawnRequests.FindByPredicate([&ASyncLoadRequestId](const FItemSpawnRequestInfo& Request)
@@ -190,7 +184,7 @@ void UTartarusItemSubsystem::HandleBlueprintLoaded(FGuid ASyncLoadRequestId, TSh
 	if (!IsValid(ItemClass))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Item failed: Class failed to load!"), __FUNCTION__);
-		HandleRequestFailed(CurrentRequest);
+		HandleSpawnItemRequestFailed(CurrentRequest);
 		
 		return;
 	}
@@ -200,14 +194,14 @@ void UTartarusItemSubsystem::HandleBlueprintLoaded(FGuid ASyncLoadRequestId, TSh
 	if (!IsValid(SpawnedItem))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Item failed: Item failed to spawn!"), __FUNCTION__);
-		HandleRequestFailed(CurrentRequest);
+		HandleSpawnItemRequestFailed(CurrentRequest);
 
 		return;
 	}
 
 	SpawnedItem->SetReferenceId(CurrentRequest->GetItemId());
 
-	HandleRequestSuccess(CurrentRequest, SpawnedItem);
+	HandleSpawnItemRequestSuccess(CurrentRequest, SpawnedItem);
 }
 
 ATartarusItemBase* UTartarusItemSubsystem::SpawnItem(TSubclassOf<ATartarusItemBase>& ItemClass, const FTransform& SpawnTransform)
@@ -253,4 +247,90 @@ FItemTableRow* UTartarusItemSubsystem::FindItemRow(UDataTable* const DataTable, 
 
 	return nullptr;
 }
+#pragma endregion
+
+#pragma region LoadItemTable
+FGuid UTartarusItemSubsystem::ASyncRequestLoadItemTable(FLoadItemTableRequestCompletedEvent& OnRequestCompletedEvent)
+{
+	// Get the AsyncLoader.
+	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
+
+	if (!AssetManager.IsValid())
+	{
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), __FUNCTION__);
+		return FGuid();
+	}
+
+	// Prepare the callback for when the request completes.
+	FAsyncLoadAssetRequestCompletedEvent OnRequestCompleted;
+	OnRequestCompleted.AddUObject(this, &UTartarusItemSubsystem::HandleItemTableLoaded);
+
+	FGuid AsyncLoadRequestId = AssetManager.AsyncRequestLoadAsset(ItemDataTable.ToSoftObjectPath(), OnRequestCompleted);
+
+	if (!AsyncLoadRequestId.IsValid())
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), __FUNCTION__);
+		return FGuid();
+	}
+
+	// Setup the request for this spawn.
+	FLoadItemTableRequestInfo LoadRequest = FLoadItemTableRequestInfo(OnRequestCompletedEvent);
+	LoadRequest.SetASyncLoadRequestId(AsyncLoadRequestId);
+
+	LoadItemTableRequests.Add(LoadRequest);
+
+	return LoadRequest.GetRequestId();
+}
+
+void UTartarusItemSubsystem::HandleItemTableLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle)
+{
+	// Get the request that is being handled.
+	FLoadItemTableRequestInfo* const CurrentRequest = LoadItemTableRequests.FindByPredicate([&ASyncLoadRequestId](const FLoadItemTableRequestInfo& Request)
+		{
+			return Request.GetASyncLoadRequestId() == ASyncLoadRequestId;
+		});
+
+	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Item failed: Could not find the request!"), __FUNCTION__);
+		return;
+	}
+
+	// Store the loaded asset for future references.
+	ItemDataTable = AssetHandle.Get()->GetLoadedAsset();
+
+	if (!IsValid(ItemDataTable.Get()))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Load ItemTable failed: Item table was invalid!"), __FUNCTION__);
+		HandleItemTableLoadRequestFailed(CurrentRequest);
+		
+		return;
+	}
+
+	HandleItemTableLoadRequestSuccess(CurrentRequest);
+}
+
+void UTartarusItemSubsystem::HandleItemTableLoadRequestSuccess(const FLoadItemTableRequestInfo* const SuccessRequest)
+{
+	if (!SuccessRequest)
+	{
+		return;
+	}
+
+	SuccessRequest->OnLoadItemTableRequestCompleted().Broadcast(SuccessRequest->GetRequestId(), ItemDataTable.Get());
+	LoadItemTableRequests.RemoveSingleSwap(*SuccessRequest);
+}
+
+void UTartarusItemSubsystem::HandleItemTableLoadRequestFailed(const FLoadItemTableRequestInfo* const FailedRequest)
+{
+	if (!FailedRequest)
+	{
+		return;
+	}
+
+	FailedRequest->OnLoadItemTableRequestCompleted().Broadcast(FailedRequest->GetRequestId(), nullptr);
+	LoadItemTableRequests.RemoveSingleSwap(*FailedRequest);
+}
+#pragma endregion
+
 #pragma endregion

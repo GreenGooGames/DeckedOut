@@ -21,6 +21,7 @@ public class Tartarus : ModuleRules
 				"Engine", 
 				"InputCore", 
 				"HeadMountedDisplay",
-				"GameplayTags" });
+				"GameplayTags",
+				"SlateCore"});
 	}
 }

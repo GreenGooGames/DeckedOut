@@ -6,6 +6,7 @@
 #include "Player/TartarusPlayerCharacter.h"
 #include "Item/Equipable/Equipment/TartarusCompass.h"
 #include "Item/Equipable/TartarusEquipableManager.h"
+#include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/Loot/TartarusLootComponent.h"
 #include "logging/TartarusLogChannels.h"
 
@@ -28,6 +29,21 @@ bool ATartarusTreasureChest::StartInteraction(const TObjectPtr<AController> Inst
 	const bool bHasUnequippedCompass = Player->GetEquipableManager()->Unequip(LinkedCompass.Get());
 
 	if (!bHasUnequippedCompass)
+	{
+		return false;
+	}
+
+	// Remove the compass from the inventory.
+	UTartarusInventoryComponent* const Inventory = InstigatorController->FindComponentByClass<UTartarusInventoryComponent>();
+
+	if (!IsValid(Inventory))
+	{
+		return false;
+	}
+
+	const bool bHasRetrievedItem = Inventory->RetrieveItem(LinkedCompass.Get()->GetReferenceId(), 1);
+
+	if (!bHasRetrievedItem)
 	{
 		return false;
 	}
