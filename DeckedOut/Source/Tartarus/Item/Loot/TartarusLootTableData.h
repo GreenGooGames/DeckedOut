@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "System/TartarusHelpers.h"
 
 #include "TartarusLootTableData.Generated.h"
 
@@ -15,6 +14,5 @@ struct FLootTableRow : public FTableRowBase
 
 public:
 	UPROPERTY(EditDefaultsOnly)
-		int32 ItemId = FTartarusHelpers::InvalidItemId;
-
+		FDataTableRowHandle Item = FDataTableRowHandle();
 };

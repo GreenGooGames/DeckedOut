@@ -97,6 +97,7 @@ private:
 public:
 	// Creates a request to spawn an item in the world.
 	FGuid ASyncRequestSpawnItem(const int32 ItemId, const FTransform& SpawnTransform, FItemSpawnRequestCompletedEvent& OnRequestCompletedEvent);
+	FGuid ASyncRequestSpawnItem(const FItemTableRow* const ItemRow, const FTransform& SpawnTransform, FItemSpawnRequestCompletedEvent& OnRequestCompletedEvent);
 
 protected:
 	// Notfies the requester that the request has succeeded and removes the request from the queue.

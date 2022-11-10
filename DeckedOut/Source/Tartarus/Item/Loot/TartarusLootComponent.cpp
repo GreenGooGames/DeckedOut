@@ -157,7 +157,8 @@ FGuid UTartarusLootComponent::AsyncRequestSpawnItem(const FLootTableRow* const L
 	FItemSpawnRequestCompletedEvent OnSpawnRequestCompleted;
 	OnSpawnRequestCompleted.AddUObject(this, &UTartarusLootComponent::HandleLootSpawned);
 
-	const FGuid SpawnRequestId = ItemSubsystem->ASyncRequestSpawnItem(LootDefinition->ItemId, SpawnTransform, OnSpawnRequestCompleted);
+	FString ContextString;
+	const FGuid SpawnRequestId = ItemSubsystem->ASyncRequestSpawnItem(LootDefinition->Item.GetRow<FItemTableRow>(ContextString), SpawnTransform, OnSpawnRequestCompleted);
 
 	if (!SpawnRequestId.IsValid())
 	{

@@ -68,6 +68,33 @@ FGuid UTartarusItemSubsystem::ASyncRequestSpawnItem(const int32 ItemId, const FT
 	return SpawnRequest.GetRequestId();
 }
 
+FGuid UTartarusItemSubsystem::ASyncRequestSpawnItem(const FItemTableRow* const ItemRow, const FTransform& SpawnTransform, FItemSpawnRequestCompletedEvent& OnRequestCompletedEvent)
+{
+	if (!ItemRow)
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Item failed: Item row was null!"), __FUNCTION__);
+
+		return FGuid();
+	}
+
+	FGuid LoadItemRequestId = AsyncRequestLoadItem(ItemRow);
+
+	if (!LoadItemRequestId.IsValid())
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Item failed: Could not load the item async!"), __FUNCTION__);
+
+		return FGuid();
+	}
+
+	// Setup the request for this spawn.
+	FItemSpawnRequestInfo SpawnRequest = FItemSpawnRequestInfo(OnRequestCompletedEvent, ItemRow->UniqueId, SpawnTransform);
+	SpawnRequest.SetASyncLoadRequestId(LoadItemRequestId);
+
+	SpawnRequests.Add(SpawnRequest);
+
+	return SpawnRequest.GetRequestId();
+}
+
 void UTartarusItemSubsystem::HandleSpawnItemRequestSuccess(const FItemSpawnRequestInfo* const SuccessRequest, TWeakObjectPtr<ATartarusItemBase> SpawnedItem)
 {
 	if (!SuccessRequest)
