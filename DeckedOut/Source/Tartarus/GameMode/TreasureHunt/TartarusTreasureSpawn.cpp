@@ -21,16 +21,17 @@ ATartarusTreasureSpawn::ATartarusTreasureSpawn()
 
 #if WITH_EDITORONLY_DATA
 	Sprite = CreateEditorOnlyDefaultSubobject<UBillboardComponent>(TEXT("Sprite"));
-	Sprite->SetupAttachment(RootComponent);
 
-	if (!IsRunningCommandlet())
+	if (IsValid(Sprite))
 	{
-		if (Sprite)
+		Sprite->SetupAttachment(RootComponent);
+
+		if (!IsRunningCommandlet())
 		{
-			Sprite->bHiddenInGame = true;
-			Sprite->SetupAttachment(RootComponent);
-			Sprite->SetUsingAbsoluteScale(true);
-			Sprite->bIsScreenSizeScaled = true;
+				Sprite->bHiddenInGame = true;
+				Sprite->SetupAttachment(RootComponent);
+				Sprite->SetUsingAbsoluteScale(true);
+				Sprite->bIsScreenSizeScaled = true;
 		}
 	}
 #endif

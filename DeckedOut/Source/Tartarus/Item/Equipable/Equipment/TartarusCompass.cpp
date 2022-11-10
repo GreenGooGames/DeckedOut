@@ -19,20 +19,26 @@ ATartarusCompass::ATartarusCompass()
 #if WITH_EDITORONLY_DATA
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 	ArrowComponent = CreateEditorOnlyDefaultSubobject<UArrowComponent>(FName("ArrowComponent"), false);
-	ArrowComponent->SetupAttachment(RootComponent);
+
+	if (IsValid(ArrowComponent))
+	{
+		ArrowComponent->SetupAttachment(RootComponent);
+	}
 #endif
 }
 
 #if WITH_EDITORONLY_DATA
 void ATartarusCompass::Tick(float DeltaSeconds)
 {
-	// Calculate the look at angle from the Arrow Component position to the target.
-	const FRotator LookatRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetLocation);
+	if (IsValid(ArrowComponent))
+	{
+		// Calculate the look at angle from the Arrow Component position to the target.
+		const FRotator LookatRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetLocation);
 
-	// Set the Arrow component rotation.
-	ArrowComponent->SetWorldRotation(LookatRotation);
+		// Set the Arrow component rotation.
+		ArrowComponent->SetWorldRotation(LookatRotation);
+	}
 }
 #endif
 
