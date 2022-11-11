@@ -135,29 +135,33 @@ FGuid UTartarusInventoryWidget::AsyncRequestSetDisplayTexture(UTartarusInventory
 {
 	// Get the ItemSubsystem.
 	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
-
+	
 	if (!IsValid(ItemSubsystem))
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: ItemSubsystem was invalid!"), __FUNCTION__);
 		return FGuid();
 	}
 
-	// Prepare a callback for when the itemsubsystem has loaded the item table.
-	FLoadItemTableRequestCompletedEvent OnRequestCompleted;
-	OnRequestCompleted.AddUObject(this, &UTartarusInventoryWidget::HandleDataTableLoaded);
+	// Create a request to handle updating the UI.
+	FUpdateInventoryUIRequestInfo UpdateRequest = FUpdateInventoryUIRequestInfo(OnRequestCompletedEvent, ItemId, SlotWidget);
 
-	FGuid AsyncLoadRequestId = ItemSubsystem->ASyncRequestLoadItemTable(OnRequestCompleted);
-	
+	// Prepare a callback for when the itemsubsystem has loaded the items their data.
+	FGetItemDataRequestCompletedEvent OnRequestCompleted;
+	OnRequestCompleted.AddUObject(this, &UTartarusInventoryWidget::HandleItemsDataLoaded);
+
+	// Create a request to load the data/
+	TArray<int32> ItemIds;
+	ItemIds.Add(ItemId);
+
+	FGuid AsyncLoadRequestId = ItemSubsystem->AsyncRequestGetItemsData(ItemIds, OnRequestCompleted);
+		
 	if (!AsyncLoadRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), __FUNCTION__);
 		return FGuid();
 	}
 	
-	// Setup the request this update.
-	FUpdateInventoryUIRequestInfo UpdateRequest = FUpdateInventoryUIRequestInfo(OnRequestCompletedEvent, ItemId, SlotWidget);
 	UpdateRequest.SetASyncLoadRequestId(AsyncLoadRequestId);
-	
 	UpdateUIRequests.Add(UpdateRequest);
 	
 	return UpdateRequest.GetRequestId();
@@ -187,7 +191,8 @@ void UTartarusInventoryWidget::HandleRequestFailed(const FUpdateInventoryUIReque
 	UpdateUIRequests.RemoveSingleSwap(*FailedRequest);
 }
 
-void UTartarusInventoryWidget::HandleDataTableLoaded(FGuid ASyncLoadRequestId, TWeakObjectPtr<UDataTable> ItemTable)
+// TODO: this whiole method expect only 1 item to be loaded!
+void UTartarusInventoryWidget::HandleItemsDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData)
 {
 	// Get the request that is being handled.
 	FUpdateInventoryUIRequestInfo* const CurrentRequest = UpdateUIRequests.FindByPredicate([&ASyncLoadRequestId](const FUpdateInventoryUIRequestInfo& Request)
@@ -201,47 +206,17 @@ void UTartarusInventoryWidget::HandleDataTableLoaded(FGuid ASyncLoadRequestId, T
 		return;
 	}
 
-	// Verify the table is loaded.	
-	if (!IsValid(ItemTable.Get()))
+	// Verify that the correct item is loaded.
+	if (ItemsData.IsEmpty() || ItemsData[0].UniqueId != CurrentRequest->GetItemId())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Item failed: datatable was not loaded!"), __FUNCTION__);
-		HandleRequestFailed(CurrentRequest);
-
-		return;
-	}
-
-	// Readout the datatable.
-	FString Context = "";
-	TArray<FItemTableRow*> Items;
-
-	ItemTable.Get()->GetAllRows<FItemTableRow>(Context, Items);
-
-	if (Items.IsEmpty())
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: ItemTable was empty!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: No items loaded or the wrong item got loaded.!"), __FUNCTION__);
 		HandleRequestFailed(CurrentRequest);
 
 		return;
 	}
 
 	// Find the row for the item to display.
-	const FItemTableRow* ItemRow = nullptr;
-
-	for (FItemTableRow* const ItemTableRow : Items)
-	{
-		if (ItemTableRow->UniqueId == CurrentRequest->GetItemId())
-		{
-			ItemRow = ItemTableRow;
-		}
-	}
-
-	if (!ItemRow)
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: Could not find the requested item!"), __FUNCTION__);
-		HandleRequestFailed(CurrentRequest);
-
-		return;
-	}
+	const FItemTableRow& ItemRow = ItemsData[0];
 
 	// Request to load the texture.
 	 FGuid AsyncLoadRequestId = AsyncRequestLoadTexture(ItemRow);
@@ -257,7 +232,7 @@ void UTartarusInventoryWidget::HandleDataTableLoaded(FGuid ASyncLoadRequestId, T
 	 CurrentRequest->SetASyncLoadRequestId(AsyncLoadRequestId);
 }
 
-FGuid UTartarusInventoryWidget::AsyncRequestLoadTexture(const FItemTableRow* const ItemDefinition)
+FGuid UTartarusInventoryWidget::AsyncRequestLoadTexture(const FItemTableRow& ItemDefinition)
 {
 	// Get the AsyncLoader.
 	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
@@ -273,7 +248,7 @@ FGuid UTartarusInventoryWidget::AsyncRequestLoadTexture(const FItemTableRow* con
 	OnTextureLoaded.AddUObject(this, &UTartarusInventoryWidget::HandleTextureLoaded);
 
 	// Create a request to start loading the Item Table.
-	const FGuid AsyncLoadRequestId = AssetManager.AsyncRequestLoadAsset(ItemDefinition->DisplayTexture.ToSoftObjectPath(), OnTextureLoaded);
+	const FGuid AsyncLoadRequestId = AssetManager.AsyncRequestLoadAsset(ItemDefinition.DisplayTexture.ToSoftObjectPath(), OnTextureLoaded);
 
 	if (!AsyncLoadRequestId.IsValid())
 	{

@@ -63,7 +63,7 @@ bool ATartarusTreasureChest::StartInteraction(const TObjectPtr<AController> Inst
 	return true;
 }
 
-void ATartarusTreasureChest::HandleLootDropped(FGuid RequestId, TWeakObjectPtr<ATartarusItemBase> SpawnedLoot)
+void ATartarusTreasureChest::HandleLootDropped(FGuid RequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot)
 {
 	OnLooted.Broadcast(this);
 }

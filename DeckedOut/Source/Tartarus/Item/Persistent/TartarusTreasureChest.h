@@ -35,7 +35,7 @@ protected:
 	
 	TWeakObjectPtr<ATartarusCompass> LinkedCompass = nullptr;
 
-	void HandleLootDropped(FGuid RequestId, TWeakObjectPtr<ATartarusItemBase> SpawnedLoot);
+	void HandleLootDropped(FGuid RequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot);
 
 #pragma region TartarusInteractableTargetInterface
 public:

@@ -6,6 +6,7 @@
 
 // TEMP
 #include "Item/System/TartarusItemSubsystem.h"
+#include "Engine/DataTable.h"
 // END TEMP
 
 #pragma region Template
@@ -152,16 +153,19 @@ void ATartarusPlayerCharacter::BeginPlay()
 
 	// TEMP
 	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
-
+	
 	if (!ItemSubsystem)
 	{
 		return;
 	}
-
+	
 	// Spawn Compass at (X=2160.000000,Y=730.000000,Z=150.000000)
 	FTransform SpawnTransform = FTransform(FVector(2160, 730, 150));
 	FItemSpawnRequestCompletedEvent OnSpawnRequestCompleted;
+	
+	TArray<FDataTableRowHandle> ItemsToSpawn;
+	ItemsToSpawn.Add(CompassRow);
 
-	ItemSubsystem->ASyncRequestSpawnItem(1, SpawnTransform, OnSpawnRequestCompleted);
+	ItemSubsystem->AsyncRequestSpawnItems(ItemsToSpawn, SpawnTransform, OnSpawnRequestCompleted);
 	// END TEMP
 }

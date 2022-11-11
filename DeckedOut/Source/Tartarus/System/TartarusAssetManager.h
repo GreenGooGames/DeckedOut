@@ -42,6 +42,7 @@ public:
 	* Return: the unique ID of the request.	
 	*/
 	FGuid AsyncRequestLoadAsset(const FSoftObjectPath& TargetToLoad, const FAsyncLoadAssetRequestCompletedEvent& OnRequestCompletedEvent);
+	FGuid AsyncRequestLoadAssets(TArray<FSoftObjectPath> TargetsToLoad, const FAsyncLoadAssetRequestCompletedEvent& OnRequestCompletedEvent);
 
 protected:
 	// Callback to when any asset is loaded.

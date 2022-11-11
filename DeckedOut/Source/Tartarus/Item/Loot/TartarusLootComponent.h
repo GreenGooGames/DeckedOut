@@ -9,12 +9,12 @@
 #include "TartarusLootComponent.generated.h"
 
 class ATartarusItemBase;
-class UDataTable;
+class UTartarusLootTableDataAsset;
 
-struct FLootTableRow;
+struct FDataTableRowHandle;
 struct FStreamableHandle;
 
-DECLARE_EVENT_TwoParams(UTartarusItemSubsystem, FDropLootRequestCompletedEvent, FGuid /*RequestId*/, TWeakObjectPtr<ATartarusItemBase> /*SpawnedItems*/)
+DECLARE_EVENT_TwoParams(UTartarusItemSubsystem, FDropLootRequestCompletedEvent, FGuid /*RequestId*/, TArray<TWeakObjectPtr<ATartarusItemBase>> /*SpawnedItems*/)
 
 USTRUCT()
 struct FLootDropRequestInfo : public FASyncLoadRequest
@@ -51,9 +51,7 @@ public:
 protected:
 	// Table that contains the loot to be dropped.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		TSoftObjectPtr<UDataTable> LootTable = nullptr;
-
-	const FLootTableRow* GetRandomLootEntry() const;
+		TSoftObjectPtr<UTartarusLootTableDataAsset> LootTable = nullptr;
 
 #pragma region AsyncLoading
 public:
@@ -65,22 +63,22 @@ public:
 
 protected:
 	// Notfies the requester that the request has succeeded and removes the request from the queue.
-	void HandleRequestSuccess(const FLootDropRequestInfo* const SuccessRequest, TWeakObjectPtr<ATartarusItemBase> SpawnedLoot);
+	void HandleRequestSuccess(const FLootDropRequestInfo* const SuccessRequest, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot);
 
 	// Notifies the requester that the request failed and removes the request from the queue.
 	void HandleRequestFailed(const FLootDropRequestInfo* const FailedRequest);
 
 	// Called when the loot datatable is loaded.
-	void HandleDataTableLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle);
+	void HandleLootTableLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle);
 
 	/*
 	* Creates a request to load an item.
 	* Return: The Guid of the async load request.
 	*/
-	FGuid AsyncRequestSpawnItem(const FLootTableRow* const LootDefinition, const FTransform& SpawnTransform);
+	FGuid AsyncRequestSpawnItems(TArray<FDataTableRowHandle> LootHandles, const FTransform& SpawnTransform);
 
 	// Called when the item blueprint is loaded.
-	void HandleLootSpawned(FGuid ASyncLoadRequestId, TWeakObjectPtr<ATartarusItemBase> SpawnedLoot);
+	void HandleLootSpawned(FGuid ASyncLoadRequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot);
 
 private:
 	TArray<FLootDropRequestInfo> LootDropRequests;

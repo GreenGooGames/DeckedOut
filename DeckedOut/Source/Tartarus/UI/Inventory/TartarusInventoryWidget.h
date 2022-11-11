@@ -24,12 +24,12 @@ struct FUpdateInventoryUIRequestInfo : public FASyncLoadRequest
 
 public:
 	FUpdateInventoryUIRequestInfo() {}
-	FUpdateInventoryUIRequestInfo(const FUpdateInventoryUIRequestCompletedEvent& OnCompleted, const int32 ItemToSpawnId, UTartarusInventorySlotWidget* const Widget)
+	FUpdateInventoryUIRequestInfo(const FUpdateInventoryUIRequestCompletedEvent& OnCompleted, const int32 ItemToLoadId, UTartarusInventorySlotWidget* const Widget)
 	{
 		RequestId = FGuid::NewGuid();
 
 		OnRequestCompleteEvent = OnCompleted;
-		ItemId = ItemToSpawnId;
+		ItemId = ItemToLoadId;
 		SlotWidget = Widget;
 	}
 
@@ -97,14 +97,14 @@ protected:
 	// Notifies the requester that the request failed and removes the request from the queue.
 	void HandleRequestFailed(const FUpdateInventoryUIRequestInfo* const FailedRequest);
 
-	// Called when the item datatable is loaded.
-	void HandleDataTableLoaded(FGuid ASyncLoadRequestId, TWeakObjectPtr<UDataTable> ItemTable);
+	// Called when the items their data is loaded.
+	void HandleItemsDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData);
 
 	/*
 	* Creates a request to load a texture.
 	* Return: The Guid of the async load request.
 	*/
-	FGuid AsyncRequestLoadTexture(const FItemTableRow* const ItemDefinition);
+	FGuid AsyncRequestLoadTexture(const FItemTableRow& ItemDefinitionn);
 
 	// Called when the Item UI Display Texture is loaded.
 	void HandleTextureLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle);

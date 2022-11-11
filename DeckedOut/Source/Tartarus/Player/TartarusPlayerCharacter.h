@@ -84,4 +84,9 @@ protected:
 
 public:
 	virtual void BeginPlay() override;
+
+	// TEMP
+	UPROPERTY(EditDefaultsOnly)
+	struct FDataTableRowHandle CompassRow;
+	// END TEMP
 };
