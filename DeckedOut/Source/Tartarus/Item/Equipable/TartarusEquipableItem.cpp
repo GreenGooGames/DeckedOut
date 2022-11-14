@@ -6,27 +6,10 @@
 #include "Item/Equipable/TartarusEquipableManager.h"
 #include "Logging/TartarusLogChannels.h"
 
-#pragma region EquipableInterface
-void ATartarusEquipableItem::OnEquipped()
-{
-	Mesh->SetSimulatePhysics(false);
-	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	Mesh->SetEnableGravity(false);
-}
-
-void ATartarusEquipableItem::OnUnequipped()
-{
-	Mesh->SetSimulatePhysics(true);
-	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	Mesh->SetEnableGravity(true);
-}
-#pragma endregion
-
-#pragma region TartarusInteractableTargetInterface
-bool ATartarusEquipableItem::StartInteraction(const TObjectPtr<AController> InstigatorController)
+bool ATartarusEquipableItem::HandlePickedup(const TObjectPtr<AController> InstigatorController)
 {
 	// Add the Item to the inventory.
-	bool bIsStored = Super::StartInteraction(InstigatorController);
+	const bool bIsStored = Super::HandlePickedup(InstigatorController);
 
 	if (!bIsStored)
 	{
@@ -44,5 +27,20 @@ bool ATartarusEquipableItem::StartInteraction(const TObjectPtr<AController> Inst
 	const bool IsEquipped = EquipableManager->Equip(this, EEquipmentSlot::LeftHand);
 
 	return IsEquipped;
+}
+
+#pragma region EquipableInterface
+void ATartarusEquipableItem::OnEquipped()
+{
+	Mesh->SetSimulatePhysics(false);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Mesh->SetEnableGravity(false);
+}
+
+void ATartarusEquipableItem::OnUnequipped()
+{
+	Mesh->SetSimulatePhysics(true);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	Mesh->SetEnableGravity(true);
 }
 #pragma endregion

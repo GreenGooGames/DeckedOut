@@ -4,12 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Interaction/TartarusInteractableTargetInterface.h"
 
 #include "TartarusItemBase.generated.h"
 
 UCLASS()
-class TARTARUS_API ATartarusItemBase : public AActor, public ITartarusInteractableTargetInterface
+class TARTARUS_API ATartarusItemBase : public AActor
 {
 	GENERATED_BODY()
 	
@@ -20,17 +19,7 @@ public:
 	void SetReferenceId(const int32 ItemReferenceId) { ReferenceId = ItemReferenceId; }
 	int32 GetReferenceId() { return ReferenceId; }
 
-protected:
-	// The visual representation of the Item in the world.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UStaticMeshComponent> Mesh = nullptr;
-
 private:
 	int32 ReferenceId = -1;
 
-#pragma region TartarusInteractableTargetInterface
-public:
-	virtual bool IsInteractable() const override;
-	virtual bool StartInteraction(const TObjectPtr<AController> InstigatorController) override;
-#pragma endregion
 };

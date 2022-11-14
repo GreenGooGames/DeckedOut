@@ -8,11 +8,23 @@
 #include "Item/Equipable/TartarusEquipableManager.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/Loot/TartarusLootComponent.h"
+#include "Item/TartarusItemBase.h"
 #include "logging/TartarusLogChannels.h"
 
 ATartarusTreasureChest::ATartarusTreasureChest()
 {
 	LootComponent = CreateDefaultSubobject<UTartarusLootComponent>(TEXT("LootComponent"));
+}
+
+void ATartarusTreasureChest::HandleLootDropped(FGuid RequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot)
+{
+	OnLooted.Broadcast(this);
+}
+
+#pragma region TartarusInteractableTargetInterface
+bool ATartarusTreasureChest::IsInteractable() const
+{
+	return WasRecentlyRendered();
 }
 
 bool ATartarusTreasureChest::StartInteraction(const TObjectPtr<AController> InstigatorController)
@@ -62,8 +74,4 @@ bool ATartarusTreasureChest::StartInteraction(const TObjectPtr<AController> Inst
 
 	return true;
 }
-
-void ATartarusTreasureChest::HandleLootDropped(FGuid RequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot)
-{
-	OnLooted.Broadcast(this);
-}
+#pragma endregion

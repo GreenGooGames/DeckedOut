@@ -3,11 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item/TartarusItemBase.h"
+#include "GameFramework/Actor.h"
+#include "Interaction/TartarusInteractableTargetInterface.h"
 
 #include "TartarusTreasureChest.generated.h"
 
 class ATartarusCompass;
+class ATartarusItemBase;
 class UTartarusLootComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLooted, ATartarusTreasureChest* const, LootedTreasure);
@@ -16,7 +18,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLooted, ATartarusTreasureChest* c
  * 
  */
 UCLASS()
-class TARTARUS_API ATartarusTreasureChest : public ATartarusItemBase
+class TARTARUS_API ATartarusTreasureChest : public AActor, public ITartarusInteractableTargetInterface
 {
 	GENERATED_BODY()
 	
@@ -39,6 +41,7 @@ protected:
 
 #pragma region TartarusInteractableTargetInterface
 public:
+	virtual bool IsInteractable() const override;
 	virtual bool StartInteraction(const TObjectPtr<AController> InstigatorController) override;
 #pragma endregion
 
