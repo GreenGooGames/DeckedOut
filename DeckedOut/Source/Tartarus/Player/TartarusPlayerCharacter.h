@@ -81,12 +81,4 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		TObjectPtr<UTartarusEquipableManager> EquipableManager = nullptr;
-
-public:
-	virtual void BeginPlay() override;
-
-	// TEMP
-	UPROPERTY(EditDefaultsOnly)
-	struct FDataTableRowHandle CompassRow;
-	// END TEMP
 };

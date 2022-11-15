@@ -15,4 +15,12 @@ class TARTARUS_API ATartarusTreasureHuntGameMode : public ATartarusGameMode
 {
 	GENERATED_BODY()
 	
+public:
+	void StartTreasureHunt();
+	void StopTreasureHunt();
+
+	bool IsTreasureHuntInProgress() const { return bIsTreaseHuntInProgress; }
+
+private:
+	bool bIsTreaseHuntInProgress = false;
 };

@@ -4,30 +4,8 @@
 #include "Item/Equipable/TartarusEquipableItem.h"
 
 #include "Item/Equipable/TartarusEquipableManager.h"
+#include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Logging/TartarusLogChannels.h"
-
-bool ATartarusEquipableItem::HandlePickedup(const TObjectPtr<AController> InstigatorController)
-{
-	// Add the Item to the inventory.
-	const bool bIsStored = Super::HandlePickedup(InstigatorController);
-
-	if (!bIsStored)
-	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Item was not added to the inventory!"), __FUNCTION__);
-		return false;
-	}
-
-	UTartarusEquipableManager* const EquipableManager = InstigatorController->GetPawn()->FindComponentByClass<UTartarusEquipableManager>();
-
-	if (!IsValid(EquipableManager))
-	{
-		return false;
-	}
-
-	const bool IsEquipped = EquipableManager->Equip(this, EEquipmentSlot::LeftHand);
-
-	return IsEquipped;
-}
 
 #pragma region EquipableInterface
 void ATartarusEquipableItem::OnEquipped()

@@ -5,7 +5,6 @@
 
 #include "Player/TartarusPlayerCharacter.h"
 #include "Item/Equipable/Equipment/TartarusCompass.h"
-#include "Item/Equipable/TartarusEquipableManager.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/Loot/TartarusLootComponent.h"
 #include "Item/TartarusItemBase.h"
@@ -37,14 +36,6 @@ bool ATartarusTreasureChest::StartInteraction(const TObjectPtr<AController> Inst
 		return false;
 	}
 
-	// Detach the compass from the player.
-	const bool bHasUnequippedCompass = Player->GetEquipableManager()->Unequip(LinkedCompass.Get());
-
-	if (!bHasUnequippedCompass)
-	{
-		return false;
-	}
-
 	// Remove the compass from the inventory.
 	UTartarusInventoryComponent* const Inventory = InstigatorController->FindComponentByClass<UTartarusInventoryComponent>();
 
@@ -53,17 +44,12 @@ bool ATartarusTreasureChest::StartInteraction(const TObjectPtr<AController> Inst
 		return false;
 	}
 
+	// [Koen Goossens] TODO: Magic number 1.
 	const bool bHasRetrievedItem = Inventory->RetrieveItem(LinkedCompass.Get()->GetReferenceId(), 1);
 
 	if (!bHasRetrievedItem)
 	{
 		return false;
-	}
-
-	// Consume the compass used to open the treasure chest.
-	if (IsValid(LinkedCompass.Get()))
-	{
-		LinkedCompass->Destroy();
 	}
 
 	// Droploot.

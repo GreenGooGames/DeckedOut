@@ -90,6 +90,13 @@ bool UTartarusItemSubsystem::DespawnItem(ATartarusItemBase* const ToDespawn)
 	return true;
 }
 
+bool UTartarusItemSubsystem::DespawnItem(AActor* const ToDespawn)
+{
+	ATartarusItemBase* const AsItem = Cast<ATartarusItemBase>(ToDespawn);
+
+	return DespawnItem(AsItem);
+}
+
 TWeakObjectPtr<ATartarusItemBase> UTartarusItemSubsystem::SpawnItem(const TSubclassOf<ATartarusItemBase>& ItemClass, const int32 ItemId, const FTransform& SpawnTransform)
 {
 	const FActorSpawnParameters SpawnParams = FActorSpawnParameters();
@@ -136,7 +143,46 @@ FGuid UTartarusItemSubsystem::AsyncRequestSpawnItems(const TArray<FDataTableRowH
 			continue;
 		}
 
-		SpawnRequest.AddAssetToLoad(ItemRow->Blueprint.ToSoftObjectPath(), ItemRow->UniqueId);
+		SpawnRequest.AddAssetToLoad(ItemRow->Blueprint.ToSoftObjectPath(), ItemRow->UniqueItemId);
+	}
+
+	// Create a callback for when the items are loaded.
+	FAsyncLoadAssetRequestCompletedEvent OnItemsLoaded;
+	OnItemsLoaded.AddUObject(this, &UTartarusItemSubsystem::HandleItemsLoaded);
+
+	// Create a request to start loading the Items.
+	const FGuid AsyncLoadRequestId = AssetManager.AsyncRequestLoadAssets(SpawnRequest.GetAssetsToLoad(), OnItemsLoaded);
+	SpawnRequest.SetASyncLoadRequestId(AsyncLoadRequestId);
+
+	if (!AsyncLoadRequestId.IsValid())
+	{
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: No async load started!"), __FUNCTION__);
+		return FGuid();
+	}
+
+	SpawnItemRequests.Add(SpawnRequest);
+
+	return SpawnRequest.GetRequestId();
+}
+
+FGuid UTartarusItemSubsystem::AsyncRequestSpawnItems(const TArray<FItemTableRow>& ItemTableRows, const FTransform& SpawnTransform, const FItemSpawnRequestCompletedEvent& OnRequestCompleted)
+{
+	// Get the AsyncLoader.
+	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
+
+	if (!AssetManager.IsValid())
+	{
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), __FUNCTION__);
+		return FGuid();
+	}
+
+	// Create a request to handle spawning the items;
+	FSpawnItemsRequestInfo SpawnRequest = FSpawnItemsRequestInfo(SpawnTransform, OnRequestCompleted);
+
+	// Gather all the paths of the assets to load.
+	for (const FItemTableRow& ItemRow : ItemTableRows)
+	{
+		SpawnRequest.AddAssetToLoad(ItemRow.Blueprint.ToSoftObjectPath(), ItemRow.UniqueItemId);
 	}
 
 	// Create a callback for when the items are loaded.
@@ -286,7 +332,7 @@ void UTartarusItemSubsystem::HandleItemsDataTableLoaded(FGuid ASyncLoadRequestId
 
 		for (FItemTableRow* const Row : AllItemRows)
 		{
-			if (Row->UniqueId != ItemId)
+			if (Row->UniqueItemId != ItemId)
 			{
 				continue;
 			}

@@ -35,9 +35,13 @@ bool ATartarusDoor::ChangeState(const EDoorState NewState)
 {
 	// [Koen Goossens] TODO: Add a CanChangeState here if needed. (ex: Blocked --> Open, requires a key)
 	DoorState = NewState;
-	OnStateChanged().Broadcast(DoorState);
 
 	return true;
+}
+
+void ATartarusDoor::HandleStateChanged(const EDoorState NewState, AController* const InstigatorController)
+{
+	OnStateChanged().Broadcast(DoorState);
 }
 
 #pragma region ITartarusInteractableTargetInterface
@@ -68,6 +72,11 @@ bool ATartarusDoor::StartInteraction(const TObjectPtr<AController> InstigatorCon
 	case EDoorState::Blocked:
 	default:
 		break;
+	}
+
+	if (bHasStateChanged)
+	{
+		HandleStateChanged(DoorState, InstigatorController);
 	}
 
 	return bHasStateChanged;

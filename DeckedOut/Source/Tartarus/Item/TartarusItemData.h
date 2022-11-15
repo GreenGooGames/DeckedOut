@@ -18,7 +18,7 @@ struct FItemTableRow : public FTableRowBase
 public:
 	// Unique Id to identify the item.
 	UPROPERTY(EditDefaultsOnly)
-		int32 UniqueId = FTartarusHelpers::InvalidItemId;
+		int32 UniqueItemId = FTartarusHelpers::InvalidItemId;
 
 	// Name to represent the item.
 	UPROPERTY(EditDefaultsOnly)

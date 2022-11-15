@@ -16,9 +16,6 @@ class TARTARUS_API ATartarusEquipableItem : public ATartarusPickup, public ITart
 {
 	GENERATED_BODY()
 
-protected:
-	virtual bool HandlePickedup(const TObjectPtr<AController> InstigatorController) override;
-
 #pragma region EquipableInterface
 public:
 	virtual void OnEquipped() override;

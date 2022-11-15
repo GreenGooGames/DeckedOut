@@ -78,6 +78,12 @@ public:
 	*/
 	bool DespawnItem(ATartarusItemBase* const ToDespawn);
 
+	/*
+	* Despawns an item if managed by this system.
+	* Return: True if the item got destroyed, false if despawn failed.
+	*/
+	bool DespawnItem(AActor* const ToDespawn);
+
 protected:
 	// Datatable reference that contains all items.
 	UPROPERTY(EditDefaultsOnly)
@@ -99,6 +105,12 @@ public:
 	* Return: The unique identifier of the request.
 	*/
 	FGuid AsyncRequestSpawnItems(const TArray<FDataTableRowHandle>& ItemTableHandles, const FTransform& SpawnTransform, const FItemSpawnRequestCompletedEvent& OnRequestCompleted);
+
+	/*
+	* Creates an ASync request to load and spawn Items in the world.
+	* Return: The unique identifier of the request.
+	*/
+	FGuid AsyncRequestSpawnItems(const TArray<FItemTableRow>& ItemTableRows, const FTransform& SpawnTransform, const FItemSpawnRequestCompletedEvent& OnRequestCompleted);
 
 protected:
 	// Executed when a Item spawn request has completed.

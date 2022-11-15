@@ -97,7 +97,7 @@ void UTartarusInventoryWidget::UpdateSlotDisplays()
 		// Create an async request to load the appropriate texture.
 		FUpdateInventoryUIRequestCompletedEvent OnRequestCompleted;
 
-		AsyncRequestSetDisplayTexture(SlotWidget, InventorySlots[i].ItemId, OnRequestCompleted);
+		AsyncRequestSetDisplayTexture(SlotWidget, InventorySlots[i].GetItemId(), OnRequestCompleted);
 	}
 }
 
@@ -207,7 +207,7 @@ void UTartarusInventoryWidget::HandleItemsDataLoaded(FGuid ASyncLoadRequestId, T
 	}
 
 	// Verify that the correct item is loaded.
-	if (ItemsData.IsEmpty() || ItemsData[0].UniqueId != CurrentRequest->GetItemId())
+	if (ItemsData.IsEmpty() || ItemsData[0].UniqueItemId != CurrentRequest->GetItemId())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: No items loaded or the wrong item got loaded.!"), __FUNCTION__);
 		HandleRequestFailed(CurrentRequest);

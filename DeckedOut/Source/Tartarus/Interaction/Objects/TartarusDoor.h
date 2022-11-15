@@ -51,6 +51,8 @@ protected:
 	// Event fired when the state of the door changes.
 	FStateChangedEvent& OnStateChanged() { return StateChangedEvent; };
 
+	virtual void HandleStateChanged(const EDoorState NewState, AController* const InstigatorController);
+
 	// Defines behavior to happen when the door state changes.
 	UFUNCTION(BlueprintImplementableEvent)
 		void BP_HandleStateChanged(EDoorState NewState);

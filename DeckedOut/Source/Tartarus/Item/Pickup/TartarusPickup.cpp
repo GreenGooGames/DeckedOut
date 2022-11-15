@@ -32,9 +32,17 @@ bool ATartarusPickup::HandlePickedup(const TObjectPtr<AController> InstigatorCon
 	}
 
 	// [Koen Goossens] TODO: Magic Number 1, setup a stacksize as parameter.
-	const bool bIsStored = InstigatorInventory->StoreItem(GetReferenceId(), 1);
+	const bool bIsStored = InstigatorInventory->StoreItem(GetReferenceId(), 1).IsValid();
 
-	return bIsStored;
+	if (!bIsStored)
+	{
+		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Could not store the item in the inventory!"), __FUNCTION__);
+		return false;
+	}
+
+	Destroy();
+
+	return true;;
 }
 
 #pragma region TartarusInteractableTargetInterface
