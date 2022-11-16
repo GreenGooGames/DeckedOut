@@ -58,6 +58,7 @@ void ATartarusTreasureHuntEntrance::HandleStateChanged(const EDoorState NewState
 	}
 
 	// [Koen Goossens] TODO: Door should not open if the compass failed to be gifted.
+	// [Koen Goossens] TODO: If the gift failed, should the compass be spawned into the world for later pickup?
 	// [Koen Goossens] TODO: Magic number 1.
 	FGuid StackId = Inventory->StoreItem(ItemRow->UniqueItemId, 1);
 

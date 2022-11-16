@@ -17,6 +17,7 @@ struct FItemTableRow : public FTableRowBase
 
 public:
 	// Unique Id to identify the item.
+	// Negative = non-stackable Item, Positive = Stackable item, 0 = invalid
 	UPROPERTY(EditDefaultsOnly)
 		int32 UniqueItemId = FTartarusHelpers::InvalidItemId;
 

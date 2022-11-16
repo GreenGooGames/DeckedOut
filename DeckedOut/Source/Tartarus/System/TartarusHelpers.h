@@ -7,5 +7,5 @@
 namespace FTartarusHelpers
 {
     static const FVector InvalidLocation = FVector(FLT_MAX);
-    static const int32 InvalidItemId = -1;
+    static const int32 InvalidItemId = 0;
 }

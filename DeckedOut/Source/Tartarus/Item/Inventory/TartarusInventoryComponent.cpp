@@ -49,17 +49,18 @@ FGuid UTartarusInventoryComponent::StoreItem(const int32 ItemId, const int32 Sta
 		return FGuid();
 	}
 
-	// Search if there is a duplicate.
+	// Search if there is a stackable duplicate.
+	const bool bIsStackableItem = ItemId > FTartarusHelpers::InvalidItemId;
 	int32 SlotIndex = FindItem(ItemId);
 
-	if (SlotIndex != INDEX_NONE)
+	if (bIsStackableItem && SlotIndex != INDEX_NONE)
 	{
-		// Duplicate is found, increase the Stacksize.
+		// Stackable Duplicate is found, increase the Stacksize.
 		InventorySlots[SlotIndex].StackSize += StackSize;
 	}
 	else
 	{
-		// No duplicate is found, Is there a slot available to add a new entry?
+		// No duplicate is found/item is non-stackable, Is there a slot available to add a new entry?
 		SlotIndex = FindItem(FTartarusHelpers::InvalidItemId);
 
 		if (SlotIndex == INDEX_NONE)
