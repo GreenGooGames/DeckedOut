@@ -10,10 +10,6 @@
 
 class UArrowComponent;
 
-// TEMP
-class ATartarusTreasureChest;
-// END TEMP
-
 /**
  * 
  */
@@ -38,9 +34,4 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UArrowComponent> ArrowComponent;
 #endif
-
-#pragma region EquipableInterface
-public:
-	virtual void OnEquipped() override;
-#pragma endregion
 };

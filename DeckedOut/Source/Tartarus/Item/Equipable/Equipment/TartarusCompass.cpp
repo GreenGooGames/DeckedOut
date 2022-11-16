@@ -3,12 +3,6 @@
 
 #include "Item/Equipable/Equipment/TartarusCompass.h"
 
-#include "GameMode/TreasureHunt/TartarusTreasureSubsystem.h"
-
-// TEMP
-#include "Item/Persistent/TartarusTreasureChest.h"
-// END TEMP
-
 #if WITH_EDITOR
 #include "Components/ArrowComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -42,20 +36,4 @@ void ATartarusCompass::Tick(float DeltaSeconds)
 }
 #endif
 
-void ATartarusCompass::OnEquipped()
-{
-	Super::OnEquipped();
-
-	// TEMP
-	UTartarusTreasureSubsystem* const TreasureSubsystem = GetWorld()->GetSubsystem<UTartarusTreasureSubsystem>();
-
-	if (!TreasureSubsystem)
-	{
-		return;
-	}
-
-	FSpawnAndLinkRequestCompletedEvent OnRequestCompleted;
-
-	TreasureSubsystem->AsyncRequestSpawnedAndLinkTreasure(this, OnRequestCompleted);
-	// END TEMP
-}
+// [Koen Goossens] TODO: OnEquip ASk the TreasureSubssytem for the targetlocation using the invnetoryStackId of this item.

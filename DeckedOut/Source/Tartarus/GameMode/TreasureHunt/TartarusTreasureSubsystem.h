@@ -26,6 +26,7 @@ struct FSpawnPointData
 	TWeakObjectPtr<ATartarusTreasureChest> Treasure;
 };
 
+#pragma region AsyncLoading
 USTRUCT()
 struct FTreasureSpawnRequestInfo : public FASyncLoadRequest
 {
@@ -33,25 +34,26 @@ struct FTreasureSpawnRequestInfo : public FASyncLoadRequest
 
 public:
 	FTreasureSpawnRequestInfo() {}
-	FTreasureSpawnRequestInfo(FSpawnPointData* SpawnPoint, ATartarusCompass* ToLinkCompass, FSpawnAndLinkRequestCompletedEvent& OnRequestCompleted)
+	FTreasureSpawnRequestInfo(FSpawnPointData* const SpawnPoint, const FGuid ToLinkKeyInventoryStackId, FSpawnAndLinkRequestCompletedEvent& OnRequestCompleted)
 	{
 		RequestId = FGuid::NewGuid();
 
 		RequestCompletedEvent = OnRequestCompleted;
 		SpawnPointData = SpawnPoint;
-		Compass = ToLinkCompass;
+		KeyInventoryStackId = ToLinkKeyInventoryStackId;
 	}
 
 	const FSpawnAndLinkRequestCompletedEvent& OnRequestCompleted() const { return RequestCompletedEvent; }
 	FSpawnPointData& GetSpawnPointData() const { return *SpawnPointData; }
-	TWeakObjectPtr<ATartarusCompass> GetCompass() { return Compass; }
+	FGuid GetKeyInventoryStackId() { return KeyInventoryStackId; }
 
 private:
 	FSpawnAndLinkRequestCompletedEvent RequestCompletedEvent = FSpawnAndLinkRequestCompletedEvent();
 	
 	FSpawnPointData* SpawnPointData = nullptr;
-	TWeakObjectPtr<ATartarusCompass> Compass = nullptr;
+	FGuid KeyInventoryStackId = FGuid();
 };
+#pragma endregion
 
 /**
  * 
@@ -66,20 +68,23 @@ public:
 
 protected:
 	/*
-	Spawns a treasure in the world.
-	Return: The Treasure that is spawned, nullptr if spawn failed.
+	* Spawns a treasure in the world.
+	* Return: The Treasure that is spawned, nullptr if spawn failed.
 	*/
 	ATartarusTreasureChest* SpawnTreasure(TSubclassOf<ATartarusTreasureChest>& TreasureClass, const FTransform& SpawnTransform);
 
-	/* Links a compassand a treasure to eachother.
+	/* 
+	* Links a compass and a treasure to eachother.
 	* Return: True if linked, false if link failed.
 	*/
-	bool LinkCompassToTreasure(TWeakObjectPtr<ATartarusCompass> Compass, TObjectPtr<ATartarusTreasureChest> Treasure);
+	bool LinkKeyToTreasure(const FGuid KeyInventoryStackId, TObjectPtr<ATartarusTreasureChest> Treasure);
 
 	// Fired when a treasure is looted, called by the treasure itself.
 	UFUNCTION()
 	void HandleOnTreasureLooted(ATartarusTreasureChest* const LootedTreasure);
 	
+	// [Koen Goossens] TODO: Add public method to get treasure location by using a key inventory id.
+
 #pragma region SpawnPoint
 public:
 	// Register a trasnform to be used as a location to spawn a treasure chest.
@@ -95,10 +100,10 @@ private:
 #pragma region AsyncLoading
 public:
 	/*
-	Create a request to spawn a treasure chest and link a compass to it.
+	Create a request to spawn a treasure chest and link a key to it.
 	Return: The unique id of this request.
 	*/
-	FGuid AsyncRequestSpawnedAndLinkTreasure(TWeakObjectPtr<ATartarusCompass> Compass, FSpawnAndLinkRequestCompletedEvent& OnRequestCompletedEvent);
+	FGuid AsyncRequestSpawnAndLink(const FGuid KeyInventoryStackId, FSpawnAndLinkRequestCompletedEvent& OnRequestCompletedEvent);
 
 protected:
 	// Notfies the requester that the request has succeeded and removes the request from the queue.

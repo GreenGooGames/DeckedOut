@@ -199,9 +199,8 @@ bool UTartarusEquipableManager::ASyncRequestEquip(const FGuid& InventoryStackId,
 		return false;
 	}
 
-	// Get the item stack from the inventory.
-	FInventoryItemStack ItemStack = FInventoryItemStack();
-	if (!Inventory->FindStack(InventoryStackId, ItemStack))
+	// Check that the item to equip exists in the inventory.
+	if (!Inventory->Contains(InventoryStackId))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Item stack not in the inventory!"), __FUNCTION__);
 		return false;
@@ -228,8 +227,11 @@ bool UTartarusEquipableManager::ASyncRequestEquip(const FGuid& InventoryStackId,
 	FGetItemDataRequestCompletedEvent OnDataRequestCompleted;
 	OnDataRequestCompleted.AddUObject(this, &UTartarusEquipableManager::HandleItemDataLoaded);
 
+	// Get the overview of the stack.
+	const FInventoryItemStack* ItemStack = Inventory->GetOverviewSingle(InventoryStackId);
+
 	TArray<int32> ToSpawnItemIds;
-	ToSpawnItemIds.Add(ItemStack.GetItemId());
+	ToSpawnItemIds.Add(ItemStack->GetItemId());
 
 	FGuid ASyncRequestId = ItemSubsystem->AsyncRequestGetItemsData(ToSpawnItemIds, OnDataRequestCompleted);
 

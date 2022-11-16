@@ -12,7 +12,7 @@ class ATartarusCompass;
 class ATartarusItemBase;
 class UTartarusLootComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLooted, ATartarusTreasureChest* const, LootedTreasure);
+DECLARE_EVENT_OneParam(ATartarusTreasureChest, FLootedEvent, ATartarusTreasureChest* const /*LootedTreasure*/);
 
 /**
  * 
@@ -26,23 +26,27 @@ public:
 	ATartarusTreasureChest();
 
 public:
-	// [Koen Goossens] TODO: This WeakPtr will be invalid once the Compass is stored in the inventory. Identify the hourglass through different means.
-	void LinkCompass(TWeakObjectPtr<ATartarusCompass> Compass) { LinkedCompass = Compass; }
+	// Links a key to exclusivly open this chest.
+	void LinkKey(FGuid KeyStackId) { KeyInventoryStackId = KeyStackId; }
 
-	FOnLooted OnLooted;
+	// Event fired when this chest is looted.
+	FLootedEvent& OnLooted() { return LootedEvent; }
 
 protected:
+	// The component responsible for awarding loot.
 	UPROPERTY(EditDefaultsOnly)
 		TObjectPtr<UTartarusLootComponent> LootComponent = nullptr;
 	
-	TWeakObjectPtr<ATartarusCompass> LinkedCompass = nullptr;
-
+	// Fired when the loot is spawned into the world.
 	void HandleLootDropped(FGuid RequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot);
+
+private:
+	FLootedEvent LootedEvent = FLootedEvent();
+	FGuid KeyInventoryStackId = FGuid();
 
 #pragma region TartarusInteractableTargetInterface
 public:
 	virtual bool IsInteractable() const override;
 	virtual bool StartInteraction(const TObjectPtr<AController> InstigatorController) override;
 #pragma endregion
-
 };

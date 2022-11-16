@@ -17,7 +17,7 @@ ATartarusTreasureChest::ATartarusTreasureChest()
 
 void ATartarusTreasureChest::HandleLootDropped(FGuid RequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot)
 {
-	OnLooted.Broadcast(this);
+	LootedEvent.Broadcast(this);
 }
 
 #pragma region TartarusInteractableTargetInterface
@@ -45,7 +45,7 @@ bool ATartarusTreasureChest::StartInteraction(const TObjectPtr<AController> Inst
 	}
 
 	// [Koen Goossens] TODO: Magic number 1.
-	const bool bHasRetrievedItem = Inventory->RetrieveItem(LinkedCompass.Get()->GetReferenceId(), 1);
+	const bool bHasRetrievedItem = Inventory->RetrieveItem(KeyInventoryStackId, 1);
 
 	if (!bHasRetrievedItem)
 	{

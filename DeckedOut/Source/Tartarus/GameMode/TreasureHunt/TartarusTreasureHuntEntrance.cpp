@@ -5,6 +5,7 @@
 
 #include "Components/BoxComponent.h"
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameMode.h"
+#include "GameMode/TreasureHunt/TartarusTreasureSubsystem.h"
 #include "Item/Equipable/TartarusEquipableManager.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/TartarusItemData.h"
@@ -68,6 +69,17 @@ void ATartarusTreasureHuntEntrance::HandleStateChanged(const EDoorState NewState
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not store the item in the inventory!"), __FUNCTION__);
 		return;
 	}
+
+	// Spawn a chest for this compass.
+	UTartarusTreasureSubsystem* const TreasureSubsystem = GetWorld()->GetSubsystem<UTartarusTreasureSubsystem>();
+
+	if (!TreasureSubsystem)
+	{
+		return;
+	}
+
+	FSpawnAndLinkRequestCompletedEvent OnRequestCompleted;
+	TreasureSubsystem->AsyncRequestSpawnAndLink(StackId, OnRequestCompleted);
 
 	// Auto-equip the compass.
 	UTartarusEquipableManager* const EquipableManager = InstigatorController->GetPawn()->FindComponentByClass<UTartarusEquipableManager>();
