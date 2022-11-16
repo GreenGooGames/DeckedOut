@@ -21,8 +21,6 @@ class TARTARUS_API ATartarusCompass : public ATartarusEquipableItem
 public:
 	ATartarusCompass();
 
-	void SetTargetLocation(const FVector& Location) { TargetLocation = Location; }
-
 protected:
 	FVector TargetLocation = FTartarusHelpers::InvalidLocation;
 
@@ -34,4 +32,9 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UArrowComponent> ArrowComponent;
 #endif
+
+#pragma region EquipableInterface
+public:
+	virtual void OnEquipped(AActor* const EquippedActor) override;
+#pragma endregion
 };

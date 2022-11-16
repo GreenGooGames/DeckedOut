@@ -23,7 +23,7 @@ class TARTARUS_API ITartarusEquipableInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	// Called when the object is equipped.
-	virtual void OnEquipped() = 0;
+	virtual void OnEquipped(AActor* const EquippedActor) = 0;
 
 	// Calleed when the object is unequipped.
 	virtual void OnUnequipped() = 0;

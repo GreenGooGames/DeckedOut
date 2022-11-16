@@ -67,11 +67,18 @@ public:
 	*/
 	bool Unequip(const FGuid& InventoryStackId);
 
+	/*
+	* Searches for an equipped item.
+	* Return: the Equipped info of the item, nullptr if the item is not equipped.
+	*/
+	const FEquipmentInfo* FindEquippedItem(const ATartarusItemBase* const ToFindItem) const;
+
 protected:
 	// Map that identifies which Skeleton Socket corresponds to a slot.
 	UPROPERTY(EditDefaultsOnly)
 		TMap<EEquipmentSlot, FName> SocketMapping;
 
+	// All possible slots with related data.
 	TMap<EEquipmentSlot, FEquipmentInfo> EquipmentSlots;
 
 	/*
@@ -80,6 +87,9 @@ protected:
 	*/
 	EEquipmentSlot FindAvailableRequestedSlot(const EEquipmentSlot RequestedSlot) const;
 
+	/*
+	* Called whn a change in the inventory happens, used to unequip items that are no longer in the inventory.
+	*/
 	void HandleInventoryUpdated(EInventoryChanged ChangeType, FGuid StackId, int32 StackSize);
 
 #pragma region ASyncEquip

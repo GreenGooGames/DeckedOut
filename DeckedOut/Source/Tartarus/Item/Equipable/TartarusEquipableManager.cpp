@@ -105,6 +105,33 @@ bool UTartarusEquipableManager::Unequip(const FGuid& InventoryStackId)
 	return false;
 }
 
+const FEquipmentInfo* UTartarusEquipableManager::FindEquippedItem(const ATartarusItemBase* const ToFindItem) const
+{
+	if (!IsValid(ToFindItem))
+	{
+		return nullptr;
+	}
+
+	for (const TPair<EEquipmentSlot, FEquipmentInfo>& EquipmentSlot : EquipmentSlots)
+	{
+		const ATartarusItemBase* const EquippedItem = EquipmentSlot.Value.Item.Get();
+
+		if (!IsValid(EquippedItem))
+		{
+			continue;
+		}
+
+		if (EquippedItem != ToFindItem)
+		{
+			continue;
+		}
+
+		return &EquipmentSlot.Value;
+	}
+
+	return nullptr;
+}
+
 EEquipmentSlot UTartarusEquipableManager::FindAvailableRequestedSlot(const EEquipmentSlot RequestedSlot) const
 {
 	for (TPair<EEquipmentSlot, FEquipmentInfo> EquipmentSlot : EquipmentSlots)
@@ -364,7 +391,7 @@ void UTartarusEquipableManager::HandleItemSpawned(FGuid ASyncLoadRequestId, TArr
 				const FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
 				ItemRaw->AttachToComponent(AttachComponent, AttachmentRules, SocketName);
 
-				EquipableInterface->OnEquipped();
+				EquipableInterface->OnEquipped(GetOwner());
 			}
 		}
 	}

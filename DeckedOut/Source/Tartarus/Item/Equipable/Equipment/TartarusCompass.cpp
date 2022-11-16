@@ -3,6 +3,11 @@
 
 #include "Item/Equipable/Equipment/TartarusCompass.h"
 
+#include "GameMode/TreasureHunt/TartarusTreasureSubsystem.h"
+#include "Item/Equipable/TartarusEquipableManager.h"
+#include "Logging/TartarusLogChannels.h"
+#include "Player/TartarusPlayerCharacter.h"
+
 #if WITH_EDITOR
 #include "Components/ArrowComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -36,4 +41,43 @@ void ATartarusCompass::Tick(float DeltaSeconds)
 }
 #endif
 
-// [Koen Goossens] TODO: OnEquip ASk the TreasureSubssytem for the targetlocation using the invnetoryStackId of this item.
+#pragma region EquipableInterface
+void ATartarusCompass::OnEquipped(AActor* const EquippedActor)
+{
+	Super::OnEquipped(EquippedActor);
+
+	const UTartarusTreasureSubsystem*const TreasureSubsystem = GetWorld()->GetSubsystem<UTartarusTreasureSubsystem>();
+
+	if (!IsValid(TreasureSubsystem))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: No treasureSubsytem found!"), __FUNCTION__);
+		return;
+	}
+
+	const ATartarusPlayerCharacter* const PlayerCharacter = Cast<ATartarusPlayerCharacter>(EquippedActor);
+
+	if (!IsValid(PlayerCharacter))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: Not equipped to a player!"), __FUNCTION__);
+		return;
+	}
+
+	const UTartarusEquipableManager* const EquipableManager = PlayerCharacter->GetEquipableManager();
+
+	if (!IsValid(EquipableManager))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: No equipable manager on the player, how did this get called?"), __FUNCTION__);
+		return;
+	}
+
+	const FEquipmentInfo* const EquippableInfo = EquipableManager->FindEquippedItem(this);
+
+	if (!EquippableInfo)
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: This item is not equipped, how did this get called?"), __FUNCTION__);
+		return;
+	}
+
+	TargetLocation = TreasureSubsystem->GetLinkedTreasureLocation(EquippableInfo->InventoryStackId);
+}
+#pragma endregion

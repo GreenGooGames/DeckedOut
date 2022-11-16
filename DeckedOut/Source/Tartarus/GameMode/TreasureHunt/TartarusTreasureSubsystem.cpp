@@ -39,7 +39,7 @@ ATartarusTreasureChest* UTartarusTreasureSubsystem::SpawnTreasure(TSubclassOf<AT
 	return Treasure;
 }
 
-bool UTartarusTreasureSubsystem::LinkKeyToTreasure(const FGuid KeyInventoryStackId, TObjectPtr<ATartarusTreasureChest> Treasure)
+bool UTartarusTreasureSubsystem::LinkKeyToTreasure(const FGuid KeyInventoryStackId, TObjectPtr<ATartarusTreasureChest> Treasure) const
 {
 	if (!KeyInventoryStackId.IsValid())
 	{
@@ -78,6 +78,26 @@ void UTartarusTreasureSubsystem::HandleOnTreasureLooted(ATartarusTreasureChest* 
 
 		LootedTreasure->Destroy();
 	}
+}
+
+FVector UTartarusTreasureSubsystem::GetLinkedTreasureLocation(const FGuid& KeyInventoryId) const
+{
+	for (const FSpawnPointData& SpawnPoint : SpawnPoints)
+	{
+		if (!IsValid(SpawnPoint.Treasure))
+		{
+			continue;
+		}
+
+		if (SpawnPoint.Treasure->GetLinkedKey() != KeyInventoryId)
+		{
+			continue;
+		}
+
+		return SpawnPoint.Transform.GetLocation();
+	}
+
+	return FTartarusHelpers::InvalidLocation;
 }
 
 #pragma region SpawnPoint

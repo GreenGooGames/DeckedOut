@@ -8,7 +8,7 @@
 #include "Logging/TartarusLogChannels.h"
 
 #pragma region EquipableInterface
-void ATartarusEquipableItem::OnEquipped()
+void ATartarusEquipableItem::OnEquipped(AActor* const EquippedActor)
 {
 	Mesh->SetSimulatePhysics(false);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);

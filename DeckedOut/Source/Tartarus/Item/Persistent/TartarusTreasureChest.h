@@ -32,6 +32,12 @@ public:
 	// Event fired when this chest is looted.
 	FLootedEvent& OnLooted() { return LootedEvent; }
 
+	/*
+	* Retrieve the key id that is linked to this treasure.
+	* Return: the Id of the stack that holds the key in the player inventory.
+	*/
+	FGuid GetLinkedKey() { return KeyInventoryStackId; }
+
 protected:
 	// The component responsible for awarding loot.
 	UPROPERTY(EditDefaultsOnly)

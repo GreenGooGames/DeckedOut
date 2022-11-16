@@ -23,7 +23,7 @@ struct FSpawnPointData
 	bool bIsAvailable = true;
 
 	FTransform Transform = FTransform();
-	TWeakObjectPtr<ATartarusTreasureChest> Treasure;
+	TObjectPtr<ATartarusTreasureChest> Treasure;
 };
 
 #pragma region AsyncLoading
@@ -66,6 +66,12 @@ class TARTARUS_API UTartarusTreasureSubsystem : public UWorldSubsystem
 public:
 	UTartarusTreasureSubsystem();
 
+	/*
+	* Retrieves the location of treasure that is linked to the key.
+	* Return: The location of the Treasure in the world.
+	*/
+	FVector GetLinkedTreasureLocation(const FGuid& KeyInventoryId) const;
+
 protected:
 	/*
 	* Spawns a treasure in the world.
@@ -77,13 +83,10 @@ protected:
 	* Links a compass and a treasure to eachother.
 	* Return: True if linked, false if link failed.
 	*/
-	bool LinkKeyToTreasure(const FGuid KeyInventoryStackId, TObjectPtr<ATartarusTreasureChest> Treasure);
+	bool LinkKeyToTreasure(const FGuid KeyInventoryStackId, TObjectPtr<ATartarusTreasureChest> Treasure) const;
 
 	// Fired when a treasure is looted, called by the treasure itself.
-	UFUNCTION()
 	void HandleOnTreasureLooted(ATartarusTreasureChest* const LootedTreasure);
-	
-	// [Koen Goossens] TODO: Add public method to get treasure location by using a key inventory id.
 
 #pragma region SpawnPoint
 public:

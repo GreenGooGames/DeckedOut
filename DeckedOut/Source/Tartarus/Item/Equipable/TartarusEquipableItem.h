@@ -18,7 +18,7 @@ class TARTARUS_API ATartarusEquipableItem : public ATartarusPickup, public ITart
 
 #pragma region EquipableInterface
 public:
-	virtual void OnEquipped() override;
+	virtual void OnEquipped(AActor* const EquippedActor) override;
 	virtual void OnUnequipped() override;
 #pragma endregion
 };

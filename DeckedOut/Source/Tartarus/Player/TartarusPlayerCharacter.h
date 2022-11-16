@@ -76,7 +76,7 @@ public:
 #pragma endregion
 
 public:
-	UTartarusEquipableManager* GetEquipableManager() { return EquipableManager; }
+	UTartarusEquipableManager* GetEquipableManager() const { return EquipableManager; }
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
