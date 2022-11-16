@@ -110,7 +110,7 @@ TWeakObjectPtr<ATartarusItemBase> UTartarusItemSubsystem::SpawnItem(const TSubcl
 		return false;
 	}
 
-	ItemInstance->SetReferenceId(ItemId);
+	ItemInstance->SetItemId(ItemId);
 	ItemInstances.Add(ItemInstance);
 
 	return ItemInstance;

@@ -16,10 +16,10 @@ public:
 	// Sets default values for this actor's properties
 	ATartarusItemBase();
 
-	void SetReferenceId(const int32 ItemReferenceId) { ReferenceId = ItemReferenceId; }
-	int32 GetReferenceId() { return ReferenceId; }
+	void SetItemId(const int32 ItemReferenceId) { ItemId = ItemReferenceId; }
+	int32 GetItemId() { return ItemId; }
 
 private:
-	int32 ReferenceId = -1;
+	int32 ItemId = -1;
 
 };

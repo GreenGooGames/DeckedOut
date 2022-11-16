@@ -32,7 +32,7 @@ bool ATartarusPickup::HandlePickedup(const TObjectPtr<AController> InstigatorCon
 	}
 
 	// [Koen Goossens] TODO: Magic Number 1, setup a stacksize as parameter.
-	const bool bIsStored = InstigatorInventory->StoreItem(GetReferenceId(), 1).IsValid();
+	const bool bIsStored = InstigatorInventory->StoreItem(GetItemId(), 1).IsValid();
 
 	if (!bIsStored)
 	{
