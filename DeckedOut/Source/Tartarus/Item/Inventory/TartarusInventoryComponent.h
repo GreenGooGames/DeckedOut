@@ -24,6 +24,8 @@ public:
 	FInventoryItemStack() {}
 	FInventoryItemStack(const int32 NewItemId, const int32 NewStackSize);
 
+	bool operator==(const FInventoryItemStack& rhs) { return GetStackId() == rhs.GetStackId(); }
+
 	int32 StackSize = 0;
 	
 	const FGuid& GetStackId() const { return StackId; }
@@ -79,6 +81,12 @@ public:
 	* Return: Data stored in the slot.
 	*/
 	const FInventoryItemStack* GetOverviewSingle(const FGuid StackId) const;
+
+	/*
+	* Retrieves the number of slots in the inventory that are available for storage.
+	* Return: Number of avaialble slots.
+	*/
+	int32 GetAvailableSlotCount() const;
 
 	/*
 	* Checks if the inventory contains an entry for the ItemId

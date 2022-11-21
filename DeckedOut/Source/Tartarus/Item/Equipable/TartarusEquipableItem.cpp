@@ -3,10 +3,6 @@
 
 #include "Item/Equipable/TartarusEquipableItem.h"
 
-#include "Item/Equipable/TartarusEquipableManager.h"
-#include "Item/Inventory/TartarusInventoryComponent.h"
-#include "Logging/TartarusLogChannels.h"
-
 #pragma region EquipableInterface
 void ATartarusEquipableItem::OnEquipped(AActor* const EquippedActor)
 {

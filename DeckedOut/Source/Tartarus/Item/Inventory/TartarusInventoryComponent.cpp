@@ -122,6 +122,21 @@ const FInventoryItemStack* UTartarusInventoryComponent::GetOverviewSingle(const 
 	return &InventorySlots[SlotIndex];
 }
 
+int32 UTartarusInventoryComponent::GetAvailableSlotCount() const
+{
+	int32 NumAvailableSlots = 0;
+
+	for (const FInventoryItemStack& Stack : InventorySlots)
+	{
+		if (Stack.GetItemId() == FTartarusHelpers::InvalidItemId)
+		{
+			NumAvailableSlots++;
+		}
+	}
+
+	return NumAvailableSlots;
+}
+
 bool UTartarusInventoryComponent::Contains(const int32 ItemId) const
 {
 	for (const FInventoryItemStack& Stack : InventorySlots)
