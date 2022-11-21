@@ -13,6 +13,7 @@ class ATartarusItemBase;
 
 struct FItemTableRow;
 
+#pragma region EquipmentData
 UENUM(BlueprintType, meta = (Bitflags))
 enum class EEquipmentSlot : uint8
 {
@@ -21,15 +22,48 @@ enum class EEquipmentSlot : uint8
 	RightHand = 0x02,
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FEquipmentInfo
 {
 	GENERATED_BODY()
 
 public:
+	/*
+	* Retrieves the item that is being held by this slot.
+	* Return: Pointer to the item being held, nullptr if no item exist.
+	*/
+	ATartarusItemBase* GetItem() const { return Item.Get(); }
+
+	// Sets the Item instance that is equipped to this slot.
+	void SetItem(ATartarusItemBase* const ItemInstance) { Item = ItemInstance; }
+
+	/*
+	* Retrieves the InventoryStackId that is used to reference the equipped item in the owner inventory.
+	* Return: Id of the ItemStack that represents the equipped item in the owner inventory.
+	*/
+	const FGuid& GetInventoryStackId() const { return InventoryStackId; }
+
+	void SetInventoryItemStackId(const FGuid& InventoryStackIdReference);
+
+	/*
+	* Retrieves the name of the socket that is linked to this slot.
+	* Return: Name of the socket to attach to.
+	*/
+	const FName& GetSocket() { return Socket; }
+
+	// Resets all data stored.
+	void Reset();
+
+protected:
+	// Optional Socket name to attach to.
+	UPROPERTY(EditDefaultsOnly)
+		FName Socket = NAME_None;
+
+private:
 	TWeakObjectPtr<ATartarusItemBase> Item = nullptr;
 	FGuid InventoryStackId = FGuid();
 };
+#pragma endregion
 
 #pragma region ASyncEquip
 USTRUCT()
@@ -74,12 +108,9 @@ public:
 	const FEquipmentInfo* FindEquippedItem(const ATartarusItemBase* const ToFindItem) const;
 
 protected:
-	// Map that identifies which Skeleton Socket corresponds to a slot.
-	UPROPERTY(EditDefaultsOnly)
-		TMap<EEquipmentSlot, FName> SocketMapping;
-
 	// All possible slots with related data.
-	TMap<EEquipmentSlot, FEquipmentInfo> EquipmentSlots;
+	UPROPERTY(EditDefaultsOnly)
+		TMap<EEquipmentSlot, FEquipmentInfo> EquipmentSlots;
 
 	/*
 	* Finds a slot that is available to equip on.
@@ -88,7 +119,7 @@ protected:
 	EEquipmentSlot FindAvailableRequestedSlot(const EEquipmentSlot RequestedSlot) const;
 
 	/*
-	* Called whn a change in the inventory happens, used to unequip items that are no longer in the inventory.
+	* Called when a change in the inventory happens, used to unequip items that are no longer in the inventory.
 	*/
 	void HandleInventoryUpdated(EInventoryChanged ChangeType, FGuid StackId, int32 StackSize);
 

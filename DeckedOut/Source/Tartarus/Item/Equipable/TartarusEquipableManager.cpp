@@ -10,6 +10,24 @@
 #include "Item/TartarusItemBase.h"
 #include "Logging/TartarusLogChannels.h"
 
+#pragma region EquipmentData
+void FEquipmentInfo::SetInventoryItemStackId(const FGuid& InventoryStackIdReference)
+{
+	if (InventoryStackId.IsValid())
+	{
+		UE_LOG(LogTartarus, Error, TEXT("%s: Overwritting a valid InventoryStackId!"), __FUNCTION__);
+	}
+
+	InventoryStackId = InventoryStackIdReference;
+}
+
+void FEquipmentInfo::Reset()
+{
+	Item = nullptr;
+	InventoryStackId = FGuid();
+}
+#pragma endregion
+
 #pragma region ASyncEquip
 FEquipRequestInfo::FEquipRequestInfo(const EEquipmentSlot Slot)
 {
@@ -34,15 +52,10 @@ void UTartarusEquipableManager::BeginPlay()
 	Super::BeginPlay();
 
 	// Check if the slots are setup.
-	if (SocketMapping.IsEmpty())
+	if (EquipmentSlots.IsEmpty())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Equipment mapping is not setup!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Error, TEXT("%s: Equipment mapping is not setup!"), __FUNCTION__);
 		return;
-	}
-
-	for (TPair<EEquipmentSlot, FName> SlotToNamePair : SocketMapping)
-	{
-		EquipmentSlots.Add(SlotToNamePair.Key, FEquipmentInfo());
 	}
 
 	// Subscribe to inventory updates to unequip if an item is removed.
@@ -72,14 +85,14 @@ bool UTartarusEquipableManager::Unequip(const FGuid& InventoryStackId)
 	// Find the equipped item using the inventory stack Id.
 	for (TPair<EEquipmentSlot, FEquipmentInfo>& EquipmentSlot : EquipmentSlots)
 	{
-		if (EquipmentSlot.Value.InventoryStackId != InventoryStackId)
+		if (EquipmentSlot.Value.GetInventoryStackId() != InventoryStackId)
 		{
 			continue;
 		}
 
 		// Clear the entry in the slots, and keep a reference to the item instance for further actions.
-		ATartarusItemBase* const ToUnequip = EquipmentSlot.Value.Item.Get();
-		EquipmentSlot.Value.Item = nullptr;
+		ATartarusItemBase* const ToUnequip = EquipmentSlot.Value.GetItem();
+		EquipmentSlot.Value.Reset();
 
 		if (!IsValid(ToUnequip))
 		{
@@ -114,7 +127,7 @@ const FEquipmentInfo* UTartarusEquipableManager::FindEquippedItem(const ATartaru
 
 	for (const TPair<EEquipmentSlot, FEquipmentInfo>& EquipmentSlot : EquipmentSlots)
 	{
-		const ATartarusItemBase* const EquippedItem = EquipmentSlot.Value.Item.Get();
+		const ATartarusItemBase* const EquippedItem = EquipmentSlot.Value.GetItem();
 
 		if (!IsValid(EquippedItem))
 		{
@@ -144,7 +157,7 @@ EEquipmentSlot UTartarusEquipableManager::FindAvailableRequestedSlot(const EEqui
 		{
 			const EEquipmentSlot FoundSlot = static_cast<EEquipmentSlot>(BitResult);
 
-			if (!EquipmentSlots[FoundSlot].InventoryStackId.IsValid())
+			if (!EquipmentSlots[FoundSlot].GetInventoryStackId().IsValid())
 			{
 				return FoundSlot;
 			}
@@ -165,7 +178,7 @@ void UTartarusEquipableManager::HandleInventoryUpdated(EInventoryChanged ChangeT
 	for (TPair<EEquipmentSlot, FEquipmentInfo> Slot : EquipmentSlots)
 	{
 		// Continue if the change is not related to this slot.
-		if (Slot.Value.InventoryStackId != StackId)
+		if (Slot.Value.GetInventoryStackId() != StackId)
 		{
 			continue;
 		}
@@ -177,9 +190,9 @@ void UTartarusEquipableManager::HandleInventoryUpdated(EInventoryChanged ChangeT
 		}
 
 		// The change resulted in the item no longer being in the inventory, unequip and destroy it.
-		if (IsValid(Slot.Value.Item.Get()))
+		if (IsValid(Slot.Value.GetItem()))
 		{
-			Unequip(Slot.Value.InventoryStackId);
+			Unequip(Slot.Value.GetInventoryStackId());
 
 			UWorld* const World = GetWorld();
 
@@ -189,7 +202,7 @@ void UTartarusEquipableManager::HandleInventoryUpdated(EInventoryChanged ChangeT
 
 				if (IsValid(ItemSubsystem))
 				{
-					ItemSubsystem->DespawnItem(Cast<ATartarusItemBase>(Slot.Value.Item.Get()));
+					ItemSubsystem->DespawnItem(Cast<ATartarusItemBase>(Slot.Value.GetItem()));
 				}
 			}
 		}
@@ -273,11 +286,7 @@ bool UTartarusEquipableManager::ASyncRequestEquip(const FGuid& InventoryStackId,
 	EquipRequests.Add(EquipRequest);
 
 	// Occupy the slot untill the request finishes.
-	FEquipmentInfo EquipInfo = FEquipmentInfo();
-	EquipInfo.Item = nullptr;
-	EquipInfo.InventoryStackId = InventoryStackId;
-
-	EquipmentSlots[AvailableSlot] = EquipInfo;
+	EquipmentSlots[AvailableSlot].SetInventoryItemStackId(InventoryStackId);
 
 	return true;
 }
@@ -373,7 +382,7 @@ void UTartarusEquipableManager::HandleItemSpawned(FGuid ASyncLoadRequestId, TArr
 	}
 
 	EEquipmentSlot EquipSlot = CurrentRequest->GetEquipSlot();
-	EquipmentSlots[EquipSlot].Item = SpawnedItems[0];
+	EquipmentSlots[EquipSlot].SetItem(SpawnedItems[0].Get());
 
 	const ACharacter* const Owner = Cast<ACharacter>(GetOwner());
 
@@ -383,11 +392,11 @@ void UTartarusEquipableManager::HandleItemSpawned(FGuid ASyncLoadRequestId, TArr
 
 		if (AttachComponent)
 		{
-			const FName& SocketName = SocketMapping[EquipSlot];
+			const FName& SocketName = EquipmentSlots[EquipSlot].GetSocket();
 
 			if (SocketName != NAME_None)
 			{
-				ATartarusItemBase* const ItemRaw = EquipmentSlots[EquipSlot].Item.Get();
+				ATartarusItemBase* const ItemRaw = EquipmentSlots[EquipSlot].GetItem();
 				const FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
 				ItemRaw->AttachToComponent(AttachComponent, AttachmentRules, SocketName);
 

@@ -78,6 +78,6 @@ void ATartarusCompass::OnEquipped(AActor* const EquippedActor)
 		return;
 	}
 
-	TargetLocation = TreasureSubsystem->GetLinkedTreasureLocation(EquippableInfo->InventoryStackId);
+	TargetLocation = TreasureSubsystem->GetLinkedTreasureLocation(EquippableInfo->GetInventoryStackId());
 }
 #pragma endregion
