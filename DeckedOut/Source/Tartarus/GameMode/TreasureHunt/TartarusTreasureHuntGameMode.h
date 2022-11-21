@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/DataTable.h"
 #include "GameMode/TartarusGameMode.h"
 
 #include "TartarusTreasureHuntGameMode.generated.h"
@@ -19,8 +20,10 @@ public:
 	void StartTreasureHunt();
 	void StopTreasureHunt();
 
-	bool IsTreasureHuntInProgress() const { return bIsTreaseHuntInProgress; }
+protected:
+	// Item to be gifted when a player starts the game.
+	UPROPERTY(EditDefaultsOnly)
+		FDataTableRowHandle GiftItemRow;
 
-private:
-	bool bIsTreaseHuntInProgress = false;
+	void GiftStarterItems(AController* const PlayerController) const;
 };

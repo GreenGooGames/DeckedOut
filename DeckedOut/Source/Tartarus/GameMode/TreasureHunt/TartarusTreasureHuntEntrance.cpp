@@ -5,16 +5,13 @@
 
 #include "Components/BoxComponent.h"
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameMode.h"
-#include "GameMode/TreasureHunt/TartarusTreasureSubsystem.h"
-#include "Item/Equipable/TartarusEquipableManager.h"
-#include "Item/Inventory/TartarusInventoryComponent.h"
-#include "Item/TartarusItemData.h"
+#include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
 #include "Logging/TartarusLogChannels.h"
 
 ATartarusTreasureHuntEntrance::ATartarusTreasureHuntEntrance()
 {
 	// Close Trigger.
-	CloseTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("CLosing Trigger"));
+	CloseTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("Closing Trigger"));
 	CloseTrigger->SetSimulatePhysics(false);
 	CloseTrigger->SetCollisionProfileName(FName("Trigger"), false);
 	CloseTrigger->OnComponentBeginOverlap.AddUniqueDynamic(this, &ATartarusTreasureHuntEntrance::OnCloseTriggerOverlap);
@@ -26,12 +23,13 @@ void ATartarusTreasureHuntEntrance::HandleStateChanged(const EDoorState NewState
 {
 	Super::HandleStateChanged(NewState, InstigatorController);
 
-	// ONly execute the behavior if the door opened, any other states skip.
-	if (NewState != EDoorState::Open)
+	// Skip if a wrong state is received.
+	if (NewState == EDoorState::None)
 	{
 		return;
 	}
 
+	// [Koen Goossens] TODO: Does this work for multiplayer?
 	// Is the game mode correct?
 	ATartarusTreasureHuntGameMode* const GameMode = GetWorld()->GetAuthGameMode<ATartarusTreasureHuntGameMode>();
 
@@ -40,61 +38,28 @@ void ATartarusTreasureHuntEntrance::HandleStateChanged(const EDoorState NewState
 		return;
 	}
 
-	// [Koen Goossens] TODO: Should the gamemode on StartTreasureHunt not give the compass?
-	// Gift the instigator a compass.
-	UTartarusInventoryComponent* const Inventory = InstigatorController->FindComponentByClass<UTartarusInventoryComponent>();
-
-	if (!IsValid(Inventory))
+	switch (NewState)
 	{
-		return;
-	}
-
-	FString ContextString = "";
-	FItemTableRow* const ItemRow = GiftItemRow.GetRow<FItemTableRow>(ContextString);
-
-	if (!ItemRow)
+	case EDoorState::Open:
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not retrieve the item row!"), __FUNCTION__);
-		return;
+		// Start the treasure hunt.
+		GameMode->StartTreasureHunt();
+
+		break;
 	}
-
-	// [Koen Goossens] TODO: Door should not open if the compass failed to be gifted.
-	// [Koen Goossens] TODO: If the gift failed, should the compass be spawned into the world for later pickup?
-	// [Koen Goossens] TODO: Magic number 1.
-	FGuid StackId = Inventory->StoreItem(ItemRow->UniqueItemId, 1);
-
-	// [Koen Goossens] TODO: If the compass cannot be gifted, then the interaction should fail and the door should not open.
-	if (!StackId.IsValid())
+	case EDoorState::Closed:
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not store the item in the inventory!"), __FUNCTION__);
-		return;
+		// Stop the treasure hunt.
+		GameMode->StopTreasureHunt();
+		break;
 	}
-
-	// Spawn a chest for this compass.
-	UTartarusTreasureSubsystem* const TreasureSubsystem = GetWorld()->GetSubsystem<UTartarusTreasureSubsystem>();
-
-	if (!TreasureSubsystem)
-	{
-		return;
+	// Intentioanl fall-trough.
+	case EDoorState::None:
+	case EDoorState::Blocked:
+	default:
+		// Not implemented.
+		break;
 	}
-
-	FSpawnAndLinkRequestCompletedEvent OnRequestCompleted;
-	TreasureSubsystem->AsyncRequestSpawnAndLink(StackId, OnRequestCompleted);
-
-	// Auto-equip the compass.
-	UTartarusEquipableManager* const EquipableManager = InstigatorController->GetPawn()->FindComponentByClass<UTartarusEquipableManager>();
-
-	if (!IsValid(EquipableManager))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not auto-equip the gift item: No equipableManager found!"), __FUNCTION__);
-		return;
-	}
-
-	// [Koen Goossens] TODO: Try to equip in both left and right but by exposing as a var.
-	bool bIsTryingToEquip = EquipableManager->ASyncRequestEquip(StackId, EEquipmentSlot::LeftHand);
-
-	// Start the treasure hunt.
-	GameMode->StartTreasureHunt();
 }
 
 void ATartarusTreasureHuntEntrance::OnCloseTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -111,15 +76,13 @@ void ATartarusTreasureHuntEntrance::OnCloseTriggerOverlap(UPrimitiveComponent* O
 		return;
 	}
 
-	// Stop the treasure hunt.
-	ATartarusTreasureHuntGameMode* const GameMode = GetWorld()->GetAuthGameMode<ATartarusTreasureHuntGameMode>();
+	// Check if the game is in progress.
+	ATartarusTreasureHuntGameState* const GameState = GetWorld()->GetGameState<ATartarusTreasureHuntGameState>();
 
-	if (!IsValid(GameMode) || !GameMode->IsTreasureHuntInProgress())
+	if (!IsValid(GameState) || !GameState->IsTreasureHuntActive())
 	{
 		return;
 	}
-
-	GameMode->StopTreasureHunt();
 
 	// Close the door.
 	EDoorState NewState = EDoorState::Closed;
@@ -136,14 +99,14 @@ bool ATartarusTreasureHuntEntrance::IsInteractable() const
 {
 	bool bIsInteractable = Super::IsInteractable();
 
-	ATartarusTreasureHuntGameMode* const GameMode = GetWorld()->GetAuthGameMode<ATartarusTreasureHuntGameMode>();
+	ATartarusTreasureHuntGameState* const GameState = GetWorld()->GetGameState<ATartarusTreasureHuntGameState>();
 
-	if (!IsValid(GameMode))
+	if (!IsValid(GameState))
 	{
 		return false;
 	}
 
-	bIsInteractable = bIsInteractable && !GameMode->IsTreasureHuntInProgress();
+	bIsInteractable = bIsInteractable && !GameState->IsTreasureHuntActive();
 
 	return bIsInteractable;
 }

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/DataTable.h"
 #include "Interaction/Objects/TartarusDoor.h"
 
 #include "TartarusTreasureHuntEntrance.generated.h"
@@ -23,10 +22,6 @@ protected:
 	// Trigger to determine the player is on the other side of the door.
 	UPROPERTY(EditDefaultsOnly)
 		TObjectPtr<UBoxComponent> CloseTrigger = nullptr;
-
-	// Item to be gifted when the player opens the door.
-	UPROPERTY(EditDefaultsOnly)
-		FDataTableRowHandle GiftItemRow;
 
 	// Executed when the state of the door is changed.
 	virtual void HandleStateChanged(const EDoorState NewState, AController* const InstigatorController) override;
