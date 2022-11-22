@@ -46,7 +46,7 @@ void ATartarusTreasureHuntGameMode::StopTreasureHunt()
 
 void ATartarusTreasureHuntGameMode::GiftStarterItems(AController* const PlayerController) const
 {
-	// Gift the player a compass.
+	// Get the player ivnentory.
 	UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
 
 	if (!IsValid(Inventory))
@@ -55,7 +55,7 @@ void ATartarusTreasureHuntGameMode::GiftStarterItems(AController* const PlayerCo
 	}
 
 	FString ContextString = "";
-	FItemTableRow* const ItemRow = GiftItemRow.GetRow<FItemTableRow>(ContextString);
+	FItemTableRow* const ItemRow = StarterCompass.GetRow<FItemTableRow>(ContextString);
 
 	if (!ItemRow)
 	{
@@ -63,8 +63,7 @@ void ATartarusTreasureHuntGameMode::GiftStarterItems(AController* const PlayerCo
 		return;
 	}
 
-	// [Koen Goossens] TODO: Magic number 1.
-	FGuid StackId = Inventory->StoreItem(ItemRow->UniqueItemId, 1);
+	const FGuid StackId = Inventory->StoreItem(ItemRow->UniqueItemId, NumGiftCompasses);
 
 	// [Koen Goossens] TODO: If the compass cannot be gifted, then the interaction should fail and the door should not open.
 	if (!StackId.IsValid())
@@ -75,11 +74,6 @@ void ATartarusTreasureHuntGameMode::GiftStarterItems(AController* const PlayerCo
 
 	// Spawn a chest for this compass.
 	UTartarusTreasureSubsystem* const TreasureSubsystem = GetWorld()->GetSubsystem<UTartarusTreasureSubsystem>();
-
-	if (!TreasureSubsystem)
-	{
-		return;
-	}
 
 	FSpawnAndLinkRequestCompletedEvent OnRequestCompleted;
 	TreasureSubsystem->AsyncRequestSpawnAndLink(StackId, OnRequestCompleted);
@@ -93,6 +87,5 @@ void ATartarusTreasureHuntGameMode::GiftStarterItems(AController* const PlayerCo
 		return;
 	}
 
-	// [Koen Goossens] TODO: Try to equip in both left and right but by exposing as a var.
-	bool bIsTryingToEquip = EquipableManager->ASyncRequestEquip(StackId, EEquipmentSlot::LeftHand);
+	bool bIsTryingToEquip = EquipableManager->ASyncRequestEquip(StackId, StaticCast<EEquipmentSlot>(AutoEquipCompassSlotMask));
 }

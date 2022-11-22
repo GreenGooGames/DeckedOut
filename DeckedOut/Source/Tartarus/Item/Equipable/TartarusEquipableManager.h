@@ -14,7 +14,7 @@ class ATartarusItemBase;
 struct FItemTableRow;
 
 #pragma region EquipmentData
-UENUM(BlueprintType, meta = (Bitflags))
+UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
 enum class EEquipmentSlot : uint8
 {
 	None = 0x00,

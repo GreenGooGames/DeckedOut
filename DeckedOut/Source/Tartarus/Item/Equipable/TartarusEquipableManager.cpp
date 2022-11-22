@@ -145,6 +145,7 @@ const FEquipmentInfo* UTartarusEquipableManager::FindEquippedItem(const ATartaru
 	return nullptr;
 }
 
+#pragma optimize("", off)
 EEquipmentSlot UTartarusEquipableManager::FindAvailableRequestedSlot(const EEquipmentSlot RequestedSlot) const
 {
 	for (TPair<EEquipmentSlot, FEquipmentInfo> EquipmentSlot : EquipmentSlots)
@@ -153,7 +154,7 @@ EEquipmentSlot UTartarusEquipableManager::FindAvailableRequestedSlot(const EEqui
 		const uint8 Current = uint8(EquipmentSlot.Key);
 		const uint8 BitResult = Request & Current;
 
-		if (BitResult == Request)
+		if (BitResult == Current)
 		{
 			const EEquipmentSlot FoundSlot = static_cast<EEquipmentSlot>(BitResult);
 
@@ -166,6 +167,7 @@ EEquipmentSlot UTartarusEquipableManager::FindAvailableRequestedSlot(const EEqui
 
 	return EEquipmentSlot::None;
 }
+#pragma optimize("", on)
 
 void UTartarusEquipableManager::HandleInventoryUpdated(EInventoryChanged ChangeType, FGuid StackId, int32 StackSize)
 {
@@ -214,14 +216,7 @@ void UTartarusEquipableManager::HandleInventoryUpdated(EInventoryChanged ChangeT
 #pragma region ASyncEquip
 bool UTartarusEquipableManager::ASyncRequestEquip(const FGuid& InventoryStackId, const EEquipmentSlot SlotName)
 {
-	// Is the requested slot setup?
-	if (!EquipmentSlots.Contains(SlotName))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Requested slot not found!"), __FUNCTION__);
-		return false;
-	}
-
-	// Is the requested slot available?
+	// Is the requested slot available/does it exist?
 	const EEquipmentSlot AvailableSlot = FindAvailableRequestedSlot(SlotName);
 	if (AvailableSlot == EEquipmentSlot::None)
 	{
