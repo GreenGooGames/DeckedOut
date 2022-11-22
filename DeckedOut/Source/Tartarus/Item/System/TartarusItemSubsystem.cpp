@@ -7,7 +7,6 @@
 #include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
 #include "System/TartarusAssetManager.h"
-#include "System/TartarusHelpers.h"
 
 #pragma region FSpawnItemsRequestInfo
 FSpawnItemsRequestInfo::FSpawnItemsRequestInfo(const FTransform& Transform, const FItemSpawnRequestCompletedEvent& OnCompleted)
@@ -18,30 +17,47 @@ FSpawnItemsRequestInfo::FSpawnItemsRequestInfo(const FTransform& Transform, cons
 	RequestCompletedEvent = OnCompleted;
 }
 
-void FSpawnItemsRequestInfo::AddAssetToLoad(const FSoftObjectPath& AssetPath, const int32 ItemId)
+void FSpawnItemsRequestInfo::AddItemToLoad(const FSoftObjectPath& ItemObjectPath, const int32 ItemId)
 {
-	AssetsToLoad.Add(AssetPath, ItemId);
+	FLoadingItemData* const  ExistingLoad = ItemsToLoad.FindByPredicate([&ItemId](const FLoadingItemData& ItemData)
+		{
+			return ItemData.ItemId == ItemId;
+		});
+
+	if (ExistingLoad) // Increase the count of instances to spawn of this Item.
+	{
+		ExistingLoad->Count++;
+	}
+	else // Create a new entry and add it.
+	{
+		FLoadingItemData LoadData = FLoadingItemData();
+		LoadData.ItemId = ItemId;
+		LoadData.ObjectPath = ItemObjectPath;
+		LoadData.Count = 1;
+
+		ItemsToLoad.Add(LoadData);
+	}
 }
 
-TArray<FSoftObjectPath> FSpawnItemsRequestInfo::GetAssetsToLoad()
+TArray<FSoftObjectPath> FSpawnItemsRequestInfo::GetAssetsToLoad() const
 {
 	TArray<FSoftObjectPath> Assets;
 
-	for (auto Asset : AssetsToLoad)
+	for (const FLoadingItemData& ItemData : ItemsToLoad)
 	{
-		Assets.Add(Asset.Key);
+		Assets.Add(ItemData.ObjectPath);
 	}
 
 	return Assets;
 }
 
-int32 FSpawnItemsRequestInfo::GetItemId(const UObject* const Asset)
+int32 FSpawnItemsRequestInfo::GetItemId(const UObject* const Asset) const
 {
-	for (auto AssetToIdPair : AssetsToLoad)
+	for (const FLoadingItemData& ItemData : ItemsToLoad)
 	{
-		if (AssetToIdPair.Key.ResolveObject() == Asset)
+		if (ItemData.ObjectPath.ResolveObject() == Asset)
 		{
-			return AssetToIdPair.Value;
+			return ItemData.ItemId;
 		}
 	}
 
@@ -143,7 +159,7 @@ FGuid UTartarusItemSubsystem::AsyncRequestSpawnItems(const TArray<FDataTableRowH
 			continue;
 		}
 
-		SpawnRequest.AddAssetToLoad(ItemRow->Blueprint.ToSoftObjectPath(), ItemRow->UniqueItemId);
+		SpawnRequest.AddItemToLoad(ItemRow->Blueprint.ToSoftObjectPath(), ItemRow->UniqueItemId);
 	}
 
 	// Create a callback for when the items are loaded.
@@ -182,7 +198,7 @@ FGuid UTartarusItemSubsystem::AsyncRequestSpawnItems(const TArray<FItemTableRow>
 	// Gather all the paths of the assets to load.
 	for (const FItemTableRow& ItemRow : ItemTableRows)
 	{
-		SpawnRequest.AddAssetToLoad(ItemRow.Blueprint.ToSoftObjectPath(), ItemRow.UniqueItemId);
+		SpawnRequest.AddItemToLoad(ItemRow.Blueprint.ToSoftObjectPath(), ItemRow.UniqueItemId);
 	}
 
 	// Create a callback for when the items are loaded.
@@ -229,31 +245,29 @@ void UTartarusItemSubsystem::HandleItemsLoaded(FGuid ASyncLoadRequestId, TShared
 		return;
 	}
 
-	// Get all loaded Assets, loaded children will be ignored later.
-	TArray<UObject*> LoadedAssets;
-	StreamingHandle->GetLoadedAssets(LoadedAssets);
-
-	// Convert each asset to an item subclass, and ignore any loaded children.
+	// For each item that is loaded, spawn the number of requested instances.
 	TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedItens;
 
-	for (UObject* const Asset : LoadedAssets)
+	for (const FLoadingItemData& LoadingData : CurrentRequest->GetItemsToLoad())
 	{
-		TSubclassOf<ATartarusItemBase> AsItemClass = Cast<UClass>(Asset);
+		TSubclassOf<ATartarusItemBase> AsItemClass = Cast<UClass>(LoadingData.ObjectPath.ResolveObject());
 
 		if (!IsValid(AsItemClass))
 		{
 			continue;
 		}
 
-		// The asset is a valid item class, spawn it in the world.
-		TWeakObjectPtr<ATartarusItemBase> SpawnedItem = SpawnItem(AsItemClass, CurrentRequest->GetItemId(Asset), CurrentRequest->GetSpawnTransform());
-
-		if (!IsValid(SpawnedItem.Get()))
+		for (int32 i = 0; i < LoadingData.Count; i++)
 		{
-			continue;
-		}
+			TWeakObjectPtr<ATartarusItemBase> SpawnedItem = SpawnItem(AsItemClass, LoadingData.ItemId, CurrentRequest->GetSpawnTransform());
 
-		SpawnedItens.Add(SpawnedItem);
+			if (!IsValid(SpawnedItem.Get()))
+			{
+				continue;
+			}
+
+			SpawnedItens.Add(SpawnedItem);
+		}
 	}
 
 	HandleSpawnItemRequestCompleted(CurrentRequest, SpawnedItens);
