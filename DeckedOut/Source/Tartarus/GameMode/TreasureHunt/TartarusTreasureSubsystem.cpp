@@ -3,10 +3,12 @@
 
 #include "GameMode/TreasureHunt/TartarusTreasureSubsystem.h"
 
+#include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
 #include "GameMode/TreasureHunt/TartarusTreasureSubsystemSettings.h"
 #include "Item/Equipable/Equipment/TartarusCompass.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/Persistent/TartarusTreasureChest.h"
+#include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
 #include "System/TartarusAssetManager.h"
 
@@ -17,8 +19,24 @@ UTartarusTreasureSubsystem::UTartarusTreasureSubsystem()
 	if (IsValid(Settings))
 	{
 		TreasureClass = Settings->TreasureClass;
+		TreasureKeys = Settings->TreasureKeys;
 	}
 
+}
+
+void UTartarusTreasureSubsystem::OnWorldBeginPlay(UWorld& InWorld)
+{
+	Super::OnWorldBeginPlay(InWorld);
+
+	ATartarusTreasureHuntGameState* const GameState = GetWorld()->GetGameState<ATartarusTreasureHuntGameState>();
+
+	if (!IsValid(GameState))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to subscribe to the game state: No game valid state found!"), __FUNCTION__);
+		return;
+	}
+
+	GameState->OnRunningStateChanged().AddUObject(this, &UTartarusTreasureSubsystem::HandleGameRunningStateChanged);
 }
 
 ATartarusTreasureChest* UTartarusTreasureSubsystem::SpawnTreasure(TSubclassOf<ATartarusTreasureChest>& ToSpawnClass, const FTransform& SpawnTransform)
@@ -77,6 +95,45 @@ void UTartarusTreasureSubsystem::HandleOnTreasureLooted(ATartarusTreasureChest* 
 		SpawnPoint.Treasure = nullptr;
 
 		LootedTreasure->Destroy();
+	}
+}
+
+void UTartarusTreasureSubsystem::HandleGameRunningStateChanged(ETreasureHuntState OldState, ETreasureHuntState NewState)
+{
+	// Spawn and Link treasure when the treasure hunt starts.
+	if (NewState == ETreasureHuntState::Active && OldState == ETreasureHuntState::Inactive)
+	{
+		// Get the inventory of the player.
+		AController* const PlayerController = GetWorld()->GetFirstPlayerController<AController>();
+
+		if (!IsValid(PlayerController))
+		{
+			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No player in the world!"), __FUNCTION__);
+			return;
+		}
+
+		UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
+
+		if (!IsValid(Inventory))
+		{
+			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No inventory on player!"), __FUNCTION__);
+			return;
+		}
+
+		// Find all treasure keys in the inventory of the player.
+		for (const FDataTableRowHandle& TreasureKey : TreasureKeys)
+		{
+			FString ContextString = "";
+			const int32 KeyItemId = TreasureKey.GetRow<FItemTableRow>(ContextString)->UniqueItemId;
+			const TArray<const FInventoryItemStack*> InventoryTreasureKeys = Inventory->GetOverviewMulti(KeyItemId);
+
+			for (const FInventoryItemStack* const ItemStack : InventoryTreasureKeys)
+			{
+				// Spawn a treasure chest and link it to the treasure key.
+				FSpawnAndLinkRequestCompletedEvent OnRequestCompleted;
+				AsyncRequestSpawnAndLink(ItemStack->GetStackId(), OnRequestCompleted);
+			}
+		}
 	}
 }
 

@@ -5,7 +5,17 @@
 
 void ATartarusTreasureHuntGameState::ChangeTreasureHuntState(const ETreasureHuntState NewState)
 {
+	ETreasureHuntState OldState = TreasureHuntState;
+
+	if (NewState == OldState)
+	{
+		return;
+	}
+
 	TreasureHuntState = NewState;
+
+	// Notify all watchers that the state has changed to a new state.
+	OnRunningStateChanged().Broadcast(OldState, TreasureHuntState);
 }
 
 bool ATartarusTreasureHuntGameState::IsTreasureHuntActive() const

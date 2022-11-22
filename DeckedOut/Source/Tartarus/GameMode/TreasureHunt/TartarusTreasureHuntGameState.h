@@ -14,6 +14,8 @@ enum class ETreasureHuntState : uint8
 	Paused,
 };
 
+DECLARE_EVENT_TwoParams(ATartarusTreasureHuntGameState, FRunningStateChanged, ETreasureHuntState /*OldState*/, ETreasureHuntState /*NewState*/);
+
 /**
  * 
  */
@@ -32,8 +34,15 @@ public:
 	*/
 	bool IsTreasureHuntActive() const;
 
+	/*
+	* Event fired each time the running state of the treasure hunt changes.
+	* Return: The event that gets fired when the state changes.
+	*/
+	FRunningStateChanged& OnRunningStateChanged() { return RunningStateChangedEvent; }
+
 protected:
 	
 private:
 	ETreasureHuntState TreasureHuntState = ETreasureHuntState::Inactive;
+	FRunningStateChanged RunningStateChangedEvent = FRunningStateChanged();
 };

@@ -77,6 +77,12 @@ public:
 	const TArray<FInventoryItemStack>& GetOverview() const { return InventorySlots; }
 
 	/*
+	* Retrieves an overview of all items matching the id.
+	* Return: Data stored in the inventory of each slot that contains the given id.
+	*/
+	const TArray<const FInventoryItemStack*> GetOverviewMulti(const int32 ItemId) const;
+
+	/*
 	* Retrieves an overview of a single slot.
 	* Return: Data stored in the slot.
 	*/

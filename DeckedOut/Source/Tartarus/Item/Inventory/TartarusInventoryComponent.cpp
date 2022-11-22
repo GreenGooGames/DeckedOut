@@ -110,6 +110,21 @@ bool UTartarusInventoryComponent::RetrieveItem(const FGuid& StackId, const int32
 	return bHasReduced;
 }
 
+const TArray<const FInventoryItemStack*> UTartarusInventoryComponent::GetOverviewMulti(const int32 ItemId) const
+{
+	TArray<const FInventoryItemStack*> MatchingItemSlots = TArray<const FInventoryItemStack*>();
+	
+	for (const FInventoryItemStack& Stack : InventorySlots)
+	{
+		if (Stack.GetItemId() == ItemId)
+		{
+			MatchingItemSlots.Add(&Stack);
+		}
+	}
+
+	return MatchingItemSlots;
+}
+
 const FInventoryItemStack* UTartarusInventoryComponent::GetOverviewSingle(const FGuid StackId) const
 {
 	int32 SlotIndex = FindSlot(StackId);

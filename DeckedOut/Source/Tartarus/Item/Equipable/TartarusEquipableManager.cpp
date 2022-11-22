@@ -263,7 +263,7 @@ bool UTartarusEquipableManager::ASyncRequestEquip(const FGuid& InventoryStackId,
 	OnDataRequestCompleted.AddUObject(this, &UTartarusEquipableManager::HandleItemDataLoaded);
 
 	// Get the overview of the stack.
-	const FInventoryItemStack* ItemStack = Inventory->GetOverviewSingle(InventoryStackId);
+	const FInventoryItemStack* const ItemStack = Inventory->GetOverviewSingle(InventoryStackId);
 
 	TArray<int32> ToSpawnItemIds;
 	ToSpawnItemIds.Add(ItemStack->GetItemId());

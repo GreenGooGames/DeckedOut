@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/DataTable.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "System/TartarusASyncLoadData.h"
 
@@ -10,6 +11,8 @@
 
 class ATartarusCompass; 
 class ATartarusTreasureChest;
+
+enum class ETreasureHuntState : uint8;
 
 struct FStreamableHandle;
 
@@ -66,6 +69,9 @@ class TARTARUS_API UTartarusTreasureSubsystem : public UWorldSubsystem
 public:
 	UTartarusTreasureSubsystem();
 
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
+
+public:
 	/*
 	* Retrieves the location of treasure that is linked to the key.
 	* Return: The location of the Treasure in the world.
@@ -73,6 +79,9 @@ public:
 	FVector GetLinkedTreasureLocation(const FGuid& KeyInventoryId) const;
 
 protected:
+	// All possible keys to open treasure.
+	TArray<FDataTableRowHandle> TreasureKeys;
+
 	/*
 	* Spawns a treasure in the world.
 	* Return: The Treasure that is spawned, nullptr if spawn failed.
@@ -87,6 +96,8 @@ protected:
 
 	// Fired when a treasure is looted, called by the treasure itself.
 	void HandleOnTreasureLooted(ATartarusTreasureChest* const LootedTreasure);
+
+	void HandleGameRunningStateChanged(ETreasureHuntState OldState, ETreasureHuntState NewState);
 
 #pragma region SpawnPoint
 public:

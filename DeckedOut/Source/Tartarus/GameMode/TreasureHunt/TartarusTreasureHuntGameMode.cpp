@@ -5,7 +5,6 @@
 
 #include "GameFramework/PlayerState.h"
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
-#include "GameMode/TreasureHunt/TartarusTreasureSubsystem.h"
 #include "Item/Equipable/TartarusEquipableManager.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/TartarusItemData.h"
@@ -21,14 +20,15 @@ void ATartarusTreasureHuntGameMode::StartTreasureHunt()
 		return;
 	}
 
-	TreasureHuntGameState->ChangeTreasureHuntState(ETreasureHuntState::Active);
-
+	// [Koen Goossens] TODO: The TreasureHunt cannot start if the player cannot receive these manadatory gifts. (unless they already have a treasure key? Should at the very least promopt some ui warning)
 	// Gift all players a compass and spawn a linked chest in the world.
 	for (APlayerState* const PlayerState : TreasureHuntGameState->PlayerArray)
 	{
 		AController* PlayerController = PlayerState->GetOwningController();
 		GiftStarterItems(PlayerController);
 	}
+
+	TreasureHuntGameState->ChangeTreasureHuntState(ETreasureHuntState::Active);
 }
 
 void ATartarusTreasureHuntGameMode::StopTreasureHunt()
@@ -71,12 +71,6 @@ void ATartarusTreasureHuntGameMode::GiftStarterItems(AController* const PlayerCo
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not store the item in the inventory!"), __FUNCTION__);
 		return;
 	}
-
-	// Spawn a chest for this compass.
-	UTartarusTreasureSubsystem* const TreasureSubsystem = GetWorld()->GetSubsystem<UTartarusTreasureSubsystem>();
-
-	FSpawnAndLinkRequestCompletedEvent OnRequestCompleted;
-	TreasureSubsystem->AsyncRequestSpawnAndLink(StackId, OnRequestCompleted);
 
 	// Auto-equip the compass.
 	UTartarusEquipableManager* const EquipableManager = PlayerController->GetPawn()->FindComponentByClass<UTartarusEquipableManager>();
