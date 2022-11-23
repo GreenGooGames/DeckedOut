@@ -23,8 +23,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 		TObjectPtr<UBoxComponent> CloseTrigger = nullptr;
 
-	// Executed when the state of the door is changed.
-	virtual void HandleStateChanged(const EDoorState NewState, AController* const InstigatorController) override;
+	virtual bool CanChangeState(const EDoorState NewState) const;
 
 	// Executed when the player overlaps with the close trigger.
 	UFUNCTION()

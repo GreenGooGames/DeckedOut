@@ -19,46 +19,46 @@ ATartarusTreasureHuntEntrance::ATartarusTreasureHuntEntrance()
 	CloseTrigger->SetupAttachment(RootComponent);
 }
 
-void ATartarusTreasureHuntEntrance::HandleStateChanged(const EDoorState NewState, AController* const InstigatorController)
+bool ATartarusTreasureHuntEntrance::CanChangeState(const EDoorState NewState) const
 {
-	Super::HandleStateChanged(NewState, InstigatorController);
-
-	// Skip if a wrong state is received.
-	if (NewState == EDoorState::None)
+	// To change the state from Closed --> Open, a treasure hunt has to be activated.
+	if (NewState == EDoorState::Open)
 	{
-		return;
-	}
+		// Is the game mode correct?
+		ATartarusTreasureHuntGameMode* const GameMode = GetWorld()->GetAuthGameMode<ATartarusTreasureHuntGameMode>();
 
-	// Is the game mode correct?
-	ATartarusTreasureHuntGameMode* const GameMode = GetWorld()->GetAuthGameMode<ATartarusTreasureHuntGameMode>();
-
-	if (!IsValid(GameMode))
-	{
-		return;
-	}
-
-	switch (NewState)
-	{
-	case EDoorState::Open:
-	{
 		// Start the treasure hunt.
 		GameMode->StartTreasureHunt();
 
-		break;
+		ATartarusTreasureHuntGameState* const GameState = GetWorld()->GetGameState<ATartarusTreasureHuntGameState>();
+
+		if (!GameState->IsTreasureHuntActive())
+		{
+			return false;
+		}
 	}
-	case EDoorState::Closed:
+	// To change the state fom Open --> Closed, the active treasure hunt has to be deactivated.
+	else if (NewState == EDoorState::Closed)
 	{
+		// Is the game mode correct?
+		ATartarusTreasureHuntGameMode* const GameMode = GetWorld()->GetAuthGameMode<ATartarusTreasureHuntGameMode>();
+
 		// Stop the treasure hunt.
 		GameMode->StopTreasureHunt();
-		break;
+
+		ATartarusTreasureHuntGameState* const GameState = GetWorld()->GetGameState<ATartarusTreasureHuntGameState>();
+
+		if (GameState->IsTreasureHuntActive())
+		{
+			return false;
+		}
 	}
-	// Intentioanl fall-trough.
-	case EDoorState::None:
-	case EDoorState::Blocked:
-	default:
-		// Not implemented.
-		break;
+	else
+	{
+		return false;
 	}
+
+	return true;
 }
 
 void ATartarusTreasureHuntEntrance::OnCloseTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

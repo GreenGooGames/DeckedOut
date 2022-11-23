@@ -33,9 +33,19 @@ void ATartarusDoor::BeginPlay()
 
 bool ATartarusDoor::ChangeState(const EDoorState NewState)
 {
-	// [Koen Goossens] TODO: Add a CanChangeState here if needed. (ex: Blocked --> Open, requires a key)
+	const bool bCanStateBeChanged = CanChangeState(NewState);
+	if (!bCanStateBeChanged)
+	{
+		return false;
+	}
+
 	DoorState = NewState;
 
+	return true;
+}
+
+bool ATartarusDoor::CanChangeState(const EDoorState NewState) const
+{
 	return true;
 }
 

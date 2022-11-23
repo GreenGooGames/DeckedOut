@@ -10,7 +10,7 @@
 #include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
 
-void ATartarusTreasureHuntGameMode::StartTreasureHunt()
+void ATartarusTreasureHuntGameMode::StartTreasureHunt() const
 {
 	// Change the game state to indicate the treasure hunt has started.
 	ATartarusTreasureHuntGameState* const TreasureHuntGameState = Cast<ATartarusTreasureHuntGameState>(GameState);
@@ -20,18 +20,24 @@ void ATartarusTreasureHuntGameMode::StartTreasureHunt()
 		return;
 	}
 
-	// [Koen Goossens] TODO: The TreasureHunt cannot start if the player cannot receive these manadatory gifts. (unless they already have a treasure key? Should at the very least promopt some ui warning)
-	// Gift all players a compass and spawn a linked chest in the world.
-	for (APlayerState* const PlayerState : TreasureHuntGameState->PlayerArray)
+	// Gift the player starter items.
+	const AController* const PlayerController = GetWorld()->GetFirstPlayerController<AController>();
+	if (!IsValid(PlayerController))
 	{
-		AController* PlayerController = PlayerState->GetOwningController();
-		GiftStarterItems(PlayerController);
+		return;
+	}
+
+	const bool bHasGiftedItems = GiftStarterItems(PlayerController);
+	if (!bHasGiftedItems)
+	{
+		UE_LOG(LogTartarus, Log, TEXT("%s: Treasure hunt did not start: Failed to gift starter items!"), __FUNCTION__);
+		return; // Items could not be gifted so don't start a treasure hunt as the player wont be able to complete it.
 	}
 
 	TreasureHuntGameState->ChangeTreasureHuntState(ETreasureHuntState::Active);
 }
 
-void ATartarusTreasureHuntGameMode::StopTreasureHunt()
+void ATartarusTreasureHuntGameMode::StopTreasureHunt() const
 {
 	// Change the game state to indicate the treasure hunt has ended.
 	ATartarusTreasureHuntGameState* const TreasureHuntGameState = Cast<ATartarusTreasureHuntGameState>(GameState);
@@ -44,14 +50,15 @@ void ATartarusTreasureHuntGameMode::StopTreasureHunt()
 	TreasureHuntGameState->ChangeTreasureHuntState(ETreasureHuntState::Inactive);
 }
 
-void ATartarusTreasureHuntGameMode::GiftStarterItems(AController* const PlayerController) const
+bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const PlayerController) const
 {
 	// Get the player ivnentory.
 	UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
 
 	if (!IsValid(Inventory))
 	{
-		return;
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: No inventory found.!"), __FUNCTION__);
+		return false;
 	}
 
 	FString ContextString = "";
@@ -60,7 +67,7 @@ void ATartarusTreasureHuntGameMode::GiftStarterItems(AController* const PlayerCo
 	if (!ItemRow)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not retrieve the item row!"), __FUNCTION__);
-		return;
+		return false;
 	}
 
 	const FGuid StackId = Inventory->StoreItem(ItemRow->UniqueItemId, NumGiftCompasses);
@@ -69,17 +76,20 @@ void ATartarusTreasureHuntGameMode::GiftStarterItems(AController* const PlayerCo
 	if (!StackId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not store the item in the inventory!"), __FUNCTION__);
-		return;
+		return false;
 	}
 
-	// Auto-equip the compass.
+	// Optional: Auto-equip the compass.
 	UTartarusEquipableManager* const EquipableManager = PlayerController->GetPawn()->FindComponentByClass<UTartarusEquipableManager>();
 
 	if (!IsValid(EquipableManager))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not auto-equip the gift item: No equipableManager found!"), __FUNCTION__);
-		return;
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not auto-equip the gift item: No EquipableManager found!"), __FUNCTION__);
+	}
+	else
+	{
+		bool bIsTryingToEquip = EquipableManager->ASyncRequestEquip(StackId, StaticCast<EEquipmentSlot>(AutoEquipCompassSlotMask));
 	}
 
-	bool bIsTryingToEquip = EquipableManager->ASyncRequestEquip(StackId, StaticCast<EEquipmentSlot>(AutoEquipCompassSlotMask));
+	return true;
 }

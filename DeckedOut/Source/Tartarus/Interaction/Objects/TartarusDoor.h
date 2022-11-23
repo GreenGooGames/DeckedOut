@@ -48,6 +48,12 @@ protected:
 	*/
 	bool ChangeState(const EDoorState NewState);
 
+	/*
+	* Performs checks to see if the state can be changed.
+	* Return: True if all checks passed. False if something prohibits changing the state.
+	*/
+	virtual bool CanChangeState(const EDoorState NewState) const;
+
 	// Event fired when the state of the door changes.
 	FStateChangedEvent& OnStateChanged() { return StateChangedEvent; };
 
