@@ -27,7 +27,7 @@ FGuid UTartarusLootComponent::AsyncRequestDropLoot(const FTransform& SpawnTransf
 
 	if (!AssetManager.IsValid())
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -39,7 +39,7 @@ FGuid UTartarusLootComponent::AsyncRequestDropLoot(const FTransform& SpawnTransf
 
 	if (!AsyncLoadRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -86,7 +86,7 @@ void UTartarusLootComponent::HandleLootTableLoaded(FGuid ASyncLoadRequestId, TSh
 
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: Could not find the request!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: Could not find the request!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -95,7 +95,7 @@ void UTartarusLootComponent::HandleLootTableLoaded(FGuid ASyncLoadRequestId, TSh
 
 	if (!IsValid(LootTable.Get()))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: LootTable was not loaded!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: LootTable was not loaded!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 
 		return;
@@ -108,7 +108,7 @@ void UTartarusLootComponent::HandleLootTableLoaded(FGuid ASyncLoadRequestId, TSh
 
 	if (!LootLoadRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: Could not load the item async!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: Could not load the item async!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 
 		return;
@@ -124,7 +124,7 @@ FGuid UTartarusLootComponent::AsyncRequestSpawnItems(TArray<FDataTableRowHandle>
 	
 	if (!IsValid(ItemSubsystem))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: ItemSubsystem was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: ItemSubsystem was invalid!"), *FString(__FUNCTION__));
 		
 		return FGuid();
 	}
@@ -137,7 +137,7 @@ FGuid UTartarusLootComponent::AsyncRequestSpawnItems(TArray<FDataTableRowHandle>
 	
 	if (!SpawnRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: Could not start a spawn request!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: Could not start a spawn request!"), *FString(__FUNCTION__));
 		
 		return FGuid();
 	}
@@ -155,13 +155,13 @@ void UTartarusLootComponent::HandleLootSpawned(FGuid ASyncLoadRequestId, TArray<
 
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: Could not find the request!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: Could not find the request!"), *FString(__FUNCTION__));
 		return;
 	}
 
 	if (SpawnedLoot.IsEmpty())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: No loot was spawned!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: No loot was spawned!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 
 		return;

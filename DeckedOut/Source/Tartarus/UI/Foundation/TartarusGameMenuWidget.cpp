@@ -36,7 +36,7 @@ void UTartarusGameMenuWidget::RegisterBoundInputActions()
 void UTartarusGameMenuWidget::HandleExitAction()
 {
 #if WITH_EDITOR
-	GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Green, FString(__FUNCTION__));
+	GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Green, FString(*FString(__FUNCTION__)));
 #endif
 
 	ATartarusPlayerController* const PlayerController = GetOwningPlayer<ATartarusPlayerController>();

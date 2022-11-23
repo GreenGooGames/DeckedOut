@@ -30,7 +30,7 @@ void ATartarusTreasureHuntGameMode::StartTreasureHunt() const
 	const bool bHasGiftedItems = GiftStarterItems(PlayerController);
 	if (!bHasGiftedItems)
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Treasure hunt did not start: Failed to gift starter items!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Treasure hunt did not start: Failed to gift starter items!"), *FString(__FUNCTION__));
 		return; // Items could not be gifted so don't start a treasure hunt as the player wont be able to complete it.
 	}
 
@@ -57,7 +57,7 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 
 	if (!IsValid(Inventory))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: No inventory found.!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: No inventory found.!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -66,7 +66,7 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 
 	if (!ItemRow)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not retrieve the item row!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not retrieve the item row!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -75,7 +75,7 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 	// [Koen Goossens] TODO: If the compass cannot be gifted, then the interaction should fail and the door should not open.
 	if (!StackId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not store the item in the inventory!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not store the item in the inventory!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -84,7 +84,7 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 
 	if (!IsValid(EquipableManager))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not auto-equip the gift item: No EquipableManager found!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not auto-equip the gift item: No EquipableManager found!"), *FString(__FUNCTION__));
 	}
 	else
 	{

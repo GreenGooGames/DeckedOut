@@ -27,7 +27,7 @@ bool ATartarusPickup::HandlePickedup(const TObjectPtr<AController> InstigatorCon
 
 	if (!IsValid(InstigatorInventory))
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Controller has no inventory!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Controller has no inventory!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -36,7 +36,7 @@ bool ATartarusPickup::HandlePickedup(const TObjectPtr<AController> InstigatorCon
 
 	if (!bIsStored)
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Could not store the item in the inventory!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Could not store the item in the inventory!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -55,13 +55,13 @@ bool ATartarusPickup::StartInteraction(const TObjectPtr<AController> InstigatorC
 {
 	if (!IsInteractable())
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Item is not interactable!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Item is not interactable!"), *FString(__FUNCTION__));
 		return false;
 	}
 
 	if (!IsValid(InstigatorController))
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Controller is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Controller is invalid!"), *FString(__FUNCTION__));
 		return false;
 	}
 

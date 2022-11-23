@@ -51,7 +51,7 @@ bool ATartarusDisplayCase::AddToDisplay(const int32 ItemId)
 
 	if (!InventoryStackId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not display item: No slots available!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not display item: No slots available!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -60,7 +60,7 @@ bool ATartarusDisplayCase::AddToDisplay(const int32 ItemId)
 
 	if (SlotIndex == INDEX_NONE)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not display item: No slots available!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not display item: No slots available!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -73,7 +73,7 @@ bool ATartarusDisplayCase::RemoveFromDisplay(const FGuid& InventoryStackId)
 {
 	if (!InventoryComponent->Contains(InventoryStackId))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item not in inventory!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item not in inventory!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -92,7 +92,7 @@ bool ATartarusDisplayCase::RemoveFromDisplay(const FGuid& InventoryStackId)
 
 	if (SlotIndex == INDEX_NONE)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item not being displayed!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item not being displayed!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -103,7 +103,7 @@ bool ATartarusDisplayCase::RemoveFromDisplay(const FGuid& InventoryStackId)
 
 	if (!IsValid(ItemSubsystem))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item subsystem is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item subsystem is invalid!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -111,7 +111,7 @@ bool ATartarusDisplayCase::RemoveFromDisplay(const FGuid& InventoryStackId)
 
 	if (!bIsDespawned)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item not despawned!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item not despawned!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -159,7 +159,7 @@ bool ATartarusDisplayCase::ASyncRequestDisplay(const FGuid& InventoryStackId, co
 	// Check that the item to display exists in the inventory.
 	if (!InventoryComponent->Contains(InventoryStackId))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: stack not in the inventory!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: stack not in the inventory!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -168,7 +168,7 @@ bool ATartarusDisplayCase::ASyncRequestDisplay(const FGuid& InventoryStackId, co
 
 	if (!IsValid(World))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: World is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: World is invalid!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -176,7 +176,7 @@ bool ATartarusDisplayCase::ASyncRequestDisplay(const FGuid& InventoryStackId, co
 
 	if (!IsValid(ItemSubsystem))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Item subsystem is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Item subsystem is invalid!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -194,7 +194,7 @@ bool ATartarusDisplayCase::ASyncRequestDisplay(const FGuid& InventoryStackId, co
 
 	if (!ASyncRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Could not request the item data!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Could not request the item data!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -234,7 +234,7 @@ void ATartarusDisplayCase::HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray
 
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Could not find the request!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Could not find the request!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
@@ -243,7 +243,7 @@ void ATartarusDisplayCase::HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray
 
 	if (!IsValid(World))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: World is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: World is invalid!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
@@ -251,7 +251,7 @@ void ATartarusDisplayCase::HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray
 
 	if (!IsValid(ItemSubsystem))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Item subsystem is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Item subsystem is invalid!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
@@ -262,7 +262,7 @@ void ATartarusDisplayCase::HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray
 
 	if (!ASyncRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Could not request the item data!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Could not request the item data!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
@@ -279,14 +279,14 @@ void ATartarusDisplayCase::HandleItemSpawned(FGuid ASyncLoadRequestId, TArray<TW
 
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Could not find the request!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Could not find the request!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
 	// Assign the Spawned actor to the slot the request ocupies.
 	if (SpawnedItems.IsEmpty() || !SpawnedItems[0].IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: No item spawned!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: No item spawned!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 

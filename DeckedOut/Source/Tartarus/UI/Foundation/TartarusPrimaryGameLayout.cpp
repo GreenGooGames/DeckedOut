@@ -61,7 +61,7 @@ FGuid UTartarusPrimaryGameLayout::AsyncRequestPushToStack(const TSoftClassPtr<UC
 
 	if (!AssetManager.IsValid())
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -73,7 +73,7 @@ FGuid UTartarusPrimaryGameLayout::AsyncRequestPushToStack(const TSoftClassPtr<UC
 
 	if (!AsyncLoadRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -119,7 +119,7 @@ void UTartarusPrimaryGameLayout::HandleWidgetClassLoaded(FGuid ASyncLoadRequestI
 
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Push to stack failed: Could not find the request!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Push to stack failed: Could not find the request!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -127,7 +127,7 @@ void UTartarusPrimaryGameLayout::HandleWidgetClassLoaded(FGuid ASyncLoadRequestI
 
 	if (!IsValid(WidgetClass))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Push to stack failed: Class failed to load!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Push to stack failed: Class failed to load!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 
 		return;
@@ -137,7 +137,7 @@ void UTartarusPrimaryGameLayout::HandleWidgetClassLoaded(FGuid ASyncLoadRequestI
 
 	if (!IsValid(NewWidget))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Push to stack failed: Could not create the widget!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Push to stack failed: Could not create the widget!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 
 		return;

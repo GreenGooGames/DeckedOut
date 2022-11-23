@@ -50,7 +50,7 @@ void ATartarusCompass::OnEquipped(AActor* const EquippedActor)
 
 	if (!IsValid(TreasureSubsystem))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: No treasureSubsytem found!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: No treasureSubsytem found!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -58,7 +58,7 @@ void ATartarusCompass::OnEquipped(AActor* const EquippedActor)
 
 	if (!IsValid(PlayerCharacter))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: Not equipped to a player!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: Not equipped to a player!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -66,7 +66,7 @@ void ATartarusCompass::OnEquipped(AActor* const EquippedActor)
 
 	if (!IsValid(EquipableManager))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: No equipable manager on the player, how did this get called?"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: No equipable manager on the player, how did this get called?"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -74,7 +74,7 @@ void ATartarusCompass::OnEquipped(AActor* const EquippedActor)
 
 	if (!EquippableInfo)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: This item is not equipped, how did this get called?"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: This item is not equipped, how did this get called?"), *FString(__FUNCTION__));
 		return;
 	}
 

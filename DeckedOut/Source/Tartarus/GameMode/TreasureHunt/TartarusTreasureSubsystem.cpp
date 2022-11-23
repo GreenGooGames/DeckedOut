@@ -32,7 +32,7 @@ void UTartarusTreasureSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 
 	if (!IsValid(GameState))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to subscribe to the game state: No game valid state found!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to subscribe to the game state: No game valid state found!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -48,7 +48,7 @@ ATartarusTreasureChest* UTartarusTreasureSubsystem::SpawnTreasure(TSubclassOf<AT
 	
 	if (!Treasure)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to spawn the treasure!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to spawn the treasure!"), *FString(__FUNCTION__));
 		return nullptr;
 	}
 
@@ -61,13 +61,13 @@ bool UTartarusTreasureSubsystem::LinkKeyToTreasure(const FGuid KeyInventoryStack
 {
 	if (!KeyInventoryStackId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link a key to treasure: KeyInventoryStackId was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link a key to treasure: KeyInventoryStackId was invalid!"), *FString(__FUNCTION__));
 		return false;
 	}
 
 	if (!IsValid(Treasure))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link a key to treasure: Treasure was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link a key to treasure: Treasure was invalid!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -80,7 +80,7 @@ void UTartarusTreasureSubsystem::HandleOnTreasureLooted(ATartarusTreasureChest* 
 {
 	if (!IsValid(LootedTreasure))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: The treasure is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: The treasure is invalid!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -108,7 +108,7 @@ void UTartarusTreasureSubsystem::HandleGameRunningStateChanged(ETreasureHuntStat
 
 		if (!IsValid(PlayerController))
 		{
-			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No player in the world!"), __FUNCTION__);
+			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No player in the world!"), *FString(__FUNCTION__));
 			return;
 		}
 
@@ -116,7 +116,7 @@ void UTartarusTreasureSubsystem::HandleGameRunningStateChanged(ETreasureHuntStat
 
 		if (!IsValid(Inventory))
 		{
-			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No inventory on player!"), __FUNCTION__);
+			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No inventory on player!"), *FString(__FUNCTION__));
 			return;
 		}
 
@@ -196,7 +196,7 @@ FGuid UTartarusTreasureSubsystem::AsyncRequestSpawnAndLink(const FGuid KeyInvent
 	// Is the Key valid?
 	if (!KeyInventoryStackId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Request failed: The Key is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Request failed: The Key is invalid!"), *FString(__FUNCTION__));
 
 		return FGuid();
 	}
@@ -206,7 +206,7 @@ FGuid UTartarusTreasureSubsystem::AsyncRequestSpawnAndLink(const FGuid KeyInvent
 	
 	if (!SpawnPointData)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Request failed: No valid spawn point found!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Request failed: No valid spawn point found!"), *FString(__FUNCTION__));
 		
 		return FGuid();
 	}
@@ -216,7 +216,7 @@ FGuid UTartarusTreasureSubsystem::AsyncRequestSpawnAndLink(const FGuid KeyInvent
 	
 	if (!AssetManager.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Request failed: Asset manager was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Request failed: Asset manager was invalid!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 	
@@ -228,7 +228,7 @@ FGuid UTartarusTreasureSubsystem::AsyncRequestSpawnAndLink(const FGuid KeyInvent
 
 	if (!AsyncLoadRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 	
@@ -281,7 +281,7 @@ void UTartarusTreasureSubsystem::HandleTreasureClassLoaded(FGuid ASyncLoadReques
 
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Treasure failed: Could not find the request!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Treasure failed: Could not find the request!"), *FString(__FUNCTION__));
 
 		return;
 	}
@@ -291,7 +291,7 @@ void UTartarusTreasureSubsystem::HandleTreasureClassLoaded(FGuid ASyncLoadReques
 
 	if (!IsValid(TreasureClass.Get()))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Treasure failed: Class failed to load!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Treasure failed: Class failed to load!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 
 		return;
@@ -303,7 +303,7 @@ void UTartarusTreasureSubsystem::HandleTreasureClassLoaded(FGuid ASyncLoadReques
 
 	if (!IsValid(Treasure))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to spawn Treasure: Could not spawn in the world!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to spawn Treasure: Could not spawn in the world!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 
 		return;
@@ -317,7 +317,7 @@ void UTartarusTreasureSubsystem::HandleTreasureClassLoaded(FGuid ASyncLoadReques
 
 	if (!IsValid(PlayerController))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to Treasure: No player in the world!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to Treasure: No player in the world!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 
 		return;
@@ -327,7 +327,7 @@ void UTartarusTreasureSubsystem::HandleTreasureClassLoaded(FGuid ASyncLoadReques
 
 	if(!IsValid(Inventory))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to Treasure: No inventory on player!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to Treasure: No inventory on player!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 
 		return;
@@ -336,7 +336,7 @@ void UTartarusTreasureSubsystem::HandleTreasureClassLoaded(FGuid ASyncLoadReques
 	// [Koen Goossens] TODO: Chest shouldn't spawn if there is no key in the inventory;
 	if (!Inventory->Contains(CurrentRequest->GetKeyInventoryStackId()))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to Treasure: Inventory doesn't have the key!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to Treasure: Inventory doesn't have the key!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 
 		return;
@@ -347,7 +347,7 @@ void UTartarusTreasureSubsystem::HandleTreasureClassLoaded(FGuid ASyncLoadReques
 	
 	if (!bIsLinked)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to treasure: Could not establish a link!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to treasure: Could not establish a link!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 
 		return;

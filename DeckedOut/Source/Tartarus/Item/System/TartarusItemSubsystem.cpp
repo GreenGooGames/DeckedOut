@@ -89,7 +89,7 @@ bool UTartarusItemSubsystem::DespawnItem(ATartarusItemBase* const ToDespawn)
 {
 	if (!IsValid(ToDespawn))
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to despawn item: The item was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to despawn item: The item was invalid!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -97,7 +97,7 @@ bool UTartarusItemSubsystem::DespawnItem(ATartarusItemBase* const ToDespawn)
 
 	if (RemovedIndex == INDEX_NONE)
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to despawn item: The item was not found in the instance list!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to despawn item: The item was not found in the instance list!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -122,7 +122,7 @@ TWeakObjectPtr<ATartarusItemBase> UTartarusItemSubsystem::SpawnItem(const TSubcl
 
 	if (!ItemInstance)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to spawn an item!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to spawn an item!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -140,7 +140,7 @@ FGuid UTartarusItemSubsystem::AsyncRequestSpawnItems(const TArray<FDataTableRowH
 
 	if (!AssetManager.IsValid())
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -155,7 +155,7 @@ FGuid UTartarusItemSubsystem::AsyncRequestSpawnItems(const TArray<FDataTableRowH
 
 		if (!ItemRow)
 		{
-			UE_LOG(LogTartarus, Log, TEXT("%s: Failed to include handle for async loading: RowHandle does not reference an item!"), __FUNCTION__);
+			UE_LOG(LogTartarus, Log, TEXT("%s: Failed to include handle for async loading: RowHandle does not reference an item!"), *FString(__FUNCTION__));
 			continue;
 		}
 
@@ -172,7 +172,7 @@ FGuid UTartarusItemSubsystem::AsyncRequestSpawnItems(const TArray<FDataTableRowH
 
 	if (!AsyncLoadRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: No async load started!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: No async load started!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -188,7 +188,7 @@ FGuid UTartarusItemSubsystem::AsyncRequestSpawnItems(const TArray<FItemTableRow>
 
 	if (!AssetManager.IsValid())
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -211,7 +211,7 @@ FGuid UTartarusItemSubsystem::AsyncRequestSpawnItems(const TArray<FItemTableRow>
 
 	if (!AsyncLoadRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: No async load started!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: No async load started!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -241,7 +241,7 @@ void UTartarusItemSubsystem::HandleItemsLoaded(FGuid ASyncLoadRequestId, TShared
 
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Item failed: Could not find the request!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Item failed: Could not find the request!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -282,7 +282,7 @@ FGuid UTartarusItemSubsystem::AsyncRequestGetItemsData(const TArray<int32>& Item
 
 	if (!AssetManager.IsValid())
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -299,7 +299,7 @@ FGuid UTartarusItemSubsystem::AsyncRequestGetItemsData(const TArray<int32>& Item
 
 	if (!AsyncLoadRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: No async load started!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: No async load started!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -329,7 +329,7 @@ void UTartarusItemSubsystem::HandleItemsDataTableLoaded(FGuid ASyncLoadRequestId
 
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Item failed: Could not find the request!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Item failed: Could not find the request!"), *FString(__FUNCTION__));
 		return;
 	}
 

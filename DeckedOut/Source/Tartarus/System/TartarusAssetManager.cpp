@@ -27,7 +27,7 @@ FGuid UTartarusAssetManager::AsyncRequestLoadAsset(const FSoftObjectPath& Target
 	
 	if (!Handle.IsValid())
 	{
-		UE_LOG(LogTartarus, Fatal, TEXT("%s: Request failed: Could not start loading the asset!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Fatal, TEXT("%s: Request failed: Could not start loading the asset!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -46,7 +46,7 @@ FGuid UTartarusAssetManager::AsyncRequestLoadAssets(TArray<FSoftObjectPath> Targ
 
 	if (!Handle.IsValid())
 	{
-		UE_LOG(LogTartarus, Fatal, TEXT("%s: Request failed: Could not start loading the asset!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Fatal, TEXT("%s: Request failed: Could not start loading the asset!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 

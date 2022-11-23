@@ -32,7 +32,7 @@ bool ATartarusTreasureChest::StartInteraction(const TObjectPtr<AController> Inst
 
 	if (!Player)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Interaction failed: Instigator was not a player!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Interaction failed: Instigator was not a player!"), *FString(__FUNCTION__));
 		return false;
 	}
 

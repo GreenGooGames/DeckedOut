@@ -5,6 +5,6 @@
 #include "CoreMinimal.h"
 #include "Logging/LogMacros.h"
 
-// UE_LOG(LogTartarus, Log, TEXT("%s: description"), __FUNCTION__);
+// UE_LOG(LogTartarus, Log, TEXT("%s: description"), *FString(__FUNCTION__));
 TARTARUS_API DECLARE_LOG_CATEGORY_EXTERN(LogTartarus, Log, All);
 

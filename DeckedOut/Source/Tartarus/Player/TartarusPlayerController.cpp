@@ -47,7 +47,7 @@ void ATartarusPlayerController::ShowPrimaryGameLayoutASync()
 
 	if (!AssetManager.IsValid())
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to show GameLayout: AssetManager is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to show GameLayout: AssetManager is invalid!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -59,7 +59,7 @@ void ATartarusPlayerController::ShowPrimaryGameLayoutASync()
 
 	if (!AsyncLoadRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show GameLayout: Could not start async load!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show GameLayout: Could not start async load!"), *FString(__FUNCTION__));
 		return;
 	}
 }
@@ -69,7 +69,7 @@ void ATartarusPlayerController::HandleGameLayoutLoaded(FGuid ASyncLoadRequestId,
 
 	if (!IsValid(PrimaryGameLayoutClassRaw))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show GameLayout: Loaded class was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show GameLayout: Loaded class was invalid!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -77,7 +77,7 @@ void ATartarusPlayerController::HandleGameLayoutLoaded(FGuid ASyncLoadRequestId,
 
 	if (!IsValid(PrimaryGameLayoutInstance))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show GameLayout: Could not instantiate the widget!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show GameLayout: Could not instantiate the widget!"), *FString(__FUNCTION__));
 		return;
 	}
 

@@ -15,7 +15,7 @@ void FEquipmentInfo::SetInventoryItemStackId(const FGuid& InventoryStackIdRefere
 {
 	if (InventoryStackId.IsValid())
 	{
-		UE_LOG(LogTartarus, Error, TEXT("%s: Overwritting a valid InventoryStackId!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Error, TEXT("%s: Overwritting a valid InventoryStackId!"), *FString(__FUNCTION__));
 	}
 
 	InventoryStackId = InventoryStackIdReference;
@@ -54,7 +54,7 @@ void UTartarusEquipableManager::BeginPlay()
 	// Check if the slots are setup.
 	if (EquipmentSlots.IsEmpty())
 	{
-		UE_LOG(LogTartarus, Error, TEXT("%s: Equipment mapping is not setup!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Error, TEXT("%s: Equipment mapping is not setup!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -65,7 +65,7 @@ void UTartarusEquipableManager::BeginPlay()
 	
 	if (!IsValid(Controller))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to retrieve controller!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to retrieve controller!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -73,7 +73,7 @@ void UTartarusEquipableManager::BeginPlay()
 
 	if(!IsValid(Inventory))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not find inventory!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not find inventory!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -220,7 +220,7 @@ bool UTartarusEquipableManager::ASyncRequestEquip(const FGuid& InventoryStackId,
 	const EEquipmentSlot AvailableSlot = FindAvailableRequestedSlot(SlotName);
 	if (AvailableSlot == EEquipmentSlot::None)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: All slots are used!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: All slots are used!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -230,14 +230,14 @@ bool UTartarusEquipableManager::ASyncRequestEquip(const FGuid& InventoryStackId,
 
 	if (!IsValid(Inventory))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: inventory is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: inventory is invalid!"), *FString(__FUNCTION__));
 		return false;
 	}
 
 	// Check that the item to equip exists in the inventory.
 	if (!Inventory->Contains(InventoryStackId))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Item stack not in the inventory!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Item stack not in the inventory!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -246,7 +246,7 @@ bool UTartarusEquipableManager::ASyncRequestEquip(const FGuid& InventoryStackId,
 
 	if (!IsValid(World))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: World is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: World is invalid!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -254,7 +254,7 @@ bool UTartarusEquipableManager::ASyncRequestEquip(const FGuid& InventoryStackId,
 
 	if (!IsValid(ItemSubsystem))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Item subsystem is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Item subsystem is invalid!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -272,7 +272,7 @@ bool UTartarusEquipableManager::ASyncRequestEquip(const FGuid& InventoryStackId,
 
 	if (!ASyncRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Could not request the item data!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Could not request the item data!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -312,7 +312,7 @@ void UTartarusEquipableManager::HandleItemDataLoaded(FGuid ASyncLoadRequestId, T
 
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Could not find the request!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Could not find the request!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
@@ -321,7 +321,7 @@ void UTartarusEquipableManager::HandleItemDataLoaded(FGuid ASyncLoadRequestId, T
 
 	if (!IsValid(World))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: World is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: World is invalid!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
@@ -329,7 +329,7 @@ void UTartarusEquipableManager::HandleItemDataLoaded(FGuid ASyncLoadRequestId, T
 
 	if (!IsValid(ItemSubsystem))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Item subsystem is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Item subsystem is invalid!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
@@ -340,7 +340,7 @@ void UTartarusEquipableManager::HandleItemDataLoaded(FGuid ASyncLoadRequestId, T
 
 	if (!ASyncRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Could not request the item data!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Could not request the item data!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
@@ -357,14 +357,14 @@ void UTartarusEquipableManager::HandleItemSpawned(FGuid ASyncLoadRequestId, TArr
 
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Could not find the request!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Could not find the request!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
 	// Assign the Spawned actor to the slot the request ocupies.
 	if (SpawnedItems.IsEmpty() || !SpawnedItems[0].IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: No item spawned!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: No item spawned!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
@@ -372,7 +372,7 @@ void UTartarusEquipableManager::HandleItemSpawned(FGuid ASyncLoadRequestId, TArr
 
 	if (!EquipableInterface)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Spawned item is not an equipable item!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Spawned item is not an equipable item!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 

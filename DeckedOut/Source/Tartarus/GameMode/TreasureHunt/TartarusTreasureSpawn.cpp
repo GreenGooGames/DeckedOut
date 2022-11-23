@@ -46,7 +46,7 @@ void ATartarusTreasureSpawn::BeginPlay()
 
 	if (!IsValid(TreasureSubsystem))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to find UTartarusTreasureSubsystem in world!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to find UTartarusTreasureSubsystem in world!"), *FString(__FUNCTION__));
 		return;
 	}
 

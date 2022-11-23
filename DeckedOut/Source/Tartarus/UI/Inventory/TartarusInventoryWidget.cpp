@@ -34,7 +34,7 @@ void UTartarusInventoryWidget::ConstructInventoryView()
 
 	if (!IsValid(PlayerController))
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: No player controller!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: No player controller!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -42,7 +42,7 @@ void UTartarusInventoryWidget::ConstructInventoryView()
 
 	if (!IsValid(InventoryComponent))
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: No inventory found!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: No inventory found!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -55,7 +55,7 @@ void UTartarusInventoryWidget::ConstructInventoryView()
 
 		if (!IsValid(SlotWidget))
 		{
-			UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create an instance of Inventory Tile view!"), __FUNCTION__);
+			UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create an instance of Inventory Tile view!"), *FString(__FUNCTION__));
 			continue;
 		}
 
@@ -69,7 +69,7 @@ void UTartarusInventoryWidget::UpdateSlotDisplays()
 
 	if (!IsValid(PlayerController))
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Setup inventory view failed: No player controller!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Setup inventory view failed: No player controller!"), *FString(__FUNCTION__));
 		return;
 	}
 	
@@ -77,7 +77,7 @@ void UTartarusInventoryWidget::UpdateSlotDisplays()
 
 	if (!IsValid(InventoryComponent))
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Setup inventory view failed: No inventory found!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Setup inventory view failed: No inventory found!"), *FString(__FUNCTION__));
 		return;
 	}
 	
@@ -90,7 +90,7 @@ void UTartarusInventoryWidget::UpdateSlotDisplays()
 
 		if (!IsValid(SlotWidget))
 		{
-			UE_LOG(LogTartarus, Log, TEXT("%s: Setup inventory view failed: No tile found!"), __FUNCTION__);
+			UE_LOG(LogTartarus, Log, TEXT("%s: Setup inventory view failed: No tile found!"), *FString(__FUNCTION__));
 			continue;
 		}
 
@@ -118,14 +118,14 @@ void UTartarusInventoryWidget::RegisterBoundInputActions()
 void UTartarusInventoryWidget::HandleSelectAction()
 {
 #if WITH_EDITOR
-	GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Green, FString(__FUNCTION__));
+	GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Green, FString(*FString(__FUNCTION__)));
 #endif
 }
 
 void UTartarusInventoryWidget::HandleSortAction()
 {
 #if WITH_EDITOR
-	GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Green, FString(__FUNCTION__));
+	GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Green, FString(*FString(__FUNCTION__)));
 #endif
 }
 #pragma endregion
@@ -138,7 +138,7 @@ FGuid UTartarusInventoryWidget::AsyncRequestSetDisplayTexture(UTartarusInventory
 	
 	if (!IsValid(ItemSubsystem))
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: ItemSubsystem was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: ItemSubsystem was invalid!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -157,7 +157,7 @@ FGuid UTartarusInventoryWidget::AsyncRequestSetDisplayTexture(UTartarusInventory
 		
 	if (!AsyncLoadRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 	
@@ -202,14 +202,14 @@ void UTartarusInventoryWidget::HandleItemsDataLoaded(FGuid ASyncLoadRequestId, T
 
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: Could not find the request!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: Could not find the request!"), *FString(__FUNCTION__));
 		return;
 	}
 
 	// Verify that the correct item is loaded.
 	if (ItemsData.IsEmpty() || ItemsData[0].UniqueItemId != CurrentRequest->GetItemId())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: No items loaded or the wrong item got loaded.!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: No items loaded or the wrong item got loaded.!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 
 		return;
@@ -223,7 +223,7 @@ void UTartarusInventoryWidget::HandleItemsDataLoaded(FGuid ASyncLoadRequestId, T
 
 	 if (!AsyncLoadRequestId.IsValid())
 	 {
-		 UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), __FUNCTION__);
+		 UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), *FString(__FUNCTION__));
 		 HandleRequestFailed(CurrentRequest);
 
 		 return;
@@ -239,7 +239,7 @@ FGuid UTartarusInventoryWidget::AsyncRequestLoadTexture(const FItemTableRow& Ite
 
 	if (!AssetManager.IsValid())
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to load texture: Asset Manager was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to load texture: Asset Manager was invalid!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -252,7 +252,7 @@ FGuid UTartarusInventoryWidget::AsyncRequestLoadTexture(const FItemTableRow& Ite
 
 	if (!AsyncLoadRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to load texture: could not start loading texture!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to load texture: could not start loading texture!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -269,7 +269,7 @@ void UTartarusInventoryWidget::HandleTextureLoaded(FGuid ASyncLoadRequestId, TSh
 
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: Could not find the request!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: Could not find the request!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 		
 		return;
@@ -277,7 +277,7 @@ void UTartarusInventoryWidget::HandleTextureLoaded(FGuid ASyncLoadRequestId, TSh
 
 	if (!IsValid(CurrentRequest->GetWidget().Get()))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: Widget was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: Widget was invalid!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 		
 		return;
@@ -287,7 +287,7 @@ void UTartarusInventoryWidget::HandleTextureLoaded(FGuid ASyncLoadRequestId, TSh
 
 	if (!IsValid(Texture))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: Texture was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: Texture was invalid!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 		
 		return;

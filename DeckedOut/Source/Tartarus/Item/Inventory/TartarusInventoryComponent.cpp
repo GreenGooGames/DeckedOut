@@ -39,13 +39,13 @@ FGuid UTartarusInventoryComponent::StoreItem(const int32 ItemId, const int32 Sta
 	// Verify the given parameters.
 	if (ItemId == FTartarusHelpers::InvalidItemId)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the item: ItemId was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the item: ItemId was invalid!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
 	if (StackSize <= 0)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the item: StackSize was  <= 0 !"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the item: StackSize was  <= 0 !"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -65,7 +65,7 @@ FGuid UTartarusInventoryComponent::StoreItem(const int32 ItemId, const int32 Sta
 
 		if (SlotIndex == INDEX_NONE)
 		{
-			UE_LOG(LogTartarus, Log, TEXT("%s: Unable to store the item: Inventory is full!"), __FUNCTION__);
+			UE_LOG(LogTartarus, Log, TEXT("%s: Unable to store the item: Inventory is full!"), *FString(__FUNCTION__));
 			return FGuid();
 		}
 
@@ -85,7 +85,7 @@ bool UTartarusInventoryComponent::RetrieveItem(const int32 ItemId, const int32 S
 	// Verify the given ItemId.
 	if (ItemId == FTartarusHelpers::InvalidItemId)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to retrieve the item: ItemId was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to retrieve the item: ItemId was invalid!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -100,7 +100,7 @@ bool UTartarusInventoryComponent::RetrieveItem(const FGuid& StackId, const int32
 	// Verify the given StackId.
 	if (!StackId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to retrieve the item: ItemId was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to retrieve the item: ItemId was invalid!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -213,14 +213,14 @@ bool UTartarusInventoryComponent::ReduceStack(const int32 SlotIndex, const int32
 	// Verify that a correct slot is given.
 	if (SlotIndex == INDEX_NONE)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to reduce stack: the item was not stored in the inventory!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to reduce stack: the item was not stored in the inventory!"), *FString(__FUNCTION__));
 		return false;
 	}
 
 	// Verify that an valid attempt is being made to reduce the stack and not increase it.
 	if (StackSize <= 0)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to reduce stack: StackSize to reduce with was  <= 0 !"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to reduce stack: StackSize to reduce with was  <= 0 !"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -229,7 +229,7 @@ bool UTartarusInventoryComponent::ReduceStack(const int32 SlotIndex, const int32
 
 	if (StoredStackSize < StackSize)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to reduce stack:: trying to retrieve more items than there are stored!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to reduce stack:: trying to retrieve more items than there are stored!"), *FString(__FUNCTION__));
 		return false;
 	}
 
