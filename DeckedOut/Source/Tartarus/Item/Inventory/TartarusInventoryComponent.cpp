@@ -180,7 +180,7 @@ bool UTartarusInventoryComponent::Contains(const FGuid StackId) const
 
 int32 UTartarusInventoryComponent::FindSlot(const int32 ItemId) const
 {
-	for (int32 i = 0; i < InventorySlots.Num() - 1; i++)
+	for (int32 i = 0; i < InventorySlots.Num(); i++)
 	{
 		const FInventoryItemStack& Stack = InventorySlots[i];
 
@@ -195,7 +195,7 @@ int32 UTartarusInventoryComponent::FindSlot(const int32 ItemId) const
 
 int32 UTartarusInventoryComponent::FindSlot(const FGuid& StackId) const
 {
-	for (int32 i = 0; i < InventorySlots.Num() - 1; i++)
+	for (int32 i = 0; i < InventorySlots.Num(); i++)
 	{
 		const FInventoryItemStack& Stack = InventorySlots[i];
 

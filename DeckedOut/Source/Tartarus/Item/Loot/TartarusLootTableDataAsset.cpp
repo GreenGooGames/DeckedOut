@@ -11,7 +11,7 @@ TArray<FDataTableRowHandle> UTartarusLootTableDataAsset::GetLoot()
 	// Gather all potential candidates.
 	TMap<int32, int32> LootCandidates; // <Index, MaxWeight>
 
-	for (int32 i = 0; i <= Candidates.Num() - 1; i++)
+	for (int32 i = 0; i < Candidates.Num(); i++)
 	{
 		FLootTableEntry& Candidate = Candidates[i];
 

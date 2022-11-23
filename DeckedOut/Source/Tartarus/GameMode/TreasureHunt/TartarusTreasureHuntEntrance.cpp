@@ -29,7 +29,6 @@ void ATartarusTreasureHuntEntrance::HandleStateChanged(const EDoorState NewState
 		return;
 	}
 
-	// [Koen Goossens] TODO: Does this work for multiplayer?
 	// Is the game mode correct?
 	ATartarusTreasureHuntGameMode* const GameMode = GetWorld()->GetAuthGameMode<ATartarusTreasureHuntGameMode>();
 
