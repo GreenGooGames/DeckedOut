@@ -21,6 +21,13 @@ ATartarusTreasureHuntEntrance::ATartarusTreasureHuntEntrance()
 
 bool ATartarusTreasureHuntEntrance::CanChangeState(const EDoorState NewState) const
 {
+	const bool bIsDifferentState = Super::CanChangeState(NewState);
+
+	if (!bIsDifferentState)
+	{
+		return false;
+	}
+
 	// To change the state from Closed --> Open, a treasure hunt has to be activated.
 	if (NewState == EDoorState::Open)
 	{

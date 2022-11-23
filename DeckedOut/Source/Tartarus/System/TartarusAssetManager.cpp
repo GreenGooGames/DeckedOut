@@ -60,6 +60,22 @@ FGuid UTartarusAssetManager::AsyncRequestLoadAssets(TArray<FSoftObjectPath> Targ
 
 }
 
+void UTartarusAssetManager::CancelRequest(const FGuid& RequestId)
+{
+	for (auto It = AsyncLoadRequests.CreateIterator(); It; ++It)
+	{
+		FAsyncLoadAssetRequest& CurrentRequest = AsyncLoadRequests[It.GetIndex()];
+
+		if (CurrentRequest.GetRequestId() == RequestId)
+		{
+			CurrentRequest.AssetHandle.Get()->CancelHandle();
+
+			It.RemoveCurrent();
+		}
+	}
+
+}
+
 void UTartarusAssetManager::HandleAssetLoaded()
 {
 	for (auto It = AsyncLoadRequests.CreateIterator(); It; ++It)

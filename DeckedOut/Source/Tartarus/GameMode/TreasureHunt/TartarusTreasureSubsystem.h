@@ -107,6 +107,8 @@ public:
 protected:
 	FSpawnPointData* FindAvailableSpawnpoint();
 
+	void ClearSpawnPoint(FSpawnPointData& SpawnPoint);
+
 private:
 	TArray<FSpawnPointData> SpawnPoints;
 #pragma endregion
@@ -126,9 +128,11 @@ protected:
 	// Notifies the requester that the request failed and removes the request from the queue.
 	void HandleRequestFailed(const FTreasureSpawnRequestInfo* const FailedRequest);
 
-
 	// Called when the AssetManager finishes loading the TreasureClass.
 	void HandleTreasureClassLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle);
+
+	// Cancels all active Async requests.
+	void CancelASyncRequests();
 
 private:
 	TArray<FTreasureSpawnRequestInfo> SpawnAndLinkRequests;

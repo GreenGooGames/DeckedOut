@@ -46,7 +46,10 @@ bool ATartarusDoor::ChangeState(const EDoorState NewState)
 
 bool ATartarusDoor::CanChangeState(const EDoorState NewState) const
 {
-	return true;
+	// Do not attempt to change the state if the new state is the same as the current state.
+	const bool bCanChangeState = DoorState != NewState;
+
+	return bCanChangeState;
 }
 
 void ATartarusDoor::HandleStateChanged(const EDoorState NewState, AController* const InstigatorController)

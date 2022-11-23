@@ -44,6 +44,9 @@ public:
 	FGuid AsyncRequestLoadAsset(const FSoftObjectPath& TargetToLoad, const FAsyncLoadAssetRequestCompletedEvent& OnRequestCompletedEvent);
 	FGuid AsyncRequestLoadAssets(TArray<FSoftObjectPath> TargetsToLoad, const FAsyncLoadAssetRequestCompletedEvent& OnRequestCompletedEvent);
 
+	// Cancels the request matching the RequestId.
+	void CancelRequest(const FGuid& RequestId);
+
 protected:
 	// Callback to when any asset is loaded.
 	void HandleAssetLoaded();

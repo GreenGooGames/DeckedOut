@@ -91,10 +91,7 @@ void UTartarusTreasureSubsystem::HandleOnTreasureLooted(ATartarusTreasureChest* 
 			continue;
 		}
 
-		SpawnPoint.bIsAvailable = true;
-		SpawnPoint.Treasure = nullptr;
-
-		LootedTreasure->Destroy();
+		ClearSpawnPoint(SpawnPoint);
 	}
 }
 
@@ -134,6 +131,17 @@ void UTartarusTreasureSubsystem::HandleGameRunningStateChanged(ETreasureHuntStat
 				AsyncRequestSpawnAndLink(ItemStack->GetStackId(), OnRequestCompleted);
 			}
 		}
+	}
+	// Despawn all treasure when the treasure hunt ends.
+	else if (NewState == ETreasureHuntState::Inactive)
+	{
+		// Clear all data associated with spawned treasures.
+		for (FSpawnPointData& SpawnPoint : SpawnPoints)
+		{
+			ClearSpawnPoint(SpawnPoint);
+		}
+
+		CancelASyncRequests();
 	}
 }
 
@@ -187,6 +195,17 @@ FSpawnPointData* UTartarusTreasureSubsystem::FindAvailableSpawnpoint()
 	}
 
 	return AvailablePoints[FMath::RandRange(0, AvailablePoints.Num() - 1)];
+}
+
+void UTartarusTreasureSubsystem::ClearSpawnPoint(FSpawnPointData& SpawnPoint)
+{
+	SpawnPoint.bIsAvailable = true;
+
+	if (IsValid(SpawnPoint.Treasure))
+	{
+		SpawnPoint.Treasure->Destroy();
+		SpawnPoint.Treasure = nullptr;
+	}
 }
 #pragma endregion
 
@@ -354,5 +373,24 @@ void UTartarusTreasureSubsystem::HandleTreasureClassLoaded(FGuid ASyncLoadReques
 	}
 	
 	HandleRequestSuccess(CurrentRequest);
+}
+
+void UTartarusTreasureSubsystem::CancelASyncRequests()
+{
+	// Clear all ongoing AsyncRequests.
+	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
+
+	if (AssetManager.IsValid())
+	{
+		for (const FTreasureSpawnRequestInfo& AsyncRequest : SpawnAndLinkRequests)
+		{
+			AssetManager.CancelRequest(AsyncRequest.GetASyncLoadRequestId());
+
+			// Notify any listeners that the request got canceled (/failed).
+			HandleRequestFailed(&AsyncRequest);
+		}
+	}
+
+	SpawnAndLinkRequests.Empty();
 }
 #pragma endregion
