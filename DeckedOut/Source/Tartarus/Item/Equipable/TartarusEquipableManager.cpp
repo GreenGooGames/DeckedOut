@@ -103,8 +103,7 @@ bool UTartarusEquipableManager::Unequip(const FGuid& InventoryStackId)
 		const FDetachmentTransformRules DetachmentRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, true);	
 		ToUnequip->DetachFromActor(DetachmentRules);
 
-		// [Koen Goossens] TODO: Magic Number 100.
-		ToUnequip->SetActorLocation(ToUnequip->GetActorLocation() + ToUnequip->GetActorForwardVector() * 100);
+		ToUnequip->SetActorLocation(ToUnequip->GetActorLocation() + GetOwner<AActor>()->GetActorForwardVector() * UnequipDistance);
 
 		ITartarusEquipableInterface* const EquipableInterface = Cast<ITartarusEquipableInterface>(ToUnequip);
 		if (EquipableInterface)

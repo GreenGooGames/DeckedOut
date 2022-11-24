@@ -108,6 +108,10 @@ public:
 	const FEquipmentInfo* FindEquippedItem(const ATartarusItemBase* const ToFindItem) const;
 
 protected:
+	// How far away should the equipped object be moved to from the player when unequipping it.
+	UPROPERTY(EditDefaultsOnly)
+		float UnequipDistance = 250.0f;
+
 	// All possible slots with related data.
 	UPROPERTY(EditDefaultsOnly)
 		TMap<EEquipmentSlot, FEquipmentInfo> EquipmentSlots;
