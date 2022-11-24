@@ -17,25 +17,27 @@ class TARTARUS_API ATartarusTreasureHuntGameMode : public ATartarusGameMode
 	GENERATED_BODY()
 	
 public:
-	void StartTreasureHunt() const;
-	void StopTreasureHunt() const;
+	void StartTreasureHunt();
+	void StopTreasureHunt();
 
 protected:
-	// Compass to be gifted to the players when a treasure hunt starts.
+	// TreasureKey item handle to be gifted to the players when a treasure hunt starts.
 	UPROPERTY(EditDefaultsOnly)
-		FDataTableRowHandle StarterCompass;
+		FDataTableRowHandle StarterTreasureKeyHandle;
 
-	// Number of compasses to gift when the treasure hunt starts per player.
-	UPROPERTY(EditDefaultsOnly)
-		int32 NumGiftCompasses = 0;
-
-	// Slot to auto-equip the compass to when received.
+	// Slot to auto-equip the treasure key to when received.
 	UPROPERTY(EditDefaultsOnly, meta = (Bitmask, BitmaskEnum = "EEquipmentSlot"))
-		uint8 AutoEquipCompassSlotMask;
+		uint8 AutoEquipTreasureKeySlotMask;
+
+	// Stack count of the treasure key to gift. Should always be 1 for a unique.
+	const int32 GiftTreasureKeyStackCount = 1;
+
+	// Inventory ID of the gifted treasure key to remove if the player leaves the dungeon without using it.
+	FGuid GiftedTreasureKeyInventoryId;
 
 	/*
 	* Stores starter items into the player inventory.
 	* Return: True if the items are given. False if the items could not be gifted. (ex: lack of inventory space)
 	*/
-	bool GiftStarterItems(const AController* const PlayerController) const;
+	bool GiftStarterItems(const AController* const PlayerController);
 };

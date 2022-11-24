@@ -10,7 +10,7 @@
 #include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
 
-void ATartarusTreasureHuntGameMode::StartTreasureHunt() const
+void ATartarusTreasureHuntGameMode::StartTreasureHunt()
 {
 	// Change the game state to indicate the treasure hunt has started.
 	ATartarusTreasureHuntGameState* const TreasureHuntGameState = Cast<ATartarusTreasureHuntGameState>(GameState);
@@ -37,7 +37,7 @@ void ATartarusTreasureHuntGameMode::StartTreasureHunt() const
 	TreasureHuntGameState->ChangeTreasureHuntState(ETreasureHuntState::Active);
 }
 
-void ATartarusTreasureHuntGameMode::StopTreasureHunt() const
+void ATartarusTreasureHuntGameMode::StopTreasureHunt()
 {
 	// Change the game state to indicate the treasure hunt has ended.
 	ATartarusTreasureHuntGameState* const TreasureHuntGameState = Cast<ATartarusTreasureHuntGameState>(GameState);
@@ -48,9 +48,27 @@ void ATartarusTreasureHuntGameMode::StopTreasureHunt() const
 	}
 
 	TreasureHuntGameState->ChangeTreasureHuntState(ETreasureHuntState::Inactive);
+
+	// Remove all gifted items from the player inventory.
+	const AController* const PlayerController = GetWorld()->GetFirstPlayerController();
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove gifted items: No player found."), *FString(__FUNCTION__));
+		return;
+	}
+
+	UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
+	if (!IsValid(Inventory))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove gifted items: No inventory found.!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	Inventory->RetrieveItem(GiftedTreasureKeyInventoryId, GiftTreasureKeyStackCount);
 }
 
-bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const PlayerController) const
+#pragma optimize("", off)
+bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const PlayerController)
 {
 	// Get the player ivnentory.
 	UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
@@ -62,7 +80,7 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 	}
 
 	FString ContextString = "";
-	FItemTableRow* const ItemRow = StarterCompass.GetRow<FItemTableRow>(ContextString);
+	FItemTableRow* const ItemRow = StarterTreasureKeyHandle.GetRow<FItemTableRow>(ContextString);
 
 	if (!ItemRow)
 	{
@@ -70,16 +88,15 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 		return false;
 	}
 
-	const FGuid StackId = Inventory->StoreItem(ItemRow->UniqueItemId, NumGiftCompasses);
-
-	// [Koen Goossens] TODO: If the compass cannot be gifted, then the interaction should fail and the door should not open.
-	if (!StackId.IsValid())
+	// TreasureKeys are unique, a StackCount > 1 will result in failure. (If multiple uniques need to be gifted, split them up in an array)
+	GiftedTreasureKeyInventoryId = Inventory->StoreItem(ItemRow->UniqueItemId, GiftTreasureKeyStackCount);
+	if (!GiftedTreasureKeyInventoryId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not store the item in the inventory!"), *FString(__FUNCTION__));
 		return false;
 	}
 
-	// Optional: Auto-equip the compass.
+	// Optional: Auto-equip the Treasure Key.
 	UTartarusEquipableManager* const EquipableManager = PlayerController->GetPawn()->FindComponentByClass<UTartarusEquipableManager>();
 
 	if (!IsValid(EquipableManager))
@@ -88,8 +105,15 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 	}
 	else
 	{
-		bool bIsTryingToEquip = EquipableManager->ASyncRequestEquip(StackId, StaticCast<EEquipmentSlot>(AutoEquipCompassSlotMask));
+		// Try to equip the Treasure Key, but if it fails itys no issue as it still exists in the inventory which is all that really matters.
+		bool bIsTryingToEquip = EquipableManager->ASyncRequestEquip(GiftedTreasureKeyInventoryId, StaticCast<EEquipmentSlot>(AutoEquipTreasureKeySlotMask));
+
+		if (!bIsTryingToEquip)
+		{
+			UE_LOG(LogTartarus, Warning, TEXT("%s: Could not auto-equip the gift item: Request failed!"), *FString(__FUNCTION__));
+		}
 	}
 
 	return true;
 }
+#pragma optimize("", on)

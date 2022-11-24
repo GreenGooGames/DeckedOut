@@ -34,6 +34,7 @@ void UTartarusInventoryComponent::BeginPlay()
 	InventorySlots.SetNum(NumberOfSlots);
 }
 
+#pragma optimize("", off)
 FGuid UTartarusInventoryComponent::StoreItem(const int32 ItemId, const int32 StackSize)
 {
 	// Verify the given parameters.
@@ -49,8 +50,14 @@ FGuid UTartarusInventoryComponent::StoreItem(const int32 ItemId, const int32 Sta
 		return FGuid();
 	}
 
-	// Search if there is a stackable duplicate.
 	const bool bIsStackableItem = ItemId > FTartarusHelpers::InvalidItemId;
+	if (!bIsStackableItem && StackSize > 1)
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the item: Trying to add multiples of a unique item in the same stack!"), *FString(__FUNCTION__));
+		return FGuid();
+	}
+
+	// Search if there is a stackable duplicate.
 	int32 SlotIndex = FindSlot(ItemId);
 
 	if (bIsStackableItem && SlotIndex != INDEX_NONE)
@@ -79,6 +86,7 @@ FGuid UTartarusInventoryComponent::StoreItem(const int32 ItemId, const int32 Sta
 
 	return InventorySlots[SlotIndex].GetStackId();
 }
+#pragma optimize("", on)
 
 bool UTartarusInventoryComponent::RetrieveItem(const int32 ItemId, const int32 StackSize)
 {
