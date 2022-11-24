@@ -301,7 +301,6 @@ void UTartarusTreasureSubsystem::HandleTreasureClassLoaded(FGuid ASyncLoadReques
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Treasure failed: Could not find the request!"), *FString(__FUNCTION__));
-
 		return;
 	}
 
@@ -311,6 +310,35 @@ void UTartarusTreasureSubsystem::HandleTreasureClassLoaded(FGuid ASyncLoadReques
 	if (!IsValid(TreasureClass.Get()))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Treasure failed: Class failed to load!"), *FString(__FUNCTION__));
+		HandleRequestFailed(CurrentRequest);
+
+		return;
+	}
+
+	// Check the player inventory for the key to link to this treasure.
+	AController* const PlayerController = GetWorld()->GetFirstPlayerController<AController>();
+
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to Treasure: No player in the world!"), *FString(__FUNCTION__));
+		HandleRequestFailed(CurrentRequest);
+
+		return;
+	}
+
+	UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
+
+	if (!IsValid(Inventory))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to Treasure: No inventory on player!"), *FString(__FUNCTION__));
+		HandleRequestFailed(CurrentRequest);
+
+		return;
+	}
+
+	if (!Inventory->Contains(CurrentRequest->GetKeyInventoryStackId()))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to Treasure: Inventory doesn't have the key!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 
 		return;
@@ -330,36 +358,6 @@ void UTartarusTreasureSubsystem::HandleTreasureClassLoaded(FGuid ASyncLoadReques
 
 	// Link the treasure to the spawnpoint.
 	CurrentRequest->GetSpawnPointData().Treasure = Treasure;
-
-	// Check the player inventory for the key to link to this treasure.
-	AController* const PlayerController = GetWorld()->GetFirstPlayerController<AController>();
-
-	if (!IsValid(PlayerController))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to Treasure: No player in the world!"), *FString(__FUNCTION__));
-		HandleRequestFailed(CurrentRequest);
-
-		return;
-	}
-
-	UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
-
-	if(!IsValid(Inventory))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to Treasure: No inventory on player!"), *FString(__FUNCTION__));
-		HandleRequestFailed(CurrentRequest);
-
-		return;
-	}
-
-	// [Koen Goossens] TODO: Chest shouldn't spawn if there is no key in the inventory;
-	if (!Inventory->Contains(CurrentRequest->GetKeyInventoryStackId()))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to Treasure: Inventory doesn't have the key!"), *FString(__FUNCTION__));
-		HandleRequestFailed(CurrentRequest);
-
-		return;
-	}
 
 	// Link the key to this treasure.
 	bool bIsLinked = LinkKeyToTreasure(CurrentRequest->GetKeyInventoryStackId(), Treasure);
