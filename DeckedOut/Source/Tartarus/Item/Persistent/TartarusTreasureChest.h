@@ -39,6 +39,9 @@ public:
 	FGuid GetLinkedKey() { return KeyInventoryStackId; }
 
 protected:
+	// How many keys are required to open this chest. (Only works with non-Unique keys)
+	int32 NumKeysRequired = 1;
+
 	// The component responsible for awarding loot.
 	UPROPERTY(EditDefaultsOnly)
 		TObjectPtr<UTartarusLootComponent> LootComponent = nullptr;

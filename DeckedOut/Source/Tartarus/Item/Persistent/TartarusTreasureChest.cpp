@@ -44,8 +44,8 @@ bool ATartarusTreasureChest::StartInteraction(const TObjectPtr<AController> Inst
 		return false;
 	}
 
-	// [Koen Goossens] TODO: Magic number 1.
-	const bool bHasRetrievedItem = Inventory->RetrieveItem(KeyInventoryStackId, 1);
+	// Retrieve the number of required keys, fail if there are not enough keys.
+	const bool bHasRetrievedItem = Inventory->RetrieveItem(KeyInventoryStackId, NumKeysRequired);
 
 	if (!bHasRetrievedItem)
 	{
