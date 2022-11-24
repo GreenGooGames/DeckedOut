@@ -19,6 +19,11 @@ public:
 	void SetItemId(const int32 ItemReferenceId) { ItemId = ItemReferenceId; }
 	int32 GetItemId() { return ItemId; }
 
+protected:
+	// Number of stack this item contain.
+	UPROPERTY(EditDefaultsOnly)
+		int32 StackSize = 1;
+
 private:
 	int32 ItemId = -1;
 
