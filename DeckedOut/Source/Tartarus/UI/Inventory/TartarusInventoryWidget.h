@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CommonActivatableWidget.h"
 #include "System/TartarusASyncLoadData.h"
 #include "System/TartarusHelpers.h"
+#include "UI/Foundation/TartarusActivatableWidget.h"
 
 #include "TartarusInventoryWidget.generated.h"
 
@@ -49,7 +49,7 @@ private:
  * 
  */
 UCLASS()
-class TARTARUS_API UTartarusInventoryWidget : public UCommonActivatableWidget
+class TARTARUS_API UTartarusInventoryWidget : public UTartarusActivatableWidget
 {
 	GENERATED_BODY()
 

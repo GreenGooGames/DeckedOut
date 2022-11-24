@@ -5,6 +5,7 @@
 
 #include "CommonTextBlock.h"
 #include "CommonVisibilitySwitcher.h"
+#include "UI/Foundation/TartarusActivatableWidget.h"
 #include "UI/Foundation/TartarusTextButton.h"
 #include "UI/Foundation/TartarusSwitcherWidget.h"
 
@@ -53,13 +54,10 @@ void UTartarusSwitcherWidget::OnMenuVisibilityChanged(int32 VisibleWidgetIndex)
 {
 	if (MenuVisibilitySwitcher.Get() && MenuNameText.Get())
 	{
-		UWidget* const ActiveWidget = MenuVisibilitySwitcher->GetWidgetAtIndex(VisibleWidgetIndex);
+		const UTartarusActivatableWidget* const ActiveWidget = Cast<UTartarusActivatableWidget>(MenuVisibilitySwitcher->GetWidgetAtIndex(VisibleWidgetIndex));
 
 		if (ActiveWidget)
 		{
-			// [Koen Goossens] TODO: Localize Menu names.
-			MenuNameText->SetText(FText::FromName(*ActiveWidget->GetName()));
-
 			const int32 NumChildren = MenuVisibilitySwitcher->GetChildrenCount();
 			const int32 PreviousIndexRaw = VisibleWidgetIndex - 1;
 			const int32 NextIndexRaw = VisibleWidgetIndex + 1;
@@ -68,11 +66,16 @@ void UTartarusSwitcherWidget::OnMenuVisibilityChanged(int32 VisibleWidgetIndex)
 			const int32 PreviousIndex = PreviousIndexRaw < 0 ? MaxViableIndex : PreviousIndexRaw;
 			const int32 NextIndex = NextIndexRaw > MaxViableIndex ? 0 : NextIndexRaw;
 
-			const UWidget* const PreviousWidget = MenuVisibilitySwitcher->GetWidgetAtIndex(PreviousIndex);
-			const UWidget* const NextWidget = MenuVisibilitySwitcher->GetWidgetAtIndex(NextIndex);
+			const UTartarusActivatableWidget* const PreviousWidget = Cast<UTartarusActivatableWidget>(MenuVisibilitySwitcher->GetWidgetAtIndex(PreviousIndex));
+			const UTartarusActivatableWidget* const NextWidget = Cast<UTartarusActivatableWidget>(MenuVisibilitySwitcher->GetWidgetAtIndex(NextIndex));
 
-			PreviousButton->SetText(FText::FromName(*PreviousWidget->GetName()));
-			NextButton->SetText(FText::FromName(*NextWidget->GetName()));
+			const FText CurrentText = ActiveWidget->GetWidgetName();
+			const FText PreviousText = PreviousWidget->GetWidgetName();
+			const FText NextText = NextWidget->GetWidgetName();
+
+			MenuNameText->SetText(CurrentText);
+			PreviousButton->SetText(PreviousText);
+			NextButton->SetText(NextText);
 		}
 	}
 }
