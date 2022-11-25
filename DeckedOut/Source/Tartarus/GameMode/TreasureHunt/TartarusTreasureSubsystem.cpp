@@ -8,6 +8,7 @@
 #include "Item/Equipable/Equipment/TartarusCompass.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/Persistent/TartarusTreasureChest.h"
+#include "Item/System/TartarusItemSubsystem.h"
 #include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
 #include "System/TartarusAssetManager.h"
@@ -19,9 +20,7 @@ UTartarusTreasureSubsystem::UTartarusTreasureSubsystem()
 	if (IsValid(Settings))
 	{
 		TreasureClass = Settings->TreasureClass;
-		TreasureKeys = Settings->TreasureKeys;
 	}
-
 }
 
 void UTartarusTreasureSubsystem::OnWorldBeginPlay(UWorld& InWorld)
@@ -100,37 +99,21 @@ void UTartarusTreasureSubsystem::HandleGameRunningStateChanged(ETreasureHuntStat
 	// Spawn and Link treasure when the treasure hunt starts.
 	if (NewState == ETreasureHuntState::Active && OldState == ETreasureHuntState::Inactive)
 	{
-		// Get the inventory of the player.
-		AController* const PlayerController = GetWorld()->GetFirstPlayerController<AController>();
+		// Find all treasure keys in the inventory of the player, by first getting all treasure key id's.
+		UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
 
-		if (!IsValid(PlayerController))
+		if (!IsValid(ItemSubsystem))
 		{
-			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No player in the world!"), *FString(__FUNCTION__));
+			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to treasure: Item subsystem is invalid!"), *FString(__FUNCTION__));
 			return;
 		}
 
-		UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
+		TArray<EItemType> ItemTypes;
+		ItemTypes.Add(EItemType::TreasureKey);
+		FGetItemDataRequestCompletedEvent OnRequestCompleted;
+		OnRequestCompleted.AddUObject(this, &UTartarusTreasureSubsystem::HandleTreasureKeysDataReceived);
 
-		if (!IsValid(Inventory))
-		{
-			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No inventory on player!"), *FString(__FUNCTION__));
-			return;
-		}
-
-		// Find all treasure keys in the inventory of the player.
-		for (const FDataTableRowHandle& TreasureKey : TreasureKeys)
-		{
-			FString ContextString = "";
-			const int32 KeyItemId = TreasureKey.GetRow<FItemTableRow>(ContextString)->UniqueItemId;
-			const TArray<const FInventoryItemStack*> InventoryTreasureKeys = Inventory->GetOverviewMulti(KeyItemId);
-
-			for (const FInventoryItemStack* const ItemStack : InventoryTreasureKeys)
-			{
-				// Spawn a treasure chest and link it to the treasure key.
-				FSpawnAndLinkRequestCompletedEvent OnRequestCompleted;
-				AsyncRequestSpawnAndLink(ItemStack->GetStackId(), OnRequestCompleted);
-			}
-		}
+		ItemSubsystem->AsyncRequestGetItemsData(ItemTypes, OnRequestCompleted);
 	}
 	// Despawn all treasure when the treasure hunt ends.
 	else if (NewState == ETreasureHuntState::Inactive)
@@ -163,6 +146,39 @@ FVector UTartarusTreasureSubsystem::GetLinkedTreasureLocation(const FGuid& KeyIn
 	}
 
 	return FTartarusHelpers::InvalidLocation;
+}
+
+void UTartarusTreasureSubsystem::HandleTreasureKeysDataReceived(FGuid ASyncLoadRequestId, TArray<FItemTableRow> TreasureKeysData)
+{
+	// Get the inventory of the player.
+	AController* const PlayerController = GetWorld()->GetFirstPlayerController<AController>();
+
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No player in the world!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
+
+	if (!IsValid(Inventory))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No inventory on player!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	// Loop over each treasure Key, and look if the player has it in their inventory.
+	for (const FItemTableRow& TreasureKey : TreasureKeysData)
+	{
+		const TArray<const FInventoryItemStack*> InventoryTreasureKeys = Inventory->GetOverviewMulti(TreasureKey.UniqueItemId);
+
+		for (const FInventoryItemStack* const ItemStack : InventoryTreasureKeys)
+		{
+			// Spawn a treasure chest and link it to the treasure key.
+			FSpawnAndLinkRequestCompletedEvent OnRequestCompleted;
+			AsyncRequestSpawnAndLink(ItemStack->GetStackId(), OnRequestCompleted);
+		}
+	}
 }
 
 #pragma region SpawnPoint

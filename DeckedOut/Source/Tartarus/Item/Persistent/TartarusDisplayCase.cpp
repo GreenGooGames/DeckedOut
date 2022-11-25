@@ -153,6 +153,62 @@ void ATartarusDisplayCase::HandleDisplayRequestCompleted(ATartarusItemBase* cons
 	DisplayItem->SetActorRelativeLocation(RelativeLocation);
 }
 
+void ATartarusDisplayCase::HandleArtifactsDataReceived(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ArtifactsData)
+{
+	// Get the inventory of the player.
+	AController* const PlayerController = GetWorld()->GetFirstPlayerController<AController>();
+
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No player in the world!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	UTartarusInventoryComponent* const PlayerInventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
+
+	if (!IsValid(PlayerInventory))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No inventory on player!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	// Loop over each artifact, and look if the player has it in their inventory.
+	for (const FItemTableRow& Artifact : ArtifactsData)
+	{
+		// Get all stacks that contains the current artifact.
+		const TArray<const FInventoryItemStack*> InventoryArtifacts = PlayerInventory->GetOverviewMulti(Artifact.UniqueItemId);
+
+		// For each stack, try to empty the whole stack and add it to the display.
+		for (const FInventoryItemStack* const ItemStack : InventoryArtifacts)
+		{
+			// Keep reducing the current stack StackCount untill none are left in the inventory.
+			for (int32 i = 0; i < ItemStack->StackSize; i++)
+			{
+				const int32 ArtifactId = ItemStack->GetItemId();
+
+				// Retrieve the artifact from the player invetory.
+				const bool bHasRetrieved = PlayerInventory->RetrieveItem(ArtifactId, 1);
+
+				if (!bHasRetrieved)
+				{
+					continue;
+				}
+
+				const bool bAddedToDisplay = AddToDisplay(ArtifactId);
+
+				// If the item was not added to the display, give it back to the player.
+				if (bAddedToDisplay)
+				{
+					continue;
+				}
+
+				PlayerInventory->StoreItem(ArtifactId, 1);
+			}
+		}
+	}
+
+}
+
 #pragma region ASyncDisplay
 bool ATartarusDisplayCase::ASyncRequestDisplay(const FGuid& InventoryStackId, const int32 SlotIndex)
 {
@@ -332,49 +388,25 @@ bool ATartarusDisplayCase::StartInteraction(const TObjectPtr<AController> Instig
 		return false;
 	}
 
-	// [Koen Goossens] TODO: The following code has to have a better way.
-	// Get the whole player inventory.
-	TArray<FInventoryItemStack> PlayerInventoryStacks = PlayerInventory->GetOverview();
+	// Find all treasure keys in the inventory of the player, by first getting all treasure key id's from the ItemManager.
+	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
 
-	// For each slot that is available, get an artifact from the player inventory.
-	for (int32 i = 0; i < NumAvailableSlots; i++)
+	if (!IsValid(ItemSubsystem))
 	{
-		// Search for an artifact in the copy overview.
-		TOptional<FInventoryItemStack> PlayerArtifactStack;
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to treasure: Item subsystem is invalid!"), *FString(__FUNCTION__));
+		return false;
+	}
 
-		for (const FInventoryItemStack& PlayerInventoryStack : PlayerInventoryStacks)
-		{
-			if (PlayerInventoryStack.GetItemId() >= 1000 && PlayerInventoryStack.GetItemId() < 2000)
-			{
-				PlayerArtifactStack = PlayerInventoryStack;
-			}
-		}
+	TArray<EItemType> ItemTypes;
+	ItemTypes.Add(EItemType::Artifact);
+	FGetItemDataRequestCompletedEvent OnRequestCompleted;
+	OnRequestCompleted.AddUObject(this, &ATartarusDisplayCase::HandleArtifactsDataReceived);
 
-		// Is no more artifacts can be found, exit the loop.
-		if (!PlayerArtifactStack.IsSet())
-		{
-			break;
-		}
+	const FGuid AsyncRequestId = ItemSubsystem->AsyncRequestGetItemsData(ItemTypes, OnRequestCompleted);
 
-		PlayerInventoryStacks.Remove(PlayerArtifactStack.GetValue());
-
-		// Retrieve the artifact from the player invetory.
-		const bool bHasRetrieved = PlayerInventory->RetrieveItem(PlayerArtifactStack->GetStackId(), 1);
-
-		if (!bHasRetrieved)
-		{
-			continue;
-		}
-
-		const bool bAddedToDisplay = AddToDisplay(PlayerArtifactStack->GetItemId());
-
-		// If the item was not added to the display, give it back to the player.
-		if (bAddedToDisplay)
-		{
-			continue;
-		}
-
-		PlayerInventory->StoreItem(PlayerArtifactStack->GetItemId(), 1);
+	if (!AsyncRequestId.IsValid())
+	{
+		return false;
 	}
 
 	return true;

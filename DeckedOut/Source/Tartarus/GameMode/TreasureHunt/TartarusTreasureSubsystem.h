@@ -79,9 +79,6 @@ public:
 	FVector GetLinkedTreasureLocation(const FGuid& KeyInventoryId) const;
 
 protected:
-	// All possible keys to open treasure.
-	TArray<FDataTableRowHandle> TreasureKeys;
-
 	/*
 	* Spawns a treasure in the world.
 	* Return: The Treasure that is spawned, nullptr if spawn failed.
@@ -98,6 +95,8 @@ protected:
 	void HandleOnTreasureLooted(ATartarusTreasureChest* const LootedTreasure);
 
 	void HandleGameRunningStateChanged(ETreasureHuntState OldState, ETreasureHuntState NewState);
+
+	void HandleTreasureKeysDataReceived(FGuid ASyncLoadRequestId, TArray<FItemTableRow> TreasureKeysData);
 
 #pragma region SpawnPoint
 public:

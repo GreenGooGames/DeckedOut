@@ -82,6 +82,8 @@ protected:
 	int32 FindAvailableSlot() const;
 	void HandleDisplayRequestCompleted(ATartarusItemBase* const DisplayItem, const int32 DisplaySlotIndex);
 
+	void HandleArtifactsDataReceived(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ArtifactsData);
+
 #pragma region ASyncDisplay
 // [Koen Goossens] TODO: Refactor the TartarusEquipableManager as the workflow is the same.
 protected:

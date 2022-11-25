@@ -73,6 +73,14 @@ FGetItemDataRequestInfo::FGetItemDataRequestInfo(const TArray<int32>& ItemIdsToL
 	ItemIds = ItemIdsToLoad;
 	RequestCompletedEvent = OnCompleted;
 }
+
+FGetItemDataRequestInfo::FGetItemDataRequestInfo(const TArray<EItemType>& ItemTypesToLoad, const FGetItemDataRequestCompletedEvent& OnCompleted)
+{
+	RequestId = FGuid::NewGuid();
+
+	ItemTypes = ItemTypesToLoad;
+	RequestCompletedEvent = OnCompleted;
+}
 #pragma endregion
 
 UTartarusItemSubsystem::UTartarusItemSubsystem()
@@ -308,6 +316,39 @@ FGuid UTartarusItemSubsystem::AsyncRequestGetItemsData(const TArray<int32>& Item
 	return GetItemDataRequest.GetRequestId();
 }
 
+FGuid UTartarusItemSubsystem::AsyncRequestGetItemsData(const TArray<EItemType>& ItemTypes, const FGetItemDataRequestCompletedEvent& OnRequestCompleted)
+{
+	// Get the AsyncLoader.
+	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
+
+	if (!AssetManager.IsValid())
+	{
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), *FString(__FUNCTION__));
+		return FGuid();
+	}
+
+	// Create a request to handle spawning the items;
+	FGetItemDataRequestInfo GetItemDataRequest = FGetItemDataRequestInfo(ItemTypes, OnRequestCompleted);
+
+	// Create a callback for when the DataTable is loaded.
+	FAsyncLoadAssetRequestCompletedEvent OnDataTableLoaded;
+	OnDataTableLoaded.AddUObject(this, &UTartarusItemSubsystem::HandleItemsDataTableLoaded);
+
+	// Create a request to start loading the Item Table.
+	const FGuid AsyncLoadRequestId = AssetManager.AsyncRequestLoadAsset(ItemDataTable.ToSoftObjectPath(), OnDataTableLoaded);
+	GetItemDataRequest.SetASyncLoadRequestId(AsyncLoadRequestId);
+
+	if (!AsyncLoadRequestId.IsValid())
+	{
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: No async load started!"), *FString(__FUNCTION__));
+		return FGuid();
+	}
+
+	GetItemDataRequests.Add(GetItemDataRequest);
+
+	return GetItemDataRequest.GetRequestId();
+}
+
 void UTartarusItemSubsystem::HandleGetItemsDataRequestCompleted(const FGetItemDataRequestInfo* const CompletedRequest, TArray<FItemTableRow> ItemsData)
 {
 	if (!CompletedRequest)
@@ -340,21 +381,15 @@ void UTartarusItemSubsystem::HandleItemsDataTableLoaded(FGuid ASyncLoadRequestId
 
 	ItemDataTable.Get()->GetAllRows<FItemTableRow>(ContextString, AllItemRows);
 
-	for (const int32& ItemId : CurrentRequest->GetItemIds())
+
+	for (const FItemTableRow* const ItemRow : AllItemRows)
 	{
-		FItemTableRow* ItemRow = nullptr;
-
-		for (FItemTableRow* const Row : AllItemRows)
-		{
-			if (Row->UniqueItemId != ItemId)
-			{
-				continue;
-			}
-
-			ItemRow = Row;
-		}
-
-		if (!ItemRow)
+		// Does this Item Data row identify as any of the elements to search for?
+		const bool bContainsId = CurrentRequest->GetItemIds().Contains(ItemRow->UniqueItemId);
+		const bool bContainsType = CurrentRequest->GetItemTypes().Contains(ItemRow->ItemType);
+		
+		// If any one condition is satisfied, add it to ItemsData.
+		if (!bContainsId && !bContainsType)
 		{
 			continue;
 		}

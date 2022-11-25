@@ -34,7 +34,6 @@ void UTartarusInventoryComponent::BeginPlay()
 	InventorySlots.SetNum(NumberOfSlots);
 }
 
-#pragma optimize("", off)
 FGuid UTartarusInventoryComponent::StoreItem(const int32 ItemId, const int32 StackSize)
 {
 	// Verify the given parameters.
@@ -86,7 +85,6 @@ FGuid UTartarusInventoryComponent::StoreItem(const int32 ItemId, const int32 Sta
 
 	return InventorySlots[SlotIndex].GetStackId();
 }
-#pragma optimize("", on)
 
 bool UTartarusInventoryComponent::RetrieveItem(const int32 ItemId, const int32 StackSize)
 {

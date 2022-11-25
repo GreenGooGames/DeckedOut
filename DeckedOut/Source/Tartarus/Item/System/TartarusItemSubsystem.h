@@ -14,6 +14,8 @@ class UDataTable;
 struct FStreamableHandle;
 struct FItemTableRow;
 
+enum class EItemType : uint8;
+
 #pragma region ASyncSpawn
 DECLARE_EVENT_TwoParams(UTartarusItemSubsystem, FItemSpawnRequestCompletedEvent, FGuid /*RequestId*/, TArray<TWeakObjectPtr<ATartarusItemBase>> /*SpawnedItems*/)
 
@@ -64,13 +66,16 @@ struct FGetItemDataRequestInfo : public FASyncLoadRequest
 public:
 	FGetItemDataRequestInfo() {}
 	FGetItemDataRequestInfo(const TArray<int32>& ItemIdsToLoad, const FGetItemDataRequestCompletedEvent& OnCompleted);
+	FGetItemDataRequestInfo(const TArray<EItemType>& ItemTypesToLoad, const FGetItemDataRequestCompletedEvent& OnCompleted);
 
 	const FGetItemDataRequestCompletedEvent& OnGetItemDataRequestCompleted() const { return RequestCompletedEvent; }
 	const TArray<int32>& GetItemIds() { return ItemIds; }
+	const TArray<EItemType>& GetItemTypes() { return ItemTypes; }
 
 private:
 	FGetItemDataRequestCompletedEvent RequestCompletedEvent = FGetItemDataRequestCompletedEvent();
 	TArray<int32> ItemIds;
+	TArray<EItemType> ItemTypes;
 };
 #pragma endregion
 
@@ -144,6 +149,12 @@ public:
 	* Return: The unique identifier of the request.
 	*/
 	FGuid AsyncRequestGetItemsData(const TArray<int32>& ItemIds, const FGetItemDataRequestCompletedEvent& OnRequestCompleted);
+
+	/*
+	* Creates a request to load the items datatable and provide the TableRows of the requested item types.
+	* Return: The unique identifier of the request.
+	*/
+	FGuid AsyncRequestGetItemsData(const TArray<EItemType>& ItemTypes, const FGetItemDataRequestCompletedEvent& OnRequestCompleted);
 
 protected:
 	void HandleGetItemsDataRequestCompleted(const FGetItemDataRequestInfo* const CompletedRequest, TArray<FItemTableRow> ItemsData);

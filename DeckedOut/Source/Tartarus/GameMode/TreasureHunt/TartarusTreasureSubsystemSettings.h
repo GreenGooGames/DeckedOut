@@ -20,8 +20,4 @@ public:
 	// The class of the treasure to spawn.
 	UPROPERTY(Config, EditDefaultsOnly)
 		TSoftClassPtr<ATartarusTreasureChest> TreasureClass;
-
-	// All keys that can open treasure.
-	UPROPERTY(Config, EditDefaultsOnly)
-		TArray<FDataTableRowHandle> TreasureKeys;
 };
