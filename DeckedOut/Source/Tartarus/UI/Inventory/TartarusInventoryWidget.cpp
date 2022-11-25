@@ -149,7 +149,7 @@ FGuid UTartarusInventoryWidget::AsyncRequestSetDisplayTexture(UTartarusInventory
 	FGetItemDataRequestCompletedEvent OnRequestCompleted;
 	OnRequestCompleted.AddUObject(this, &UTartarusInventoryWidget::HandleItemsDataLoaded);
 
-	// Create a request to load the data/
+	// Create a request to load the data.
 	TArray<int32> ItemIds;
 	ItemIds.Add(ItemId);
 
@@ -191,7 +191,6 @@ void UTartarusInventoryWidget::HandleRequestFailed(const FUpdateInventoryUIReque
 	UpdateUIRequests.RemoveSingleSwap(*FailedRequest);
 }
 
-// TODO: this whiole method expect only 1 item to be loaded!
 void UTartarusInventoryWidget::HandleItemsDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData)
 {
 	// Get the request that is being handled.
@@ -296,5 +295,4 @@ void UTartarusInventoryWidget::HandleTextureLoaded(FGuid ASyncLoadRequestId, TSh
 	CurrentRequest->GetWidget().Get()->SetDisplayTexture(Texture);
 	HandleRequestSuccess(CurrentRequest, Texture);
 }
-
 #pragma endregion
