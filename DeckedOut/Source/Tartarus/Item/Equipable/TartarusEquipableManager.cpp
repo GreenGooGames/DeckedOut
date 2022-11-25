@@ -144,7 +144,6 @@ const FEquipmentInfo* UTartarusEquipableManager::FindEquippedItem(const ATartaru
 	return nullptr;
 }
 
-#pragma optimize("", off)
 EEquipmentSlot UTartarusEquipableManager::FindAvailableRequestedSlot(const EEquipmentSlot RequestedSlot) const
 {
 	for (TPair<EEquipmentSlot, FEquipmentInfo> EquipmentSlot : EquipmentSlots)
@@ -166,7 +165,6 @@ EEquipmentSlot UTartarusEquipableManager::FindAvailableRequestedSlot(const EEqui
 
 	return EEquipmentSlot::None;
 }
-#pragma optimize("", on)
 
 void UTartarusEquipableManager::HandleInventoryUpdated(EInventoryChanged ChangeType, FGuid StackId, int32 StackSize)
 {

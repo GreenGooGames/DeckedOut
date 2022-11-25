@@ -67,7 +67,6 @@ void ATartarusTreasureHuntGameMode::StopTreasureHunt()
 	Inventory->RetrieveItem(GiftedTreasureKeyInventoryId, GiftTreasureKeyStackCount);
 }
 
-#pragma optimize("", off)
 bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const PlayerController)
 {
 	// Get the player ivnentory.
@@ -96,6 +95,8 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 		return false;
 	}
 
+	// [Koen Goossens] TODO: Specifically for this instance, if the treasure key is equipped before treasure has spawned it will not point towards treasure but will still be equipped.
+	// Think about if either this needs to be delayed or if the compass needs to periodically fetch the treasure location if it couldn't find it OnEquip.
 	// Optional: Auto-equip the Treasure Key.
 	UTartarusEquipableManager* const EquipableManager = PlayerController->GetPawn()->FindComponentByClass<UTartarusEquipableManager>();
 
@@ -116,4 +117,3 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 
 	return true;
 }
-#pragma optimize("", on)
