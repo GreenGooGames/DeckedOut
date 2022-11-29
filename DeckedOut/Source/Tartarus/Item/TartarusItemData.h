@@ -5,6 +5,7 @@
 #include "Engine/DataTable.h"
 #include "CoreMinimal.h"
 #include "Item/TartarusItemBase.h"
+#include "Item/Equipable/TartarusEquipableData.h"
 #include "System/TartarusHelpers.h"
 
 #include "TartarusItemData.generated.h"
@@ -54,4 +55,12 @@ public:
 	// Reference texture to represent the item in UI.
 	UPROPERTY(EditDefaultsOnly)
 		TSoftObjectPtr<UTexture2D> DisplayTexture = nullptr;
+
+	// Should this item be auto-equipped if possible when received?
+	UPROPERTY(EditDefaultsOnly)
+		bool bCanAutoEquip = false;
+
+	// To which slots can this be equipped to.
+	UPROPERTY(EditDefaultsOnly, meta = (Bitmask, BitmaskEnum = "EEquipmentSlot"))
+		uint8 EquipableSlots = 0;
 };

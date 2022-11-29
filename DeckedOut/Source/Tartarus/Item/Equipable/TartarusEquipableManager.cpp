@@ -8,32 +8,16 @@
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/System/TartarusItemSubsystem.h"
 #include "Item/TartarusItemBase.h"
+#include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
 
-#pragma region EquipmentData
-void FEquipmentInfo::SetInventoryItemStackId(const FGuid& InventoryStackIdReference)
-{
-	if (InventoryStackId.IsValid())
-	{
-		UE_LOG(LogTartarus, Error, TEXT("%s: Overwritting a valid InventoryStackId!"), *FString(__FUNCTION__));
-	}
-
-	InventoryStackId = InventoryStackIdReference;
-}
-
-void FEquipmentInfo::Reset()
-{
-	Item = nullptr;
-	InventoryStackId = FGuid();
-}
-#pragma endregion
-
 #pragma region ASyncEquip
-FEquipRequestInfo::FEquipRequestInfo(const EEquipmentSlot Slot)
+FEquipRequestInfo::FEquipRequestInfo(const FGuid& StackId, const EEquipmentSlot Slots)
 {
 	RequestId = FGuid::NewGuid();
 
-	EquipSlot = Slot;
+	InventoryStackId = StackId;
+	RequestedSlots = Slots;
 }
 #pragma endregion
 
@@ -51,6 +35,7 @@ void UTartarusEquipableManager::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// [Koen Goossens] TODO: Check this trough IsDataValid to throw a BP error instead of cheking this only at runtime.
 	// Check if the slots are setup.
 	if (EquipmentSlots.IsEmpty())
 	{
@@ -59,25 +44,12 @@ void UTartarusEquipableManager::BeginPlay()
 	}
 
 	// Subscribe to inventory updates to unequip if an item is removed.
-	const APawn* const OwningPawn = GetOwner<APawn>();
+	UTartarusInventoryComponent* const Inventory = GetOwnerInventory();
 
-	const AController* const Controller = IsValid(OwningPawn) ? OwningPawn->GetController() : GetOwner<AController>();
-	
-	if (!IsValid(Controller))
+	if (IsValid(Inventory))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to retrieve controller!"), *FString(__FUNCTION__));
-		return;
+		Inventory->OnInventoryChanged().AddUObject(this, &UTartarusEquipableManager::HandleInventoryUpdated);
 	}
-
-	UTartarusInventoryComponent* const Inventory = Controller->FindComponentByClass<UTartarusInventoryComponent>();
-
-	if(!IsValid(Inventory))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not find inventory!"), *FString(__FUNCTION__));
-		return;
-	}
-
-	Inventory->OnInventoryChanged().AddUObject(this, &UTartarusEquipableManager::HandleInventoryUpdated);
 }
 
 bool UTartarusEquipableManager::Unequip(const FGuid& InventoryStackId)
@@ -144,141 +116,44 @@ const FEquipmentInfo* UTartarusEquipableManager::FindEquippedItem(const ATartaru
 	return nullptr;
 }
 
-EEquipmentSlot UTartarusEquipableManager::FindAvailableRequestedSlot(const EEquipmentSlot RequestedSlot) const
+EEquipmentSlot UTartarusEquipableManager::FindAvailableSlot(const uint8 SlotsMask) const
 {
 	for (TPair<EEquipmentSlot, FEquipmentInfo> EquipmentSlot : EquipmentSlots)
 	{
-		const uint8 Request = uint8(RequestedSlot);
 		const uint8 Current = uint8(EquipmentSlot.Key);
-		const uint8 BitResult = Request & Current;
+		const uint8 BitResult = SlotsMask & Current;
 
-		if (BitResult == Current)
+		if (BitResult != Current)
 		{
-			const EEquipmentSlot FoundSlot = static_cast<EEquipmentSlot>(BitResult);
-
-			if (!EquipmentSlots[FoundSlot].GetInventoryStackId().IsValid())
-			{
-				return FoundSlot;
-			}
+			continue;
 		}
+
+		const bool bIsSlotAvailable = !EquipmentSlot.Value.GetInventoryStackId().IsValid();
+		if (!bIsSlotAvailable)
+		{
+			continue;
+		}
+
+		return EquipmentSlot.Key;
 	}
 
 	return EEquipmentSlot::None;
 }
 
-void UTartarusEquipableManager::HandleInventoryUpdated(EInventoryChanged ChangeType, FGuid StackId, int32 StackSize)
-{
-	// Something in the inventory changed, check if it was a removal of an equipped item.
-	if (ChangeType != EInventoryChanged::Retrieved)
-	{
-		return;
-	}
-
-	for (TPair<EEquipmentSlot, FEquipmentInfo> Slot : EquipmentSlots)
-	{
-		// Continue if the change is not related to this slot.
-		if (Slot.Value.GetInventoryStackId() != StackId)
-		{
-			continue;
-		}
-
-		// Continue if the change resulted in a higher than 0 stack size.
-		if (StackSize > 0)
-		{
-			continue;
-		}
-
-		// The change resulted in the item no longer being in the inventory, unequip and destroy it.
-		if (IsValid(Slot.Value.GetItem()))
-		{
-			Unequip(Slot.Value.GetInventoryStackId());
-
-			UWorld* const World = GetWorld();
-
-			if (IsValid(World))
-			{
-				UTartarusItemSubsystem* const ItemSubsystem = World->GetSubsystem<UTartarusItemSubsystem>();
-
-				if (IsValid(ItemSubsystem))
-				{
-					ItemSubsystem->DespawnItem(Cast<ATartarusItemBase>(Slot.Value.GetItem()));
-				}
-			}
-		}
-
-		Slot.Value = FEquipmentInfo();
-	}
-}
-
 #pragma region ASyncEquip
-bool UTartarusEquipableManager::ASyncRequestEquip(const FGuid& InventoryStackId, const EEquipmentSlot SlotName)
+bool UTartarusEquipableManager::ASyncRequestEquip(const FGuid& InventoryStackId, const EEquipmentSlot RequestedSlots)
 {
-	// Is the requested slot available/does it exist?
-	const EEquipmentSlot AvailableSlot = FindAvailableRequestedSlot(SlotName);
-	if (AvailableSlot == EEquipmentSlot::None)
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: All slots are used!"), *FString(__FUNCTION__));
-		return false;
-	}
-
-	// Get the owner inventory.
-	APawn* const OwningPawn = Cast<APawn>(GetOwner());
-	UTartarusInventoryComponent* const Inventory = OwningPawn->GetController()->FindComponentByClass<UTartarusInventoryComponent>();
-
-	if (!IsValid(Inventory))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: inventory is invalid!"), *FString(__FUNCTION__));
-		return false;
-	}
-
-	// Check that the item to equip exists in the inventory.
-	if (!Inventory->Contains(InventoryStackId))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Item stack not in the inventory!"), *FString(__FUNCTION__));
-		return false;
-	}
-
-	// Get the item subsystem.
-	UWorld* const World = GetWorld();
-
-	if (!IsValid(World))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: World is invalid!"), *FString(__FUNCTION__));
-		return false;
-	}
-
-	UTartarusItemSubsystem* const ItemSubsystem = World->GetSubsystem<UTartarusItemSubsystem>();
-
-	if (!IsValid(ItemSubsystem))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Item subsystem is invalid!"), *FString(__FUNCTION__));
-		return false;
-	}
-
-	// Request data of the item to equip.
-	FGetItemDataRequestCompletedEvent OnDataRequestCompleted;
-	OnDataRequestCompleted.AddUObject(this, &UTartarusEquipableManager::HandleItemDataLoaded);
-
-	// Get the overview of the stack.
-	const FInventoryItemStack* const ItemStack = Inventory->GetOverviewSingle(InventoryStackId);
-
-	TArray<int32> ToSpawnItemIds;
-	ToSpawnItemIds.Add(ItemStack->GetItemId());
-
-	FGuid ASyncRequestId = ItemSubsystem->AsyncRequestGetItemsData(ToSpawnItemIds, OnDataRequestCompleted);
-
+	// Make a request to get the Item specifc data.
+	const FGuid ASyncRequestId = RequestItemData(InventoryStackId);
 	if (!ASyncRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Could not request the item data!"), *FString(__FUNCTION__));
 		return false;
 	}
 
-	FEquipRequestInfo EquipRequest = FEquipRequestInfo(AvailableSlot);
+	FEquipRequestInfo EquipRequest = FEquipRequestInfo(InventoryStackId, RequestedSlots);
 	EquipRequest.SetASyncLoadRequestId(ASyncRequestId);
 	EquipRequests.Add(EquipRequest);
-
-	// Occupy the slot untill the request finishes.
-	EquipmentSlots[AvailableSlot].SetInventoryItemStackId(InventoryStackId);
 
 	return true;
 }
@@ -293,7 +168,7 @@ void UTartarusEquipableManager::HandleRequestCompleted(const FEquipRequestInfo* 
 	// If no item was equipped, free up the slot.
 	if (!IsValid(EquippedItem.Get()))
 	{
-		EquipmentSlots[CompletedRequest->GetEquipSlot()] = FEquipmentInfo();
+		EquipmentSlots[CompletedRequest->ReservedSlot].Reset();
 	}
 
 	EquipRequests.RemoveSingleSwap(*CompletedRequest);
@@ -313,28 +188,22 @@ void UTartarusEquipableManager::HandleItemDataLoaded(FGuid ASyncLoadRequestId, T
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
-	// Get the item subsystem.
-	UWorld* const World = GetWorld();
-
-	if (!IsValid(World))
+	if (ItemsData.IsEmpty())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: World is invalid!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: No Item data is loaded!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
-	UTartarusItemSubsystem* const ItemSubsystem = World->GetSubsystem<UTartarusItemSubsystem>();
-
-	if (!IsValid(ItemSubsystem))
+	// Check if the item can be equipped in the reserved slot and reserve that slot.
+	const bool bCouldReserveSlot = ReserveSlot(CurrentRequest, ItemsData[0]);
+	if (!bCouldReserveSlot)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Item subsystem is invalid!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to equip: Could not reserve a slot"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
-	FItemSpawnRequestCompletedEvent OnItemsSpawned;
-	OnItemsSpawned.AddUObject(this, &UTartarusEquipableManager::HandleItemSpawned);
-
-	FGuid ASyncRequestId = ItemSubsystem->AsyncRequestSpawnItems(ItemsData, FTransform::Identity, OnItemsSpawned);
-
+	// Create a request to spawn the item and update the request.
+	const FGuid ASyncRequestId = RequestItemsSpawn(ItemsData);
 	if (!ASyncRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Could not request the item data!"), *FString(__FUNCTION__));
@@ -358,7 +227,7 @@ void UTartarusEquipableManager::HandleItemSpawned(FGuid ASyncLoadRequestId, TArr
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
-	// Assign the Spawned actor to the slot the request ocupies.
+	// Validate that an equipable item to equip has been spawned.
 	if (SpawnedItems.IsEmpty() || !SpawnedItems[0].IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: No item spawned!"), *FString(__FUNCTION__));
@@ -366,29 +235,29 @@ void UTartarusEquipableManager::HandleItemSpawned(FGuid ASyncLoadRequestId, TArr
 	}
 
 	ITartarusEquipableInterface* const EquipableInterface = Cast<ITartarusEquipableInterface>(SpawnedItems[0]);
-
 	if (!EquipableInterface)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Spawned item is not an equipable item!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
-	EEquipmentSlot EquipSlot = CurrentRequest->GetEquipSlot();
-	EquipmentSlots[EquipSlot].SetItem(SpawnedItems[0].Get());
+	// Assign the spawned item to the reserved slot.
+	EEquipmentSlot ReservedSlot = CurrentRequest->ReservedSlot;
+	EquipmentSlots[ReservedSlot].SetItem(SpawnedItems[0].Get());
 
+	// Attach the spawned item to the owner and tell the item it is equipped.
 	const ACharacter* const Owner = Cast<ACharacter>(GetOwner());
-
 	if (Owner)
 	{
 		USkeletalMeshComponent* const AttachComponent = Owner->GetMesh();
 
 		if (AttachComponent)
 		{
-			const FName& SocketName = EquipmentSlots[EquipSlot].GetSocket();
+			const FName& SocketName = EquipmentSlots[ReservedSlot].GetSocket();
 
 			if (SocketName != NAME_None)
 			{
-				ATartarusItemBase* const ItemRaw = EquipmentSlots[EquipSlot].GetItem();
+				ATartarusItemBase* const ItemRaw = EquipmentSlots[ReservedSlot].GetItem();
 				const FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
 				ItemRaw->AttachToComponent(AttachComponent, AttachmentRules, SocketName);
 
@@ -398,5 +267,234 @@ void UTartarusEquipableManager::HandleItemSpawned(FGuid ASyncLoadRequestId, TArr
 	}
 
 	return HandleRequestCompleted(CurrentRequest, SpawnedItems[0]);
+}
+
+FGuid UTartarusEquipableManager::RequestItemsSpawn(const TArray<FItemTableRow>& ItemTableRows)
+{
+	// Get the item subsystem.
+	UWorld* const World = GetWorld();
+	if (!IsValid(World))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to request spawn of items: World is invalid!"), *FString(__FUNCTION__));
+		return FGuid();
+	}
+
+	UTartarusItemSubsystem* const ItemSubsystem = World->GetSubsystem<UTartarusItemSubsystem>();
+	if (!IsValid(ItemSubsystem))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to request spawn of items: Item subsystem is invalid!"), *FString(__FUNCTION__));
+		return FGuid();
+	}
+
+	FItemSpawnRequestCompletedEvent OnItemsSpawned;
+	OnItemsSpawned.AddUObject(this, &UTartarusEquipableManager::HandleItemSpawned);
+
+	const FGuid ASyncRequestId = ItemSubsystem->AsyncRequestSpawnItems(ItemTableRows, FTransform::Identity, OnItemsSpawned);
+
+	return ASyncRequestId;
+}
+
+FGuid UTartarusEquipableManager::RequestItemData(const FGuid& InventoryStackId)
+{
+	// Check if all components are accesible.
+	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
+	if (!IsValid(ItemSubsystem))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to request Item Data: Item subsystem is invalid!"), *FString(__FUNCTION__));
+		return FGuid();
+	}
+
+	UTartarusInventoryComponent* const Inventory = GetOwnerInventory();
+	if (!IsValid(Inventory))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: inventory is invalid!"), *FString(__FUNCTION__));
+		return FGuid();
+	}
+
+	// Confirm that the inventory stack is from this owner.
+	if (!Inventory->Contains(InventoryStackId))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Item stack not in the inventory!"), *FString(__FUNCTION__));
+		return FGuid();
+	}
+
+	// Prepare a callback for when the data is loaded.
+	FGetItemDataRequestCompletedEvent OnDataRequestCompleted;
+	OnDataRequestCompleted.AddUObject(this, &UTartarusEquipableManager::HandleItemDataLoaded);
+
+	// Create a new request to the ItemSubsytem to load item data.
+	const FInventoryItemStack* const ItemStack = Inventory->GetOverviewSingle(InventoryStackId);
+	TArray<int32> ToSpawnItemIds;
+	ToSpawnItemIds.Add(ItemStack->GetItemId());
+
+	const FGuid ASyncRequestId = ItemSubsystem->AsyncRequestGetItemsData(ToSpawnItemIds, OnDataRequestCompleted);
+
+	return ASyncRequestId;
+}
+
+bool UTartarusEquipableManager::ReserveSlot(FEquipRequestInfo* const ASyncRequest, const FItemTableRow& ItemData)
+{
+	uint8 RequestedSlotsMask = (uint8)ASyncRequest->GetRequestedSlots();
+	
+	// If the request had no requestedslots, use any of the ItemData slots otherwise only use requested valid slots.
+	RequestedSlotsMask = RequestedSlotsMask == 0 ? ItemData.EquipableSlots : RequestedSlotsMask & ItemData.EquipableSlots;
+
+	if (RequestedSlotsMask == 0)
+	{
+		return false;
+	}
+
+	const EEquipmentSlot AvailableSlot = FindAvailableSlot(RequestedSlotsMask);
+	if (AvailableSlot == EEquipmentSlot::None)
+	{
+		return false;
+	}
+
+	ASyncRequest->ReservedSlot = AvailableSlot;
+	EquipmentSlots[AvailableSlot].SetInventoryItemStackId(ASyncRequest->GetInventoryStackId());
+
+	return true;
+}
+#pragma endregion
+
+#pragma region InventoryUpdates
+UTartarusInventoryComponent* UTartarusEquipableManager::GetOwnerInventory()
+{
+	// If the current saved inventory is valid, return it.
+	if (OwnerInventory.IsValid())
+	{
+		return OwnerInventory.Get();
+	}
+
+	// No valid reference to the owner inventory is cached, search for it.
+	const APawn* const OwningPawn = GetOwner<APawn>();
+	const AController* const Controller = IsValid(OwningPawn) ? OwningPawn->GetController() : GetOwner<AController>();
+	if (!IsValid(Controller))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to find the owner inventory: Unable to retrieve controller!"), *FString(__FUNCTION__));
+		return nullptr;
+	}
+
+	UTartarusInventoryComponent* const Inventory = Controller->FindComponentByClass<UTartarusInventoryComponent>();
+	if (!IsValid(Inventory))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to find the owner inventory: Could not find inventory!"), *FString(__FUNCTION__));
+		return nullptr;
+	}
+
+	OwnerInventory = Inventory;
+
+	return Inventory;
+}
+
+void UTartarusEquipableManager::HandleInventoryUpdated(EInventoryChanged ChangeType, FGuid InventoryStackId, int32 StackSize)
+{
+	// Something in the inventory changed,
+	switch (ChangeType)
+	{
+	case EInventoryChanged::Stored:
+	{
+		HandleInventoryItemStored(InventoryStackId);
+		break;
+	}
+	case EInventoryChanged::Retrieved:
+	{
+		HandleInventoryItemRetrieved(InventoryStackId, StackSize);
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+void UTartarusEquipableManager::HandleInventoryItemRetrieved(const FGuid& InventoryStackId, const int32 StackSize)
+{
+	for (TPair<EEquipmentSlot, FEquipmentInfo> Slot : EquipmentSlots)
+	{
+		// Continue loop if the change is not related to this slot.
+		if (Slot.Value.GetInventoryStackId() != InventoryStackId)
+		{
+			continue;
+		}
+
+		// Continue loop if the change resulted in a higher than 0 stack size.
+		if (StackSize > 0)
+		{
+			continue;
+		}
+
+		// The change resulted in the item no longer being in the inventory, unequip and destroy it.
+		if (IsValid(Slot.Value.GetItem()))
+		{
+			Unequip(Slot.Value.GetInventoryStackId());
+
+			UWorld* const World = GetWorld();
+			if (IsValid(World))
+			{
+				UTartarusItemSubsystem* const ItemSubsystem = World->GetSubsystem<UTartarusItemSubsystem>();
+				if (IsValid(ItemSubsystem))
+				{
+					ItemSubsystem->DespawnItem(Cast<ATartarusItemBase>(Slot.Value.GetItem()));
+				}
+			}
+		}
+
+		Slot.Value.Reset();
+	}
+}
+
+void UTartarusEquipableManager::HandleInventoryItemStored(const FGuid& InventoryStackId)
+{
+	// The inventory received a new item, if this is to be auto-equipped do so.
+	UTartarusInventoryComponent* const Inventory = GetOwnerInventory();
+	if (!IsValid(Inventory))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not find inventory!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	const FInventoryItemStack* const StoredItemStack = Inventory->GetOverviewSingle(InventoryStackId);
+	if (!StoredItemStack)
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not find ItemStack in inventory!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	TArray<int32> ItemIds;
+	ItemIds.Add(StoredItemStack->GetItemId());
+
+	FGetItemDataRequestCompletedEvent OnRequestCompleted;
+	OnRequestCompleted.AddUObject(this, &UTartarusEquipableManager::HandleInventoryItemDataLoaded);
+
+	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
+	if (!IsValid(ItemSubsystem))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not find ItemSubsystem!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	const FGuid ASyncRequestId = ItemSubsystem->AsyncRequestGetItemsData(ItemIds, OnRequestCompleted);
+	if (!ASyncRequestId.IsValid())
+	{
+		return;
+	}
+
+	FEquipRequestInfo EquipRequest = FEquipRequestInfo(InventoryStackId, EEquipmentSlot::None);
+	EquipRequest.SetASyncLoadRequestId(ASyncRequestId);
+	EquipRequests.Add(EquipRequest);
+}
+
+void UTartarusEquipableManager::HandleInventoryItemDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData)
+{
+	// For each item that got loaded, check if it can be equipped.
+	for (const FItemTableRow& ItemData : ItemsData)
+	{
+		if (!ItemData.bCanAutoEquip)
+		{
+			continue;
+		}
+		
+		HandleItemDataLoaded(ASyncLoadRequestId, ItemsData);
+	}
 }
 #pragma endregion

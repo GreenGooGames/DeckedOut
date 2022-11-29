@@ -5,65 +5,15 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
+#include "Item/Equipable/TartarusEquipableData.h"
 #include "System/TartarusASyncLoadData.h"
 
 #include "TartarusEquipableManager.generated.h"
 
 class ATartarusItemBase;
+class UTartarusInventoryComponent;
 
 struct FItemTableRow;
-
-#pragma region EquipmentData
-UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
-enum class EEquipmentSlot : uint8
-{
-	None = 0x00,
-	LeftHand = 0x01,
-	RightHand = 0x02,
-};
-
-USTRUCT(BlueprintType)
-struct FEquipmentInfo
-{
-	GENERATED_BODY()
-
-public:
-	/*
-	* Retrieves the item that is being held by this slot.
-	* Return: Pointer to the item being held, nullptr if no item exist.
-	*/
-	ATartarusItemBase* GetItem() const { return Item.Get(); }
-
-	// Sets the Item instance that is equipped to this slot.
-	void SetItem(ATartarusItemBase* const ItemInstance) { Item = ItemInstance; }
-
-	/*
-	* Retrieves the InventoryStackId that is used to reference the equipped item in the owner inventory.
-	* Return: Id of the ItemStack that represents the equipped item in the owner inventory.
-	*/
-	const FGuid& GetInventoryStackId() const { return InventoryStackId; }
-
-	void SetInventoryItemStackId(const FGuid& InventoryStackIdReference);
-
-	/*
-	* Retrieves the name of the socket that is linked to this slot.
-	* Return: Name of the socket to attach to.
-	*/
-	const FName& GetSocket() { return Socket; }
-
-	// Resets all data stored.
-	void Reset();
-
-protected:
-	// Optional Socket name to attach to.
-	UPROPERTY(EditDefaultsOnly)
-		FName Socket = NAME_None;
-
-private:
-	TWeakObjectPtr<ATartarusItemBase> Item = nullptr;
-	FGuid InventoryStackId = FGuid();
-};
-#pragma endregion
 
 #pragma region ASyncEquip
 USTRUCT()
@@ -73,12 +23,16 @@ struct FEquipRequestInfo : public FASyncLoadRequest
 
 public:
 	FEquipRequestInfo() {}
-	FEquipRequestInfo(const EEquipmentSlot Slot);
+	FEquipRequestInfo(const FGuid& StackIds, const EEquipmentSlot Slots);
 
-	EEquipmentSlot GetEquipSlot() const { return EquipSlot; }
+	EEquipmentSlot GetRequestedSlots() const { return RequestedSlots; }
+	const FGuid& GetInventoryStackId() const { return InventoryStackId; }
+
+	EEquipmentSlot ReservedSlot = EEquipmentSlot::None;
 
 private:
-	EEquipmentSlot EquipSlot = EEquipmentSlot::None;
+	EEquipmentSlot RequestedSlots = EEquipmentSlot::None;
+	FGuid InventoryStackId = FGuid();
 };
 #pragma endregion
 
@@ -120,20 +74,15 @@ protected:
 	* Finds a slot that is available to equip on.
 	* Return: A slot that is available to equip on, EEquipmentSlot::None if no slot is available.
 	*/
-	EEquipmentSlot FindAvailableRequestedSlot(const EEquipmentSlot RequestedSlot) const;
-
-	/*
-	* Called when a change in the inventory happens, used to unequip items that are no longer in the inventory.
-	*/
-	void HandleInventoryUpdated(EInventoryChanged ChangeType, FGuid StackId, int32 StackSize);
+	EEquipmentSlot FindAvailableSlot(const uint8 SlotsMask = 0) const;
 
 #pragma region ASyncEquip
 public:
 	/*
-	* Equips an actor to the owner.
+	* Equips an actor to the owner on the prefered slot.
 	* Return: True, started request to equip the item.
 	*/
-	bool ASyncRequestEquip(const FGuid& InventoryStackId, const EEquipmentSlot SlotName);
+	bool ASyncRequestEquip(const FGuid& InventoryStackId, const EEquipmentSlot RequestedSlots);
 
 protected:
 	void HandleRequestCompleted(const FEquipRequestInfo* const CompletedRequest, const TWeakObjectPtr<ATartarusItemBase> EquippedItem);
@@ -141,7 +90,34 @@ protected:
 	void HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData);
 	void HandleItemSpawned(FGuid ASyncLoadRequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedItems);
 
+	FGuid RequestItemsSpawn(const TArray<FItemTableRow>& ItemTableRows);
+	FGuid RequestItemData(const FGuid& InventoryStackId);
+
+	/*
+	* Reserves a slot with priority to the RequestedSlots, if no slot is requested an avaialble slot that cen be used is selected.
+	* Return: True if a slot is reserved for the request.
+	*/
+	bool ReserveSlot(FEquipRequestInfo* const ASyncRequest, const FItemTableRow& ItemData);
+
 private:
 	TArray<FEquipRequestInfo> EquipRequests;
+#pragma endregion
+
+#pragma region InventoryUpdates
+protected:
+	UTartarusInventoryComponent* GetOwnerInventory();
+
+	/*
+	* Called when a change in the inventory happens, used to unequip items that are no longer in the inventory.
+	*/
+	void HandleInventoryUpdated(EInventoryChanged ChangeType, FGuid InventoryStackId, int32 StackSize);
+
+	void HandleInventoryItemRetrieved(const FGuid& InventoryStackId, const int32 StackSize);
+
+	void HandleInventoryItemStored(const FGuid& InventoryStackId);
+	void HandleInventoryItemDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData);
+
+private:
+	TWeakObjectPtr<UTartarusInventoryComponent> OwnerInventory = nullptr;
 #pragma endregion
 };

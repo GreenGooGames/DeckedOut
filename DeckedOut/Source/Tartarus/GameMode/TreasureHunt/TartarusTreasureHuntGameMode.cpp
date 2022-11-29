@@ -5,7 +5,6 @@
 
 #include "GameFramework/PlayerState.h"
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
-#include "Item/Equipable/TartarusEquipableManager.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
@@ -93,26 +92,6 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not store the item in the inventory!"), *FString(__FUNCTION__));
 		return false;
-	}
-
-	// [Koen Goossens] TODO: Specifically for this instance, if the treasure key is equipped before treasure has spawned it will not point towards treasure but will still be equipped.
-	// Think about if either this needs to be delayed or if the compass needs to periodically fetch the treasure location if it couldn't find it OnEquip.
-	// Optional: Auto-equip the Treasure Key.
-	UTartarusEquipableManager* const EquipableManager = PlayerController->GetPawn()->FindComponentByClass<UTartarusEquipableManager>();
-
-	if (!IsValid(EquipableManager))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not auto-equip the gift item: No EquipableManager found!"), *FString(__FUNCTION__));
-	}
-	else
-	{
-		// Try to equip the Treasure Key, but if it fails itys no issue as it still exists in the inventory which is all that really matters.
-		bool bIsTryingToEquip = EquipableManager->ASyncRequestEquip(GiftedTreasureKeyInventoryId, StaticCast<EEquipmentSlot>(AutoEquipTreasureKeySlotMask));
-
-		if (!bIsTryingToEquip)
-		{
-			UE_LOG(LogTartarus, Warning, TEXT("%s: Could not auto-equip the gift item: Request failed!"), *FString(__FUNCTION__));
-		}
 	}
 
 	return true;
