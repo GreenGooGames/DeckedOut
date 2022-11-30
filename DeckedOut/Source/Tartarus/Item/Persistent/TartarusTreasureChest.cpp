@@ -4,11 +4,12 @@
 #include "Item/Persistent/TartarusTreasureChest.h"
 
 #include "Player/TartarusPlayerCharacter.h"
-#include "Item/Equipable/Equipment/TartarusCompass.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/Loot/TartarusLootComponent.h"
 #include "Item/TartarusItemBase.h"
 #include "logging/TartarusLogChannels.h"
+
+#include "GameMode/TreasureHunt/TartarusTreasureSubsystem.h"
 
 ATartarusTreasureChest::ATartarusTreasureChest()
 {
@@ -29,7 +30,6 @@ bool ATartarusTreasureChest::IsInteractable() const
 bool ATartarusTreasureChest::StartInteraction(const TObjectPtr<AController> InstigatorController)
 {
 	ATartarusPlayerCharacter* const Player = Cast<ATartarusPlayerCharacter>(InstigatorController->GetPawn());
-
 	if (!Player)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Interaction failed: Instigator was not a player!"), *FString(__FUNCTION__));
@@ -38,15 +38,25 @@ bool ATartarusTreasureChest::StartInteraction(const TObjectPtr<AController> Inst
 
 	// Remove the compass from the inventory.
 	UTartarusInventoryComponent* const Inventory = InstigatorController->FindComponentByClass<UTartarusInventoryComponent>();
-
 	if (!IsValid(Inventory))
 	{
 		return false;
 	}
 
-	// Retrieve the number of required keys, fail if there are not enough keys.
-	const bool bHasRetrievedItem = Inventory->RetrieveItem(KeyInventoryStackId, NumKeysRequired);
+	UTartarusTreasureSubsystem* const TreasureSubsystem = GetWorld()->GetSubsystem<UTartarusTreasureSubsystem>();
+	if (!IsValid(TreasureSubsystem))
+	{
+		return false;
+	}
 
+	const FGuid LinkedKeyInventoryStackId = TreasureSubsystem->GetTreasureKey(this);
+	if (!LinkedKeyInventoryStackId.IsValid())
+	{
+		return false;
+	}
+
+	// Retrieve the number of required keys, fail if there are not enough keys.
+	const bool bHasRetrievedItem = Inventory->RetrieveItem(LinkedKeyInventoryStackId, NumKeysRequired);
 	if (!bHasRetrievedItem)
 	{
 		return false;

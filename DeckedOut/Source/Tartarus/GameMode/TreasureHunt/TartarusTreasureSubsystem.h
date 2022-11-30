@@ -23,10 +23,25 @@ struct FSpawnPointData
 {
 	GENERATED_BODY()
 
+public:
+	FSpawnPointData() {}
+	FSpawnPointData(const FTransform& SpawnPointTransform);
+
+	void Reset();
+	void Reserve(const FGuid& KeyInventoryId);
+	bool IsAvailable() { return bIsAvailable; }
+
+	const FTransform& GetTransform() const { return Transform; }
+	const ATartarusTreasureChest* GetTreasure() const { return Treasure.Get(); }
+	void SetTreasure(ATartarusTreasureChest* TreasureChest) { Treasure = TreasureChest; }
+	const FGuid GetKeyId() const { return KeyInventoryStackId; }
+
+private:
 	bool bIsAvailable = true;
 
 	FTransform Transform = FTransform();
-	TObjectPtr<ATartarusTreasureChest> Treasure;
+	TObjectPtr<ATartarusTreasureChest> Treasure = nullptr;
+	FGuid KeyInventoryStackId = FGuid();
 };
 
 #pragma region AsyncLoading
@@ -43,18 +58,16 @@ public:
 
 		RequestCompletedEvent = OnRequestCompleted;
 		SpawnPointData = SpawnPoint;
-		KeyInventoryStackId = ToLinkKeyInventoryStackId;
 	}
 
 	const FSpawnAndLinkRequestCompletedEvent& OnRequestCompleted() const { return RequestCompletedEvent; }
 	FSpawnPointData& GetSpawnPointData() const { return *SpawnPointData; }
-	FGuid GetKeyInventoryStackId() { return KeyInventoryStackId; }
+	FGuid GetKeyInventoryStackId() { return SpawnPointData->GetKeyId(); }
 
 private:
 	FSpawnAndLinkRequestCompletedEvent RequestCompletedEvent = FSpawnAndLinkRequestCompletedEvent();
 	
 	FSpawnPointData* SpawnPointData = nullptr;
-	FGuid KeyInventoryStackId = FGuid();
 };
 #pragma endregion
 
@@ -76,24 +89,25 @@ public:
 	* Retrieves the location of treasure that is linked to the key.
 	* Return: The location of the Treasure in the world.
 	*/
-	FVector GetLinkedTreasureLocation(const FGuid& KeyInventoryId) const;
+	FVector GetTreasureLocation(const FGuid& KeyInventoryId) const;
+
+	/*
+	* Retrieves the key used to open the given treasure.
+	* Return: the InventoryStackId of the key.
+	*/
+	FGuid GetTreasureKey(const ATartarusTreasureChest* const Treasure);
 
 protected:
 	/*
 	* Spawns a treasure in the world.
 	* Return: The Treasure that is spawned, nullptr if spawn failed.
 	*/
-	ATartarusTreasureChest* SpawnTreasure(TSubclassOf<ATartarusTreasureChest>& TreasureClass, const FTransform& SpawnTransform);
-
-	/* 
-	* Links a compass and a treasure to eachother.
-	* Return: True if linked, false if link failed.
-	*/
-	bool LinkKeyToTreasure(const FGuid KeyInventoryStackId, TObjectPtr<ATartarusTreasureChest> Treasure) const;
+	ATartarusTreasureChest* SpawnTreasure(TSubclassOf<ATartarusTreasureChest>& TreasureClass, FSpawnPointData& SpawnPointData);
 
 	// Fired when a treasure is looted, called by the treasure itself.
 	void HandleOnTreasureLooted(ATartarusTreasureChest* const LootedTreasure);
 
+	// Fired when the GameState changes, Spawns/Despawns all treasures.
 	void HandleGameRunningStateChanged(ETreasureHuntState OldState, ETreasureHuntState NewState);
 
 	void HandleTreasureKeysDataReceived(FGuid ASyncLoadRequestId, TArray<FItemTableRow> TreasureKeysData);
@@ -105,8 +119,6 @@ public:
 
 protected:
 	FSpawnPointData* FindAvailableSpawnpoint();
-
-	void ClearSpawnPoint(FSpawnPointData& SpawnPoint);
 
 private:
 	TArray<FSpawnPointData> SpawnPoints;
@@ -136,6 +148,5 @@ protected:
 private:
 	TArray<FTreasureSpawnRequestInfo> SpawnAndLinkRequests;
 	TSoftClassPtr<ATartarusTreasureChest> TreasureClass = nullptr;
-
 #pragma endregion
 };
