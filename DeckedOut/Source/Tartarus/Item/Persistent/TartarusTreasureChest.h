@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Audio/TartarusSoundData.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interaction/TartarusInteractableTargetInterface.h"
@@ -11,6 +12,7 @@
 class ATartarusCompass;
 class ATartarusItemBase;
 class UTartarusLootComponent;
+class UTartarusNoiseSourceComponent;
 
 DECLARE_EVENT_OneParam(ATartarusTreasureChest, FLootedEvent, ATartarusTreasureChest* const /*LootedTreasure*/);
 
@@ -47,5 +49,14 @@ private:
 public:
 	virtual bool IsInteractable() const override;
 	virtual bool StartInteraction(const TObjectPtr<AController> InstigatorController) override;
+#pragma endregion
+
+#pragma region Audio
+protected:
+	UPROPERTY(EditDefaultsOnly)
+		FTartarusSound LootingSound = FTartarusSound();
+
+	UPROPERTY(EditDefaultsOnly)
+		TObjectPtr<UTartarusNoiseSourceComponent> NoiseSourceComponent = nullptr;
 #pragma endregion
 };

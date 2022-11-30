@@ -3,6 +3,7 @@
 
 #include "Item/Persistent/TartarusTreasureChest.h"
 
+#include "Audio/TartarusNoiseSourceComponent.h"
 #include "Player/TartarusPlayerCharacter.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/Loot/TartarusLootComponent.h"
@@ -14,6 +15,8 @@
 ATartarusTreasureChest::ATartarusTreasureChest()
 {
 	LootComponent = CreateDefaultSubobject<UTartarusLootComponent>(TEXT("LootComponent"));
+
+	NoiseSourceComponent = CreateDefaultSubobject<UTartarusNoiseSourceComponent>(TEXT("Noise Source Component"));
 }
 
 void ATartarusTreasureChest::HandleLootDropped(FGuid RequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot)
@@ -67,6 +70,9 @@ bool ATartarusTreasureChest::StartInteraction(const TObjectPtr<AController> Inst
 	OnRequestCompleted.AddUObject(this, &ATartarusTreasureChest::HandleLootDropped);
 
 	LootComponent->AsyncRequestDropLoot(GetActorTransform(), OnRequestCompleted);
+
+	// Play sound of the chest opening.
+	NoiseSourceComponent->GenerateNoise(LootingSound, GetActorLocation());
 
 	return true;
 }

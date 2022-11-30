@@ -36,6 +36,10 @@ bool ATartarusTreasureHuntGameState::IsTreasureHuntActive() const
 void ATartarusTreasureHuntGameState::IncreaseClank(const int32 GeneratedClank)
 {
 	ClankLevel += GeneratedClank;
+
+#if WITH_EDITOR
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::White, FString("IncreasedClank: ") + FString::FromInt(ClankLevel));
+#endif
 }
 
 void ATartarusTreasureHuntGameState::ResetClank()
