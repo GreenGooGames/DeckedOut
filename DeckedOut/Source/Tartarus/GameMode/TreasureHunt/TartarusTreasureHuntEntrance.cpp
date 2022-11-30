@@ -84,7 +84,6 @@ void ATartarusTreasureHuntEntrance::OnCloseTriggerOverlap(UPrimitiveComponent* O
 
 	// Check if the game is in progress.
 	ATartarusTreasureHuntGameState* const GameState = GetWorld()->GetGameState<ATartarusTreasureHuntGameState>();
-
 	if (!IsValid(GameState) || !GameState->IsTreasureHuntActive())
 	{
 		return;
@@ -97,6 +96,7 @@ void ATartarusTreasureHuntEntrance::OnCloseTriggerOverlap(UPrimitiveComponent* O
 	if (bHasStateChanged)
 	{
 		HandleStateChanged(NewState, OtherPawn->GetController());
+		GenerateNoise();
 	}
 }
 

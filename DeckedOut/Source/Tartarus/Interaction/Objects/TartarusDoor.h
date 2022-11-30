@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Audio/TartarusSoundData.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interaction/TartarusInteractableTargetInterface.h"
@@ -9,6 +10,7 @@
 #include "TartarusDoor.generated.h"
 
 class UBoxComponent;
+class UTartarusNoiseSourceComponent;
 
 UENUM(BlueprintType)
 enum class EDoorState : uint8
@@ -71,5 +73,26 @@ private:
 public:
 	virtual bool IsInteractable() const override;
 	virtual bool StartInteraction(const TObjectPtr<AController> InstigatorController) override;
+#pragma endregion
+
+#pragma region Audio
+protected:
+	// Sound to play when opening.
+	UPROPERTY(EditDefaultsOnly)
+		FTartarusSound OpeningSound = FTartarusSound();
+
+	// Sound to play when closing.
+	UPROPERTY(EditDefaultsOnly)
+		FTartarusSound ClosingSound = FTartarusSound();
+
+	// Sound to play when trying to open/close but blocked.
+	UPROPERTY(EditDefaultsOnly)
+		FTartarusSound BlockedSound = FTartarusSound();
+
+	// Component that handles generating noise/sounds.
+	UPROPERTY(EditDefaultsOnly)
+		TObjectPtr<UTartarusNoiseSourceComponent> NoiseSourceComponent = nullptr;
+
+	virtual void GenerateNoise() const;
 #pragma endregion
 };

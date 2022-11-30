@@ -24,6 +24,7 @@ class TARTARUS_API ATartarusTreasureHuntGameState : public AGameStateBase
 {
 	GENERATED_BODY()
 
+#pragma region TreasureHuntState
 public:
 	// Changes the state of the treasure hunt if possible.
 	void ChangeTreasureHuntState(const ETreasureHuntState NewState);
@@ -45,4 +46,17 @@ protected:
 private:
 	ETreasureHuntState TreasureHuntState = ETreasureHuntState::Inactive;
 	FRunningStateChanged RunningStateChangedEvent = FRunningStateChanged();
+#pragma endregion
+
+#pragma region Clank
+public:
+	// Increases the clank level based on the amount of noise generated.
+	void IncreaseClank(const int32 GeneratedClank);
+
+protected:
+	int32 ClankLevel = 0;
+
+	// Resets the ClankLevel back to 0;
+	void ResetClank();
+#pragma endregion
 };

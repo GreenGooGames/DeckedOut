@@ -3,6 +3,7 @@
 
 #include "Interaction/Objects/TartarusDoor.h"
 
+#include "Audio/TartarusNoiseSourceComponent.h"
 #include "Components/BoxComponent.h"
 
 // Sets default values
@@ -24,6 +25,9 @@ ATartarusDoor::ATartarusDoor()
 	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	Mesh->SetupAttachment(Collider);
+
+	// Audio
+	NoiseSourceComponent = CreateDefaultSubobject<UTartarusNoiseSourceComponent>(TEXT("Noise Source Component"));
 }
 
 void ATartarusDoor::BeginPlay()
@@ -70,6 +74,11 @@ bool ATartarusDoor::StartInteraction(const TObjectPtr<AController> InstigatorCon
 	// Try to change the current state of the door. (Open --> Closed, Closed --> Open, Blocked --> Open)
 	switch (DoorState)
 	{
+	case EDoorState::Blocked:
+	{
+		GenerateNoise();
+		break;
+	}
 	case EDoorState::Open:
 	{
 		bHasStateChanged = ChangeState(EDoorState::Closed);
@@ -82,7 +91,6 @@ bool ATartarusDoor::StartInteraction(const TObjectPtr<AController> InstigatorCon
 	}
 	// Intentional falltrough, NOT IMPLEMENTED
 	case EDoorState::None:
-	case EDoorState::Blocked:
 	default:
 		break;
 	}
@@ -90,8 +98,30 @@ bool ATartarusDoor::StartInteraction(const TObjectPtr<AController> InstigatorCon
 	if (bHasStateChanged)
 	{
 		HandleStateChanged(DoorState, InstigatorController);
+		GenerateNoise();
 	}
 
 	return bHasStateChanged;
+}
+#pragma endregion
+
+#pragma region Audio
+void ATartarusDoor::GenerateNoise() const
+{
+	switch (DoorState)
+	{
+	case EDoorState::Open:
+		NoiseSourceComponent->GenerateNoise(OpeningSound, GetActorLocation());
+		break;
+	case EDoorState::Closed:
+		NoiseSourceComponent->GenerateNoise(ClosingSound, GetActorLocation());
+		break;
+	case EDoorState::Blocked:
+		NoiseSourceComponent->GenerateNoise(BlockedSound, GetActorLocation());
+		break;
+	case EDoorState::None:
+	default:
+		break;
+	}
 }
 #pragma endregion
