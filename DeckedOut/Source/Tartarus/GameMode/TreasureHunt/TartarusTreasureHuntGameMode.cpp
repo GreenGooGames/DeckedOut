@@ -5,20 +5,14 @@
 
 #include "GameFramework/PlayerState.h"
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
+#include "Gameplay/Ruleset/TartarusRuleset.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
 
+
 void ATartarusTreasureHuntGameMode::StartTreasureHunt()
 {
-	// Change the game state to indicate the treasure hunt has started.
-	ATartarusTreasureHuntGameState* const TreasureHuntGameState = Cast<ATartarusTreasureHuntGameState>(GameState);
-
-	if (!IsValid(TreasureHuntGameState))
-	{
-		return;
-	}
-
 	// Gift the player starter items.
 	const AController* const PlayerController = GetWorld()->GetFirstPlayerController<AController>();
 	if (!IsValid(PlayerController))
@@ -33,14 +27,26 @@ void ATartarusTreasureHuntGameMode::StartTreasureHunt()
 		return; // Items could not be gifted so don't start a treasure hunt as the player wont be able to complete it.
 	}
 
+	// Change the game state to indicate the treasure hunt has started.
+	ATartarusTreasureHuntGameState* const TreasureHuntGameState = Cast<ATartarusTreasureHuntGameState>(GameState);
+	if (!IsValid(TreasureHuntGameState))
+	{
+		return;
+	}
+
 	TreasureHuntGameState->ChangeTreasureHuntState(ETreasureHuntState::Active);
+
+	// Enable the ruleset for the treasure hunt.
+	EnableRuleset();
 }
 
 void ATartarusTreasureHuntGameMode::StopTreasureHunt()
 {
+	// Disable the ruleset.
+	DisableRuleset();
+
 	// Change the game state to indicate the treasure hunt has ended.
 	ATartarusTreasureHuntGameState* const TreasureHuntGameState = Cast<ATartarusTreasureHuntGameState>(GameState);
-
 	if (!IsValid(TreasureHuntGameState))
 	{
 		return;
@@ -66,6 +72,7 @@ void ATartarusTreasureHuntGameMode::StopTreasureHunt()
 	Inventory->RetrieveItem(GiftedTreasureKeyInventoryId, GiftTreasureKeyStackCount);
 }
 
+#pragma region StarterGifts
 bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const PlayerController)
 {
 	// Get the player ivnentory.
@@ -96,3 +103,37 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 
 	return true;
 }
+#pragma endregion
+
+#pragma region Ruleset
+void ATartarusTreasureHuntGameMode::HandleClankLevelChanged(int32 ClankLevel)
+{
+	// [Koen Goossens] TODO: This will activate the same stage multiple times, if a stage is already active, dont reactivate it as this could mess with the rules.
+	Ruleset->ActivateStage(GetWorld(), ClankLevel);
+}
+
+void ATartarusTreasureHuntGameMode::EnableRuleset()
+{
+	ATartarusTreasureHuntGameState* const TreasureHuntGameState = Cast<ATartarusTreasureHuntGameState>(GameState);
+	if (!IsValid(TreasureHuntGameState))
+	{
+		return;
+	}
+
+	HandleClankLevelChangedDelegateHandle = TreasureHuntGameState->OnClankLevelChanged().AddUObject(this, &ATartarusTreasureHuntGameMode::HandleClankLevelChanged);
+	HandleClankLevelChanged(0);
+}
+
+void ATartarusTreasureHuntGameMode::DisableRuleset()
+{
+	ATartarusTreasureHuntGameState* const TreasureHuntGameState = Cast<ATartarusTreasureHuntGameState>(GameState);
+	if (!IsValid(TreasureHuntGameState))
+	{
+		return;
+	}
+
+	TreasureHuntGameState->OnClankLevelChanged().Remove(HandleClankLevelChangedDelegateHandle);
+
+	Ruleset->Reset(GetWorld());
+}
+#pragma endregion

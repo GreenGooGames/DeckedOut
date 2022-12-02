@@ -8,6 +8,8 @@
 
 #include "TartarusTreasureHuntGameMode.generated.h"
 
+class UTartarusRuleset;
+
 /**
  * 
  */
@@ -20,14 +22,11 @@ public:
 	void StartTreasureHunt();
 	void StopTreasureHunt();
 
+#pragma region StarterGifts
 protected:
 	// TreasureKey item handle to be gifted to the players when a treasure hunt starts.
 	UPROPERTY(EditDefaultsOnly)
 		FDataTableRowHandle StarterTreasureKeyHandle;
-
-	// Slot to auto-equip the treasure key to when received.
-	UPROPERTY(EditDefaultsOnly, meta = (Bitmask, BitmaskEnum = "EEquipmentSlot"))
-		uint8 AutoEquipTreasureKeySlotMask;
 
 	// Stack count of the treasure key to gift. Should always be 1 for a unique.
 	const int32 GiftTreasureKeyStackCount = 1;
@@ -40,4 +39,18 @@ protected:
 	* Return: True if the items are given. False if the items could not be gifted. (ex: lack of inventory space)
 	*/
 	bool GiftStarterItems(const AController* const PlayerController);
+#pragma endregion
+
+#pragma region RuleSet
+protected:
+	UPROPERTY(EditDefaultsOnly)
+		TObjectPtr<UTartarusRuleset> Ruleset;
+
+	void HandleClankLevelChanged(int32 ClankLevel);
+	void EnableRuleset();
+	void DisableRuleset();
+
+private:
+	FDelegateHandle HandleClankLevelChangedDelegateHandle = FDelegateHandle();
+#pragma endregion
 };

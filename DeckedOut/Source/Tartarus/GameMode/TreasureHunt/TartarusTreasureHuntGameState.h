@@ -15,6 +15,7 @@ enum class ETreasureHuntState : uint8
 };
 
 DECLARE_EVENT_TwoParams(ATartarusTreasureHuntGameState, FRunningStateChanged, ETreasureHuntState /*OldState*/, ETreasureHuntState /*NewState*/);
+DECLARE_EVENT_OneParam(ATartarusTreasureHuntGameState, FClankLevelChanged, int32 /*ClankLevel*/);
 
 /**
  * 
@@ -53,10 +54,15 @@ public:
 	// Increases the clank level based on the amount of noise generated.
 	void IncreaseClank(const int32 GeneratedClank);
 
+	FClankLevelChanged& OnClankLevelChanged() { return ClankLevelChangedEvent; }
+
 protected:
 	int32 ClankLevel = 0;
 
 	// Resets the ClankLevel back to 0;
 	void ResetClank();
+
+private:
+	FClankLevelChanged ClankLevelChangedEvent = FClankLevelChanged();
 #pragma endregion
 };
