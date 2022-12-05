@@ -23,8 +23,13 @@ bool UTartarusRuleset::ActivateStage(UWorld* const World, int32& ActiveStage, co
 		return false;
 	}
 
+	// Activate each stage from the ActiveStage up to and including the NewStage.
+	for (int32 i = ActiveStage + 1; i <= StageIndex; i++)
+	{
+		Stages[i].Activate(World);
+	}
+
 	ActiveStage = StageIndex;
-	Stages[ActiveStage].Activate(World);
 
 	return true;
 }
