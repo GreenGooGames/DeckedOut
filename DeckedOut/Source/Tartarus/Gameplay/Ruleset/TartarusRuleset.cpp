@@ -3,7 +3,7 @@
 
 #include "Gameplay/Ruleset/TartarusRuleset.h"
 
-void UTartarusRuleset::ActivateStage(UWorld* const World, const int32 IntegerConditionValue)
+bool UTartarusRuleset::ActivateStage(UWorld* const World, int32& ActiveStage, const int32 IntegerConditionValue)
 {
 	// Activate the last stage that satisfies the condition.
 	int32 StageIndex = INDEX_NONE;
@@ -17,12 +17,16 @@ void UTartarusRuleset::ActivateStage(UWorld* const World, const int32 IntegerCon
 		StageIndex = i;
 	}
 
-	if (StageIndex == INDEX_NONE)
+	// Do not activate a stage if no stage satisfies the condition or the stage is already active.
+	if (StageIndex == INDEX_NONE || StageIndex == ActiveStage)
 	{
-		return;
+		return false;
 	}
 
-	Stages[StageIndex].Activate(World);
+	ActiveStage = StageIndex;
+	Stages[ActiveStage].Activate(World);
+
+	return true;
 }
 
 void UTartarusRuleset::Reset(UWorld* const World)

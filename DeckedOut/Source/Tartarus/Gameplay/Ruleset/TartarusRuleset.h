@@ -17,7 +17,14 @@ class TARTARUS_API UTartarusRuleset : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	void ActivateStage(UWorld* const World, const int32 IntegerConditionValue);
+	/*
+	* Checks all stages and if any satisfies the condition activate it.
+	* Return: True if the the stage has changed, false if no stage has been activated.
+	* Return: ActiveStage, updated to reflect the new active stage.
+	*/
+	bool ActivateStage(UWorld* const World, int32& ActiveStage, const int32 IntegerConditionValue);
+
+	// Deactivates all stages setup for this ruleset.
 	void Reset(UWorld* const World);
 
 protected:

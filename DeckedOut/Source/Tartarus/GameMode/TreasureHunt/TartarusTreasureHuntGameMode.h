@@ -52,5 +52,6 @@ protected:
 
 private:
 	FDelegateHandle HandleClankLevelChangedDelegateHandle = FDelegateHandle();
+	int32 ActiveClankStage = INDEX_NONE;
 #pragma endregion
 };

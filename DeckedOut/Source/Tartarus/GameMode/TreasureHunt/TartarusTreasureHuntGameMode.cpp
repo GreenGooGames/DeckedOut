@@ -108,8 +108,12 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 #pragma region Ruleset
 void ATartarusTreasureHuntGameMode::HandleClankLevelChanged(int32 ClankLevel)
 {
-	// [Koen Goossens] TODO: This will activate the same stage multiple times, if a stage is already active, dont reactivate it as this could mess with the rules.
-	Ruleset->ActivateStage(GetWorld(), ClankLevel);
+	const bool bStageChanged = Ruleset->ActivateStage(GetWorld(), ActiveClankStage, ClankLevel);
+
+	if (!bStageChanged)
+	{
+		return;
+	}
 }
 
 void ATartarusTreasureHuntGameMode::EnableRuleset()
@@ -135,5 +139,6 @@ void ATartarusTreasureHuntGameMode::DisableRuleset()
 	TreasureHuntGameState->OnClankLevelChanged().Remove(HandleClankLevelChangedDelegateHandle);
 
 	Ruleset->Reset(GetWorld());
+	ActiveClankStage = INDEX_NONE;
 }
 #pragma endregion
