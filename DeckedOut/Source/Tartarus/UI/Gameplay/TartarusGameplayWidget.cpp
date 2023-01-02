@@ -27,14 +27,14 @@ void UTartarusGameplayWidget::RegisterBoundInputActions()
 void UTartarusGameplayWidget::HandleOpenGameMenuAction() const
 {
 #if WITH_EDITOR
-	GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Green, FString(__FUNCTION__));
+	GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Green, FString(*FString(__FUNCTION__)));
 #endif
 
 	ATartarusPlayerController* const PlayerController = GetOwningPlayer<ATartarusPlayerController>();
 
 	if (!IsValid(PlayerController))
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Open Game Menu failed: No player controller!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Open Game Menu failed: No player controller!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -42,7 +42,7 @@ void UTartarusGameplayWidget::HandleOpenGameMenuAction() const
 
 	if (!IsValid(PrimaryGameLayoutInstance))
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Open Game Menu failed: No Primary gamelayout found!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Log, TEXT("%s: Open Game Menu failed: No Primary gamelayout found!"), *FString(__FUNCTION__));
 		return;
 	}
 

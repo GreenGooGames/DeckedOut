@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Item/Equipable/TartarusEquipableInterface.h"
-#include "Item/TartarusItemBase.h"
+#include "Item/Pickup/TartarusPickup.h"
 
 #include "TartarusEquipableItem.generated.h"
 
@@ -12,17 +12,13 @@
  * 
  */
 UCLASS()
-class TARTARUS_API ATartarusEquipableItem : public ATartarusItemBase, public ITartarusEquipableInterface
+class TARTARUS_API ATartarusEquipableItem : public ATartarusPickup, public ITartarusEquipableInterface
 {
 	GENERATED_BODY()
 
 #pragma region EquipableInterface
 public:
-	virtual void OnEquipped() override;
+	virtual void OnEquipped(AActor* const EquippedActor) override;
 	virtual void OnUnequipped() override;
-#pragma endregion
-
-#pragma region TartarusInteractableTargetInterface
-	virtual bool StartInteraction(const TObjectPtr<AController> InstigatorController) override;
 #pragma endregion
 };

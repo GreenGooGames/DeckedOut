@@ -4,12 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Interaction/TartarusInteractableTargetInterface.h"
 
 #include "TartarusItemBase.generated.h"
 
 UCLASS()
-class TARTARUS_API ATartarusItemBase : public AActor, public ITartarusInteractableTargetInterface
+class TARTARUS_API ATartarusItemBase : public AActor
 {
 	GENERATED_BODY()
 	
@@ -17,19 +16,15 @@ public:
 	// Sets default values for this actor's properties
 	ATartarusItemBase();
 
-	void SetReferenceId(const int32 ItemReferenceId) { ReferenceId = ItemReferenceId; }
+	void SetItemId(const int32 ItemReferenceId) { ItemId = ItemReferenceId; }
+	int32 GetItemId() { return ItemId; }
 
 protected:
-	// The visual representation of the Item in the world.
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UStaticMeshComponent> Mesh = nullptr;
+	// Number of stack this item contain.
+	UPROPERTY(EditDefaultsOnly)
+		int32 StackSize = 1;
 
 private:
-	int32 ReferenceId = -1;
+	int32 ItemId = -1;
 
-#pragma region TartarusInteractableTargetInterface
-public:
-	virtual bool IsInteractable() const override;
-	virtual bool StartInteraction(const TObjectPtr<AController> InstigatorController) override;
-#pragma endregion
 };

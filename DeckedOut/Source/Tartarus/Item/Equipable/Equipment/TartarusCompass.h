@@ -10,10 +10,6 @@
 
 class UArrowComponent;
 
-// TEMP
-class ATartarusTreasureChest;
-// END TEMP
-
 /**
  * 
  */
@@ -24,8 +20,6 @@ class TARTARUS_API ATartarusCompass : public ATartarusEquipableItem
 	
 public:
 	ATartarusCompass();
-
-	void SetTargetLocation(const FVector& Location) { TargetLocation = Location; }
 
 protected:
 	FVector TargetLocation = FTartarusHelpers::InvalidLocation;
@@ -41,6 +35,6 @@ private:
 
 #pragma region EquipableInterface
 public:
-	virtual void OnEquipped() override;
+	virtual void OnEquipped(AActor* const EquippedActor) override;
 #pragma endregion
 };

@@ -4,10 +4,9 @@
 #include "Item/Equipable/Equipment/TartarusCompass.h"
 
 #include "GameMode/TreasureHunt/TartarusTreasureSubsystem.h"
-
-// TEMP
-#include "Item/Persistent/TartarusTreasureChest.h"
-// END TEMP
+#include "Item/Equipable/TartarusEquipableManager.h"
+#include "Logging/TartarusLogChannels.h"
+#include "Player/TartarusPlayerCharacter.h"
 
 #if WITH_EDITOR
 #include "Components/ArrowComponent.h"
@@ -19,37 +18,62 @@ ATartarusCompass::ATartarusCompass()
 #if WITH_EDITORONLY_DATA
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 	ArrowComponent = CreateEditorOnlyDefaultSubobject<UArrowComponent>(FName("ArrowComponent"), false);
-	ArrowComponent->SetupAttachment(RootComponent);
+
+	if (IsValid(ArrowComponent))
+	{
+		ArrowComponent->SetupAttachment(RootComponent);
+	}
 #endif
 }
 
 #if WITH_EDITORONLY_DATA
 void ATartarusCompass::Tick(float DeltaSeconds)
 {
-	// Calculate the look at angle from the Arrow Component position to the target.
-	const FRotator LookatRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetLocation);
+	if (IsValid(ArrowComponent))
+	{
+		// Calculate the look at angle from the Arrow Component position to the target.
+		const FRotator LookatRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetLocation);
 
-	// Set the Arrow component rotation.
-	ArrowComponent->SetWorldRotation(LookatRotation);
+		// Set the Arrow component rotation.
+		ArrowComponent->SetWorldRotation(LookatRotation);
+	}
 }
 #endif
 
-void ATartarusCompass::OnEquipped()
+#pragma region EquipableInterface
+void ATartarusCompass::OnEquipped(AActor* const EquippedActor)
 {
-	Super::OnEquipped();
+	Super::OnEquipped(EquippedActor);
 
-	// TEMP
-	UTartarusTreasureSubsystem* const TreasureSubsystem = GetWorld()->GetSubsystem<UTartarusTreasureSubsystem>();
-
-	if (!TreasureSubsystem)
+	const UTartarusTreasureSubsystem*const TreasureSubsystem = GetWorld()->GetSubsystem<UTartarusTreasureSubsystem>();
+	if (!IsValid(TreasureSubsystem))
 	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: No treasureSubsytem found!"), *FString(__FUNCTION__));
 		return;
 	}
 
-	FSpawnAndLinkRequestCompletedEvent OnRequestCompleted;
+	const ATartarusPlayerCharacter* const PlayerCharacter = Cast<ATartarusPlayerCharacter>(EquippedActor);
+	if (!IsValid(PlayerCharacter))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: Not equipped to a player!"), *FString(__FUNCTION__));
+		return;
+	}
 
-	TreasureSubsystem->AsyncRequestSpawnedAndLinkTreasure(this, OnRequestCompleted);
-	// END TEMP
+	const UTartarusEquipableManager* const EquipableManager = PlayerCharacter->GetEquipableManager();
+	if (!IsValid(EquipableManager))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: No equipable manager on the player, how did this get called?"), *FString(__FUNCTION__));
+		return;
+	}
+
+	const FEquipmentInfo* const EquippableInfo = EquipableManager->FindEquippedItem(this);
+	if (!EquippableInfo)
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to set target location: This item is not equipped, how did this get called?"), *FString(__FUNCTION__));
+		return;
+	}
+
+	TargetLocation = TreasureSubsystem->GetTreasureLocation(EquippableInfo->GetInventoryStackId());
 }
+#pragma endregion

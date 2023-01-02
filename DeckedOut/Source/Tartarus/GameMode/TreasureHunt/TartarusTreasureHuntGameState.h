@@ -1,0 +1,68 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/GameStateBase.h"
+#include "TartarusTreasureHuntGameState.generated.h"
+
+UENUM()
+enum class ETreasureHuntState : uint8
+{
+	Active,
+	Inactive,
+	Paused,
+};
+
+DECLARE_EVENT_TwoParams(ATartarusTreasureHuntGameState, FRunningStateChanged, ETreasureHuntState /*OldState*/, ETreasureHuntState /*NewState*/);
+DECLARE_EVENT_OneParam(ATartarusTreasureHuntGameState, FClankLevelChanged, int32 /*ClankLevel*/);
+
+/**
+ * 
+ */
+UCLASS()
+class TARTARUS_API ATartarusTreasureHuntGameState : public AGameStateBase
+{
+	GENERATED_BODY()
+
+#pragma region TreasureHuntState
+public:
+	// Changes the state of the treasure hunt if possible.
+	void ChangeTreasureHuntState(const ETreasureHuntState NewState);
+
+	/*
+	* Checks if the treasure hunt is active.
+	* Return: True if the treasure hunt is ongoing. False if the treasure hunt is inactive or paused.
+	*/
+	bool IsTreasureHuntActive() const;
+
+	/*
+	* Event fired each time the running state of the treasure hunt changes.
+	* Return: The event that gets fired when the state changes.
+	*/
+	FRunningStateChanged& OnRunningStateChanged() { return RunningStateChangedEvent; }
+
+protected:
+	
+private:
+	ETreasureHuntState TreasureHuntState = ETreasureHuntState::Inactive;
+	FRunningStateChanged RunningStateChangedEvent = FRunningStateChanged();
+#pragma endregion
+
+#pragma region Clank
+public:
+	// Increases the clank level based on the amount of noise generated.
+	void IncreaseClank(const int32 GeneratedClank);
+
+	FClankLevelChanged& OnClankLevelChanged() { return ClankLevelChangedEvent; }
+
+protected:
+	int32 ClankLevel = 0;
+
+	// Resets the ClankLevel back to 0;
+	void ResetClank();
+
+private:
+	FClankLevelChanged ClankLevelChangedEvent = FClankLevelChanged();
+#pragma endregion
+};

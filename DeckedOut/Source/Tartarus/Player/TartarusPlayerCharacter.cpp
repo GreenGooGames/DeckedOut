@@ -4,10 +4,6 @@
 
 #include "Item/Equipable/TartarusEquipableManager.h"
 
-// TEMP
-#include "Item/System/TartarusItemSubsystem.h"
-// END TEMP
-
 #pragma region Template
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -145,23 +141,3 @@ void ATartarusPlayerCharacter::MoveRight(float Value)
 	}
 }
 #pragma endregion
-
-void ATartarusPlayerCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// TEMP
-	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
-
-	if (!ItemSubsystem)
-	{
-		return;
-	}
-
-	// Spawn Compass at (X=2160.000000,Y=730.000000,Z=150.000000)
-	FTransform SpawnTransform = FTransform(FVector(2160, 730, 150));
-	FItemSpawnRequestCompletedEvent OnSpawnRequestCompleted;
-
-	ItemSubsystem->ASyncRequestSpawnItem(1, SpawnTransform, OnSpawnRequestCompleted);
-	// END TEMP
-}

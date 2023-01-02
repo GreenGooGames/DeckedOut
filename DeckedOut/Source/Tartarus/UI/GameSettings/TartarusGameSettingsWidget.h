@@ -3,14 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CommonActivatableWidget.h"
+#include "UI/Foundation/TartarusActivatableWidget.h"
+
 #include "TartarusGameSettingsWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class TARTARUS_API UTartarusGameSettingsWidget : public UCommonActivatableWidget
+class TARTARUS_API UTartarusGameSettingsWidget : public UTartarusActivatableWidget
 {
 	GENERATED_BODY()
 	

@@ -3,11 +3,40 @@
 
 #include "GameMode/TreasureHunt/TartarusTreasureSubsystem.h"
 
+#include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
 #include "GameMode/TreasureHunt/TartarusTreasureSubsystemSettings.h"
 #include "Item/Equipable/Equipment/TartarusCompass.h"
+#include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/Persistent/TartarusTreasureChest.h"
+#include "Item/System/TartarusItemSubsystem.h"
+#include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
 #include "System/TartarusAssetManager.h"
+
+#pragma region FSpawnPointData
+FSpawnPointData::FSpawnPointData(const FTransform& SpawnPointTransform)
+{
+	Transform = SpawnPointTransform;
+}
+
+void FSpawnPointData::Reset()
+{
+	bIsAvailable = true;
+	KeyInventoryStackId.Invalidate();
+
+	if (IsValid(Treasure.Get()))
+	{
+		Treasure.Get()->Destroy();
+		Treasure = nullptr;
+	}
+}
+
+void FSpawnPointData::Reserve(const FGuid& KeyInventoryId)
+{
+	bIsAvailable = false;
+	KeyInventoryStackId = KeyInventoryId;
+}
+#pragma endregion
 
 UTartarusTreasureSubsystem::UTartarusTreasureSubsystem()
 {
@@ -17,76 +46,174 @@ UTartarusTreasureSubsystem::UTartarusTreasureSubsystem()
 	{
 		TreasureClass = Settings->TreasureClass;
 	}
-
 }
 
-ATartarusTreasureChest* UTartarusTreasureSubsystem::SpawnTreasure(TSubclassOf<ATartarusTreasureChest>& ToSpawnClass, const FTransform& SpawnTransform)
+void UTartarusTreasureSubsystem::OnWorldBeginPlay(UWorld& InWorld)
+{
+	Super::OnWorldBeginPlay(InWorld);
+
+	ATartarusTreasureHuntGameState* const GameState = GetWorld()->GetGameState<ATartarusTreasureHuntGameState>();
+
+	if (!IsValid(GameState))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to subscribe to the game state: No game valid state found!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	GameState->OnRunningStateChanged().AddUObject(this, &UTartarusTreasureSubsystem::HandleGameRunningStateChanged);
+}
+
+ATartarusTreasureChest* UTartarusTreasureSubsystem::SpawnTreasure(TSubclassOf<ATartarusTreasureChest>& ToSpawnClass, FSpawnPointData& SpawnPointData)
 {
 	const FActorSpawnParameters SpawnParams = FActorSpawnParameters();
 
 	// Spawn the treasure in the world.
-	ATartarusTreasureChest* const Treasure = GetWorld()->SpawnActor<ATartarusTreasureChest>(ToSpawnClass, SpawnTransform, SpawnParams);
-	
+	ATartarusTreasureChest* const Treasure = GetWorld()->SpawnActor<ATartarusTreasureChest>(ToSpawnClass, SpawnPointData.GetTransform(), SpawnParams);
 	if (!Treasure)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to spawn the treasure!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to spawn the treasure!"), *FString(__FUNCTION__));
 		return nullptr;
 	}
 
-	Treasure->OnLooted.AddDynamic(this, &UTartarusTreasureSubsystem::HandleOnTreasureLooted);
+	Treasure->OnLooted().AddUObject(this, &UTartarusTreasureSubsystem::HandleOnTreasureLooted);
+
+	SpawnPointData.SetTreasure(Treasure);
 
 	return Treasure;
-}
-
-bool UTartarusTreasureSubsystem::LinkCompassToTreasure(TWeakObjectPtr<ATartarusCompass> Compass, TObjectPtr<ATartarusTreasureChest> Treasure)
-{
-	if (!IsValid(Compass.Get()))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link a compass to treasure: Compass was invalid!"), __FUNCTION__);
-		return false;
-	}
-
-	if (!IsValid(Treasure))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link a compass to treasure: Treasure was invalid!"), __FUNCTION__);
-		return false;
-	}
-
-	Treasure->LinkCompass(Compass);
-	Compass->SetTargetLocation(Treasure->GetActorLocation());
-
-	return true;
 }
 
 void UTartarusTreasureSubsystem::HandleOnTreasureLooted(ATartarusTreasureChest* const LootedTreasure)
 {
 	if (!IsValid(LootedTreasure))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: The treasure is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: The treasure is invalid!"), *FString(__FUNCTION__));
 		return;
 	}
 
 	for (FSpawnPointData& SpawnPoint : SpawnPoints)
 	{
-		if (SpawnPoint.Treasure != LootedTreasure)
+		if (SpawnPoint.GetTreasure() != LootedTreasure)
 		{
 			continue;
 		}
 
-		SpawnPoint.bIsAvailable = true;
-		SpawnPoint.Treasure = nullptr;
+		SpawnPoint.Reset();
+	}
+}
 
-		LootedTreasure->Destroy();
+void UTartarusTreasureSubsystem::HandleGameRunningStateChanged(ETreasureHuntState OldState, ETreasureHuntState NewState)
+{
+	// Spawn and Link treasure when the treasure hunt starts.
+	if (NewState == ETreasureHuntState::Active && OldState == ETreasureHuntState::Inactive)
+	{
+		// Find all treasure keys in the inventory of the player, by first getting all treasure key id's.
+		UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
+
+		if (!IsValid(ItemSubsystem))
+		{
+			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to treasure: Item subsystem is invalid!"), *FString(__FUNCTION__));
+			return;
+		}
+
+		TArray<EItemType> ItemTypes;
+		ItemTypes.Add(EItemType::TreasureKey);
+		FGetItemDataRequestCompletedEvent OnRequestCompleted;
+		OnRequestCompleted.AddUObject(this, &UTartarusTreasureSubsystem::HandleTreasureKeysDataReceived);
+
+		ItemSubsystem->AsyncRequestGetItemsData(ItemTypes, OnRequestCompleted);
+	}
+	// Despawn all treasure when the treasure hunt ends.
+	else if (NewState == ETreasureHuntState::Inactive)
+	{
+		// Clear all data associated with spawned treasures.
+		for (FSpawnPointData& SpawnPoint : SpawnPoints)
+		{
+			SpawnPoint.Reset();
+		}
+
+		CancelASyncRequests();
+	}
+}
+
+FVector UTartarusTreasureSubsystem::GetTreasureLocation(const FGuid& KeyInventoryId) const
+{
+	if (!KeyInventoryId.IsValid())
+	{
+		return FTartarusHelpers::InvalidLocation;
+	}
+
+	for (const FSpawnPointData& SpawnPoint : SpawnPoints)
+	{
+		if (SpawnPoint.GetKeyId() != KeyInventoryId)
+		{
+			continue;
+		}
+
+		return SpawnPoint.GetTransform().GetLocation();
+	}
+
+	return FTartarusHelpers::InvalidLocation;
+}
+
+FGuid UTartarusTreasureSubsystem::GetTreasureKey(const ATartarusTreasureChest* const Treasure)
+{
+	if (!IsValid(Treasure))
+	{
+		return FGuid();
+	}
+
+	for (const FSpawnPointData& SpawnPoint : SpawnPoints)
+	{
+		if (SpawnPoint.GetTreasure() != Treasure)
+		{
+			continue;
+		}
+
+		return SpawnPoint.GetKeyId();
+	}
+
+	return FGuid();
+}
+
+void UTartarusTreasureSubsystem::HandleTreasureKeysDataReceived(FGuid ASyncLoadRequestId, TArray<FItemTableRow> TreasureKeysData)
+{
+	// Get the inventory of the player.
+	AController* const PlayerController = GetWorld()->GetFirstPlayerController<AController>();
+
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No player in the world!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
+
+	if (!IsValid(Inventory))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No inventory on player!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	// Loop over each treasure Key, and look if the player has it in their inventory.
+	for (const FItemTableRow& TreasureKey : TreasureKeysData)
+	{
+		const TArray<const FInventoryItemStack*> InventoryTreasureKeys = Inventory->GetOverviewMulti(TreasureKey.UniqueItemId);
+
+		for (const FInventoryItemStack* const ItemStack : InventoryTreasureKeys)
+		{
+			// Spawn a treasure chest and link it to the treasure key.
+			FSpawnAndLinkRequestCompletedEvent OnRequestCompleted;
+			AsyncRequestSpawnAndLink(ItemStack->GetStackId(), OnRequestCompleted);
+		}
 	}
 }
 
 #pragma region SpawnPoint
 void UTartarusTreasureSubsystem::RegisterSpawnTransform(const FTransform& SpawnTransform)
 {
-	FSpawnPointData Data = FSpawnPointData();
-	Data.Transform = SpawnTransform;
+	const FSpawnPointData SpawnPoint = FSpawnPointData(SpawnTransform);
 
-	SpawnPoints.Add(Data);
+	SpawnPoints.Add(SpawnPoint);
 }
 
 FSpawnPointData* UTartarusTreasureSubsystem::FindAvailableSpawnpoint()
@@ -96,7 +223,7 @@ FSpawnPointData* UTartarusTreasureSubsystem::FindAvailableSpawnpoint()
 	for (FSpawnPointData& SpawnPoint : SpawnPoints)
 	{
 		// If the Spawnpoint is already being used, skip.
-		if (!SpawnPoint.bIsAvailable)
+		if (!SpawnPoint.IsAvailable())
 		{
 			continue;
 		}
@@ -111,36 +238,33 @@ FSpawnPointData* UTartarusTreasureSubsystem::FindAvailableSpawnpoint()
 
 	return AvailablePoints[FMath::RandRange(0, AvailablePoints.Num() - 1)];
 }
-
 #pragma endregion
 
 #pragma region AsyncLoading
-FGuid UTartarusTreasureSubsystem::AsyncRequestSpawnedAndLinkTreasure(TWeakObjectPtr<ATartarusCompass> Compass, FSpawnAndLinkRequestCompletedEvent& OnRequestCompletedEvent)
+FGuid UTartarusTreasureSubsystem::AsyncRequestSpawnAndLink(const FGuid KeyInventoryStackId, FSpawnAndLinkRequestCompletedEvent& OnRequestCompletedEvent)
 {
-	// Is the compass currently valid?
-	if (!IsValid(Compass.Get()))
+	// Is the Key valid?
+	if (!KeyInventoryStackId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Request failed: The compass is invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Request failed: The Key is invalid!"), *FString(__FUNCTION__));
 
 		return FGuid();
 	}
 	
 	// Get an available spawn transform.
 	FSpawnPointData* const SpawnPointData = FindAvailableSpawnpoint();
-	
 	if (!SpawnPointData)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Request failed: No valid spawn point found!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Request failed: No valid spawn point found!"), *FString(__FUNCTION__));
 		
 		return FGuid();
 	}
 	
 	// Async load the treasure class.
 	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
-	
 	if (!AssetManager.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Request failed: Asset manager was invalid!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Request failed: Asset manager was invalid!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 	
@@ -149,19 +273,18 @@ FGuid UTartarusTreasureSubsystem::AsyncRequestSpawnedAndLinkTreasure(TWeakObject
 	OnRequestCompleted.AddUObject(this, &UTartarusTreasureSubsystem::HandleTreasureClassLoaded);
 
 	FGuid AsyncLoadRequestId = AssetManager.AsyncRequestLoadAsset(TreasureClass.ToSoftObjectPath(), OnRequestCompleted);
-
 	if (!AsyncLoadRequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 	
-	FTreasureSpawnRequestInfo SpawnRequestInfo = FTreasureSpawnRequestInfo(SpawnPointData, Compass.Get(), OnRequestCompletedEvent);
+	FTreasureSpawnRequestInfo SpawnRequestInfo = FTreasureSpawnRequestInfo(SpawnPointData, KeyInventoryStackId, OnRequestCompletedEvent);
 	SpawnRequestInfo.SetASyncLoadRequestId(AsyncLoadRequestId);
-	SpawnRequestInfo.GetSpawnPointData().bIsAvailable = false;
-
+	SpawnRequestInfo.GetSpawnPointData().Reserve(KeyInventoryStackId);
+	
 	SpawnAndLinkRequests.Add(SpawnRequestInfo);
-
+	
 	return SpawnRequestInfo.GetRequestId();
 }
 
@@ -185,12 +308,7 @@ void UTartarusTreasureSubsystem::HandleRequestFailed(const FTreasureSpawnRequest
 	}
 
 	FailedRequest->OnRequestCompleted().Broadcast(false);
-	FailedRequest->GetSpawnPointData().bIsAvailable = true;
-
-	if (IsValid(FailedRequest->GetSpawnPointData().Treasure.Get()))
-	{
-		FailedRequest->GetSpawnPointData().Treasure->Destroy();
-	}
+	FailedRequest->GetSpawnPointData().Reset();
 
 	SpawnAndLinkRequests.RemoveSingleSwap(*FailedRequest);
 }
@@ -205,16 +323,42 @@ void UTartarusTreasureSubsystem::HandleTreasureClassLoaded(FGuid ASyncLoadReques
 
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Treasure failed: Could not find the request!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Treasure failed: Could not find the request!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	// Check for a succesfull load.
+	TreasureClass = Cast<UClass>(AssetHandle.Get()->GetLoadedAsset());
+	if (!IsValid(TreasureClass.Get()))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Treasure failed: Class failed to load!"), *FString(__FUNCTION__));
+		HandleRequestFailed(CurrentRequest);
 
 		return;
 	}
 
-	TreasureClass = Cast<UClass>(AssetHandle.Get()->GetLoadedAsset());
-
-	if (!IsValid(TreasureClass.Get()))
+	// Check the player inventory for the key to link to this treasure.
+	AController* const PlayerController = GetWorld()->GetFirstPlayerController<AController>();
+	if (!IsValid(PlayerController))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Treasure failed: Class failed to load!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to Treasure: No player in the world!"), *FString(__FUNCTION__));
+		HandleRequestFailed(CurrentRequest);
+
+		return;
+	}
+
+	UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
+	if (!IsValid(Inventory))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to Treasure: No inventory on player!"), *FString(__FUNCTION__));
+		HandleRequestFailed(CurrentRequest);
+
+		return;
+	}
+
+	if (!Inventory->Contains(CurrentRequest->GetKeyInventoryStackId()))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to link key to Treasure: Inventory doesn't have the key!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 
 		return;
@@ -222,30 +366,34 @@ void UTartarusTreasureSubsystem::HandleTreasureClassLoaded(FGuid ASyncLoadReques
 
 	// Spawn the treasure in the world.
 	TSubclassOf<ATartarusTreasureChest> LoadedClass = TreasureClass.Get();
-	ATartarusTreasureChest* const Treasure = SpawnTreasure(LoadedClass, CurrentRequest->GetSpawnPointData().Transform);
-	
+	ATartarusTreasureChest* const Treasure = SpawnTreasure(LoadedClass, CurrentRequest->GetSpawnPointData());
 	if (!IsValid(Treasure))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to spawn Treasure: Could not spawn in the world!"), __FUNCTION__);
-		HandleRequestFailed(CurrentRequest);
-	
-		return;
-	}
-	
-	// Link the treasure to the spawnpoint.
-	CurrentRequest->GetSpawnPointData().Treasure = Treasure;
-
-	// Link a compass to the treasure.
-	bool bIsLinked = LinkCompassToTreasure(CurrentRequest->GetCompass(), Treasure);
-	
-	if (!bIsLinked)
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to spawn Treasure: Could not establish a link!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to spawn Treasure: Could not spawn in the world!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
 
 		return;
 	}
-	
+
 	HandleRequestSuccess(CurrentRequest);
+}
+
+void UTartarusTreasureSubsystem::CancelASyncRequests()
+{
+	// Clear all ongoing AsyncRequests.
+	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
+
+	if (AssetManager.IsValid())
+	{
+		for (const FTreasureSpawnRequestInfo& AsyncRequest : SpawnAndLinkRequests)
+		{
+			AssetManager.CancelRequest(AsyncRequest.GetASyncLoadRequestId());
+
+			// Notify any listeners that the request got canceled (/failed).
+			HandleRequestFailed(&AsyncRequest);
+		}
+	}
+
+	SpawnAndLinkRequests.Empty();
 }
 #pragma endregion

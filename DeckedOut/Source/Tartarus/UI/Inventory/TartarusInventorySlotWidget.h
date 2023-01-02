@@ -25,5 +25,8 @@ protected:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 		TObjectPtr<UCommonLazyImage> DisplayImage = nullptr;
 
+	UPROPERTY(EditDefaultsOnly)
+		FSlateBrush EmptySlotBrush = FSlateBrush();
+
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
 };

@@ -14,34 +14,70 @@ class UDataTable;
 struct FStreamableHandle;
 struct FItemTableRow;
 
-DECLARE_EVENT_TwoParams(UTartarusItemSubsystem, FItemSpawnRequestCompletedEvent, FGuid /*RequestId*/, TWeakObjectPtr<ATartarusItemBase> /*SpawnedItem*/)
+enum class EItemType : uint8;
+
+#pragma region ASyncSpawn
+DECLARE_EVENT_TwoParams(UTartarusItemSubsystem, FItemSpawnRequestCompletedEvent, FGuid /*RequestId*/, TArray<TWeakObjectPtr<ATartarusItemBase>> /*SpawnedItems*/)
 
 USTRUCT()
-struct FItemSpawnRequestInfo : public FASyncLoadRequest
+struct FLoadingItemData
 {
 	GENERATED_BODY()
 
 public:
-	FItemSpawnRequestInfo() {}
-	FItemSpawnRequestInfo(const FItemSpawnRequestCompletedEvent& OnCompleted, const int32 ItemToSpawnId, const FTransform& ItemSpawnTransform)
-	{
-		RequestId = FGuid::NewGuid();
+	int32 ItemId = FTartarusHelpers::InvalidItemId;
+	int32 Count = 0;
+	FSoftObjectPath ObjectPath = FSoftObjectPath();
+};
 
-		OnRequestCompleteEvent = OnCompleted;
-		ItemId = ItemToSpawnId;
-		SpawnTransform = ItemSpawnTransform;
-	}
-	
-	const FItemSpawnRequestCompletedEvent& OnItemSpawnRequestCompleted() const { return OnRequestCompleteEvent; }
-	int32 GetItemId() { return ItemId; }
+USTRUCT()
+struct FSpawnItemsRequestInfo : public FASyncLoadRequest
+{
+	GENERATED_BODY()
+
+public:
+	FSpawnItemsRequestInfo() {}
+	FSpawnItemsRequestInfo(const FTransform& Transform, const FItemSpawnRequestCompletedEvent& OnCompleted);
+
+	void AddItemToLoad(const FSoftObjectPath& ItemObjectPath, const int32 ItemId);
+	TArray<FSoftObjectPath> GetAssetsToLoad() const;
+	const TArray<FLoadingItemData>& GetItemsToLoad() const { return ItemsToLoad; };
+
+	int32 GetItemId(const UObject* const Asset) const;
+
 	const FTransform& GetSpawnTransform() const { return SpawnTransform; }
+	const FItemSpawnRequestCompletedEvent& OnItemSpawnRequestCompleted() const { return RequestCompletedEvent; }
 
 private:
-	FItemSpawnRequestCompletedEvent OnRequestCompleteEvent = FItemSpawnRequestCompletedEvent();
-
-	int32 ItemId = FTartarusHelpers::InvalidItemId;
 	FTransform SpawnTransform = FTransform();
+	FItemSpawnRequestCompletedEvent RequestCompletedEvent = FItemSpawnRequestCompletedEvent();
+	TArray<FLoadingItemData> ItemsToLoad;
 };
+#pragma endregion
+
+#pragma region ASyncItemData
+DECLARE_EVENT_TwoParams(UTartarusItemSubsystem, FGetItemDataRequestCompletedEvent, FGuid /*RequestId*/, TArray<FItemTableRow> /*ItemsData*/)
+
+USTRUCT()
+struct FGetItemDataRequestInfo : public FASyncLoadRequest
+{
+	GENERATED_BODY()
+
+public:
+	FGetItemDataRequestInfo() {}
+	FGetItemDataRequestInfo(const TArray<int32>& ItemIdsToLoad, const FGetItemDataRequestCompletedEvent& OnCompleted);
+	FGetItemDataRequestInfo(const TArray<EItemType>& ItemTypesToLoad, const FGetItemDataRequestCompletedEvent& OnCompleted);
+
+	const FGetItemDataRequestCompletedEvent& OnGetItemDataRequestCompleted() const { return RequestCompletedEvent; }
+	const TArray<int32>& GetItemIds() { return ItemIds; }
+	const TArray<EItemType>& GetItemTypes() { return ItemTypes; }
+
+private:
+	FGetItemDataRequestCompletedEvent RequestCompletedEvent = FGetItemDataRequestCompletedEvent();
+	TArray<int32> ItemIds;
+	TArray<EItemType> ItemTypes;
+};
+#pragma endregion
 
 /**
  * 
@@ -55,54 +91,76 @@ public:
 	UTartarusItemSubsystem();
 
 public:
-	// Datatable reference that contains all items.
-	UPROPERTY(EditDefaultsOnly)
-		TSoftObjectPtr<UDataTable> ItemDataTable;
-
 	/* 
 	* Despawns an item if managed by this system.
 	* Return: True if the item got destroyed, false if despawn failed.
 	*/
 	bool DespawnItem(ATartarusItemBase* const ToDespawn);
 
+	/*
+	* Despawns an item if managed by this system.
+	* Return: True if the item got destroyed, false if despawn failed.
+	*/
+	bool DespawnItem(AActor* const ToDespawn);
+
+protected:
+	// Datatable reference that contains all items.
+	UPROPERTY(EditDefaultsOnly)
+		TSoftObjectPtr<UDataTable> ItemDataTable;
+
+	/*
+	* Spawns an item in the world.
+	* Return: The item that is spawned.
+	*/
+	TWeakObjectPtr<ATartarusItemBase> SpawnItem(const TSubclassOf<ATartarusItemBase>& ItemClass, const int32 ItemId, const FTransform& SpawnTransform);
+
 private:
 	TArray<TObjectPtr<ATartarusItemBase>> ItemInstances;
 
-#pragma region ASyncLoading
+#pragma region ASyncSpawn
 public:
-	// Creates a request to spawn an item in the world.
-	FGuid ASyncRequestSpawnItem(const int32 ItemId, const FTransform& SpawnTransform, FItemSpawnRequestCompletedEvent& OnRequestCompletedEvent);
-
-protected:
-	// Notfies the requester that the request has succeeded and removes the request from the queue.
-	void HandleRequestSuccess(const FItemSpawnRequestInfo* const SuccessRequest, TWeakObjectPtr<ATartarusItemBase> SpawnedItem);
-
-	// Notifies the requester that the request failed and removes the request from the queue.
-	void HandleRequestFailed(const FItemSpawnRequestInfo* const FailedRequest);
-
-	// Called when the item datatable is loaded.
-	void HandleDataTableLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle);
+	/*
+	* Creates an ASync request to load and spawn Items in the world.
+	* Return: The unique identifier of the request.
+	*/
+	FGuid AsyncRequestSpawnItems(const TArray<FDataTableRowHandle>& ItemTableHandles, const FTransform& SpawnTransform, const FItemSpawnRequestCompletedEvent& OnRequestCompleted);
 
 	/*
-	* Creates a request to load an item.
-	* Return: The Guid of the async load request.
+	* Creates an ASync request to load and spawn Items in the world.
+	* Return: The unique identifier of the request.
 	*/
-	FGuid AsyncRequestLoadItem(const FItemTableRow* const ItemDefinition);
+	FGuid AsyncRequestSpawnItems(const TArray<FItemTableRow>& ItemTableRows, const FTransform& SpawnTransform, const FItemSpawnRequestCompletedEvent& OnRequestCompleted);
 
-	// Called when the item blueprint is loaded.
-	void HandleBlueprintLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle);
+protected:
+	// Executed when a Item spawn request has completed.
+	void HandleSpawnItemRequestCompleted(const FSpawnItemsRequestInfo* const CompletedRequest, const TArray<TWeakObjectPtr<ATartarusItemBase>>& SpawnedItems);
 
-	/* Creates and actor of the class using the provided transform in the world.
-	* Return: True if an item was spawned, false if not item was spawned.
-	*/
-	ATartarusItemBase* SpawnItem(TSubclassOf<ATartarusItemBase>& ItemClass, const FTransform& SpawnTransform);
-
-	/* Searches for the Item row based on the given Id.
-	* Return: Row of the item from the database, nullptr if not found.
-	*/
-	FItemTableRow* FindItemRow(UDataTable* const DataTable, const int32 ItemId) const;
+	// Callback for when an Items load request completed.
+	void HandleItemsLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> StreamingHandle);
 
 private:
-	TArray<FItemSpawnRequestInfo> SpawnRequests;
+	TArray<FSpawnItemsRequestInfo> SpawnItemRequests;
+#pragma endregion
+
+#pragma region ASyncItemData
+public:
+	/*
+	* Creates a request to load the items datatable and provide the TableRows of the requested items.
+	* Return: The unique identifier of the request.
+	*/
+	FGuid AsyncRequestGetItemsData(const TArray<int32>& ItemIds, const FGetItemDataRequestCompletedEvent& OnRequestCompleted);
+
+	/*
+	* Creates a request to load the items datatable and provide the TableRows of the requested item types.
+	* Return: The unique identifier of the request.
+	*/
+	FGuid AsyncRequestGetItemsData(const TArray<EItemType>& ItemTypes, const FGetItemDataRequestCompletedEvent& OnRequestCompleted);
+
+protected:
+	void HandleGetItemsDataRequestCompleted(const FGetItemDataRequestInfo* const CompletedRequest, TArray<FItemTableRow> ItemsData);
+	void HandleItemsDataTableLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> StreamingHandle);
+
+private:
+	TArray<FGetItemDataRequestInfo> GetItemDataRequests;
 #pragma endregion
 };

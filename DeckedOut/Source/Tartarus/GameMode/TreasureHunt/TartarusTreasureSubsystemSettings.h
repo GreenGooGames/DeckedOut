@@ -17,6 +17,7 @@ class TARTARUS_API UTartarusTreasureSubsystemSetting : public UDeveloperSettings
 	GENERATED_BODY()
 	
 public:
+	// The class of the treasure to spawn.
 	UPROPERTY(Config, EditDefaultsOnly)
 		TSoftClassPtr<ATartarusTreasureChest> TreasureClass;
 };

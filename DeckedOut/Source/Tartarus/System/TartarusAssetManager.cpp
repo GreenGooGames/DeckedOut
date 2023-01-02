@@ -27,7 +27,7 @@ FGuid UTartarusAssetManager::AsyncRequestLoadAsset(const FSoftObjectPath& Target
 	
 	if (!Handle.IsValid())
 	{
-		UE_LOG(LogTartarus, Fatal, TEXT("%s: Request failed: Could not start loading the asset!"), __FUNCTION__);
+		UE_LOG(LogTartarus, Fatal, TEXT("%s: Request failed: Could not start loading the asset!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
 
@@ -38,6 +38,42 @@ FGuid UTartarusAssetManager::AsyncRequestLoadAsset(const FSoftObjectPath& Target
 	AsyncLoadRequests.Add(Request);
 
 	return Request.GetRequestId();
+}
+
+FGuid UTartarusAssetManager::AsyncRequestLoadAssets(TArray<FSoftObjectPath> TargetsToLoad, const FAsyncLoadAssetRequestCompletedEvent& OnRequestCompletedEvent)
+{
+	TSharedPtr<FStreamableHandle> Handle = StreamableManager.RequestAsyncLoad(TargetsToLoad, FStreamableDelegate::CreateUObject(this, &UTartarusAssetManager::HandleAssetLoaded));
+
+	if (!Handle.IsValid())
+	{
+		UE_LOG(LogTartarus, Fatal, TEXT("%s: Request failed: Could not start loading the asset!"), *FString(__FUNCTION__));
+		return FGuid();
+	}
+
+	FAsyncLoadAssetRequest Request = FAsyncLoadAssetRequest();
+	Request.AssetHandle = Handle;
+	Request.RequestCompletedEvent = OnRequestCompletedEvent;
+
+	AsyncLoadRequests.Add(Request);
+
+	return Request.GetRequestId();
+
+}
+
+void UTartarusAssetManager::CancelRequest(const FGuid& RequestId)
+{
+	for (auto It = AsyncLoadRequests.CreateIterator(); It; ++It)
+	{
+		FAsyncLoadAssetRequest& CurrentRequest = AsyncLoadRequests[It.GetIndex()];
+
+		if (CurrentRequest.GetRequestId() == RequestId)
+		{
+			CurrentRequest.AssetHandle.Get()->CancelHandle();
+
+			It.RemoveCurrent();
+		}
+	}
+
 }
 
 void UTartarusAssetManager::HandleAssetLoaded()

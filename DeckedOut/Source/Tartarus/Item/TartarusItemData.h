@@ -5,9 +5,25 @@
 #include "Engine/DataTable.h"
 #include "CoreMinimal.h"
 #include "Item/TartarusItemBase.h"
+#include "Item/Equipable/TartarusEquipableData.h"
 #include "System/TartarusHelpers.h"
 
 #include "TartarusItemData.generated.h"
+
+UENUM(BlueprintType)
+enum class EItemType : uint8
+{
+	None = 0,
+	Artifact = 1,
+	TreasureKey = 2,
+	// Bitflags?
+	// Enum = 4
+	// Enum = 8
+	// enum = 16
+	// Enum = 32
+	// Enum = 64
+	// Enum = 128
+};
 
 // General information of an item.
 USTRUCT(BlueprintType)
@@ -17,8 +33,12 @@ struct FItemTableRow : public FTableRowBase
 
 public:
 	// Unique Id to identify the item.
+	// Negative = non-stackable Item, Positive = Stackable item, 0 = invalid
 	UPROPERTY(EditDefaultsOnly)
-		int32 UniqueId = FTartarusHelpers::InvalidItemId;
+		int32 UniqueItemId = FTartarusHelpers::InvalidItemId;
+
+	UPROPERTY(EditDefaultsOnly)
+		EItemType ItemType = EItemType::None;
 
 	// Name to represent the item.
 	UPROPERTY(EditDefaultsOnly)
@@ -35,15 +55,12 @@ public:
 	// Reference texture to represent the item in UI.
 	UPROPERTY(EditDefaultsOnly)
 		TSoftObjectPtr<UTexture2D> DisplayTexture = nullptr;
-};
 
-// Data containing item information in the inventory.
-USTRUCT()
-struct FInventoryItemEntry
-{
-	GENERATED_BODY()
+	// Should this item be auto-equipped if possible when received?
+	UPROPERTY(EditDefaultsOnly)
+		bool bCanAutoEquip = false;
 
-public:
-	int32 ReferenceId = FTartarusHelpers::InvalidItemId;
-	int32 Quantity = 0;
+	// To which slots can this be equipped to.
+	UPROPERTY(EditDefaultsOnly, meta = (Bitmask, BitmaskEnum = "EEquipmentSlot"))
+		uint8 EquipableSlots = 0;
 };
