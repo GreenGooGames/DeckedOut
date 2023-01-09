@@ -69,7 +69,7 @@ ITartarusInteractableTargetInterface* UTartarusInteractableSourceComponent::GetB
 
 float UTartarusInteractableSourceComponent::EvaluateInteractableActor(const TObjectPtr<AActor>& Interactable, const FTransform& OriginTransform) const
 {
-	if (!Interactable.IsNull())
+	if (Interactable)
 	{
 		const float MaxAngle = FMath::DegreesToRadians(InteractableAngle);
 
