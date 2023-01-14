@@ -11,9 +11,9 @@ enum class ENoiseLevel : uint8
 {
 	None,		// No sound
 	Faint,		// ex: Crouching, 
-	Subtle,		//ex: Walking, Jumping, Opening chest
-	Loud,		//ex: Running, Landing from great height, Dropping
-	Deafening,	//ex: Bell
+	Subtle,		// ex: Walking, Jumping, Opening chest
+	Loud,		// ex: Running, Landing from great height, Dropping
+	Deafening,	// ex: Bell
 };
 
 USTRUCT(BlueprintType)

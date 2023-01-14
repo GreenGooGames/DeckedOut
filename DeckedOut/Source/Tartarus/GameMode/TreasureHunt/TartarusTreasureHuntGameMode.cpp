@@ -5,7 +5,7 @@
 
 #include "GameFramework/PlayerState.h"
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
-#include "Gameplay/Ruleset/TartarusRuleset.h"
+#include "Gameplay/Ruleset/TartarusRuleSubsystem.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
@@ -27,6 +27,12 @@ void ATartarusTreasureHuntGameMode::StartTreasureHunt()
 		return; // Items could not be gifted so don't start a treasure hunt as the player wont be able to complete it.
 	}
 
+	// Apply the ruleset for the treasure hunt.
+	if (!ApplyRuleset())
+	{
+		return; // Ruleset could not be applied, nothing will happen during the treasure hunt.
+	}
+
 	// Change the game state to indicate the treasure hunt has started.
 	ATartarusTreasureHuntGameState* const TreasureHuntGameState = Cast<ATartarusTreasureHuntGameState>(GameState);
 	if (!IsValid(TreasureHuntGameState))
@@ -35,16 +41,10 @@ void ATartarusTreasureHuntGameMode::StartTreasureHunt()
 	}
 
 	TreasureHuntGameState->ChangeTreasureHuntState(ETreasureHuntState::Active);
-
-	// Enable the ruleset for the treasure hunt.
-	EnableRuleset();
 }
 
 void ATartarusTreasureHuntGameMode::StopTreasureHunt()
 {
-	// Disable the ruleset.
-	DisableRuleset();
-
 	// Change the game state to indicate the treasure hunt has ended.
 	ATartarusTreasureHuntGameState* const TreasureHuntGameState = Cast<ATartarusTreasureHuntGameState>(GameState);
 	if (!IsValid(TreasureHuntGameState))
@@ -105,40 +105,24 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 }
 #pragma endregion
 
-#pragma region Ruleset
-void ATartarusTreasureHuntGameMode::HandleClankLevelChanged(int32 ClankLevel)
+#pragma region RuleSet
+// Applies the ruleset to the Rule subsystem.
+bool ATartarusTreasureHuntGameMode::ApplyRuleset() const
 {
-	const bool bStageChanged = Ruleset->ActivateStage(GetWorld(), ActiveClankStage, ClankLevel);
-
-	if (!bStageChanged)
+	const UWorld* const World = GetWorld();
+	if (!IsValid(World))
 	{
-		return;
-	}
-}
-
-void ATartarusTreasureHuntGameMode::EnableRuleset()
-{
-	ATartarusTreasureHuntGameState* const TreasureHuntGameState = Cast<ATartarusTreasureHuntGameState>(GameState);
-	if (!IsValid(TreasureHuntGameState))
-	{
-		return;
+		return false;
 	}
 
-	HandleClankLevelChangedDelegateHandle = TreasureHuntGameState->OnClankLevelChanged().AddUObject(this, &ATartarusTreasureHuntGameMode::HandleClankLevelChanged);
-	HandleClankLevelChanged(0);
-}
-
-void ATartarusTreasureHuntGameMode::DisableRuleset()
-{
-	ATartarusTreasureHuntGameState* const TreasureHuntGameState = Cast<ATartarusTreasureHuntGameState>(GameState);
-	if (!IsValid(TreasureHuntGameState))
+	UTartarusRuleSubsystem* const RuleSubsystem = World->GetSubsystem<UTartarusRuleSubsystem>();
+	if (!IsValid(RuleSubsystem))
 	{
-		return;
+		return false;
 	}
 
-	TreasureHuntGameState->OnClankLevelChanged().Remove(HandleClankLevelChangedDelegateHandle);
+	RuleSubsystem->SetRuleset(Ruleset);
 
-	Ruleset->Reset(GetWorld());
-	ActiveClankStage = INDEX_NONE;
+	return true;
 }
 #pragma endregion

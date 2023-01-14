@@ -20,6 +20,4 @@ public:
 public:
 	void GenerateNoise(const FTartarusSound& SoundToPlay, const FVector& SourceLocation);
 
-protected:
-	int32 ConvertNoiseToClank(const ENoiseLevel NoiseLevel);
 };

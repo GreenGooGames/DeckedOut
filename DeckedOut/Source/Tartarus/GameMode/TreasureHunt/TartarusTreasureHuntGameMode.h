@@ -22,6 +22,7 @@ public:
 	void StartTreasureHunt();
 	void StopTreasureHunt();
 
+	// TODO: Refactor starter itoms into a TartarusRule.
 #pragma region StarterGifts
 protected:
 	// TreasureKey item handle to be gifted to the players when a treasure hunt starts.
@@ -43,15 +44,11 @@ protected:
 
 #pragma region RuleSet
 protected:
+	// The ruleset to apply during this gamemode.
 	UPROPERTY(EditDefaultsOnly)
 		TObjectPtr<UTartarusRuleset> Ruleset;
 
-	void HandleClankLevelChanged(int32 ClankLevel);
-	void EnableRuleset();
-	void DisableRuleset();
-
-private:
-	FDelegateHandle HandleClankLevelChangedDelegateHandle = FDelegateHandle();
-	int32 ActiveClankStage = INDEX_NONE;
+	// Applies the ruleset to the Rule subsystem.
+	bool ApplyRuleset() const;
 #pragma endregion
 };
