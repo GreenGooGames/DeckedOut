@@ -6,6 +6,19 @@
 #include "GameFramework/GameStateBase.h"
 #include "TartarusTreasureHuntGameState.generated.h"
 
+USTRUCT()
+struct FGameModifiers
+{
+	GENERATED_BODY()
+
+public:
+	// Has a chance to lower the volume of sound when generating clank.
+	float SneakModifier = 0.2f;
+
+	// Has a chance to completely nullify a sound when generating clank..
+	float SilenceModifier = 0.1f;
+};
+
 UENUM()
 enum class ETreasureHuntState : uint8
 {
@@ -41,10 +54,17 @@ public:
 	*/
 	FRunningStateChanged& OnRunningStateChanged() { return RunningStateChangedEvent; }
 
+	/*
+	* Modifiers applied to this instance of the game. Usually set trough the chosen card deck.
+	* Return: Struct containing all modifiers applied to the game.
+	*/
+	const FGameModifiers& GetGameModifiers() const { return GameModifiers; }
+
 protected:
 	
 private:
 	ETreasureHuntState TreasureHuntState = ETreasureHuntState::Inactive;
 	FRunningStateChanged RunningStateChangedEvent = FRunningStateChanged();
+	FGameModifiers GameModifiers = FGameModifiers();
 #pragma endregion
 };

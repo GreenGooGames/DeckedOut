@@ -3,7 +3,6 @@
 
 #include "Gameplay/Clank/TartarusClankSubsystem.h"
 
-#include "Audio/TartarusSoundData.h"
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
 
 void UTartarusClankSubsystem::OnWorldBeginPlay(UWorld& InWorld)
@@ -20,12 +19,13 @@ void UTartarusClankSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 
 void UTartarusClankSubsystem::GenerateClank(const ENoiseLevel NoiseLevel)
 {
-	if (NoiseLevel == ENoiseLevel::None)
+	const ENoiseLevel Volume = ApplyGameModifers(NoiseLevel);
+	if (Volume == ENoiseLevel::None)
 	{
 		return;
 	}
 
-	ClankLevel += BaseClankGenerationLevel * (uint8)NoiseLevel;
+	ClankLevel += BaseClankGenerationLevel * (uint8)Volume;
 
 	ClankLevelChangedEvent.Broadcast(ClankLevel);
 
@@ -83,5 +83,39 @@ void UTartarusClankSubsystem::HandleGameRunningStateChanged(ETreasureHuntState O
 
 void UTartarusClankSubsystem::GeneratePassiveClank()
 {
-	GenerateClank(ENoiseLevel::Faint);
+	GenerateClank(PassiveClankVolume);
+}
+
+ENoiseLevel UTartarusClankSubsystem::ApplyGameModifers(const ENoiseLevel NoiseLevel) const
+{
+	ATartarusTreasureHuntGameState* const GameState = GetWorld()->GetGameState<ATartarusTreasureHuntGameState>();
+	if (!IsValid(GameState))
+	{
+		return NoiseLevel;
+	}
+
+	const FGameModifiers& Modifiers = GameState->GetGameModifiers();
+	ENoiseLevel Volume = NoiseLevel;
+	const float Random = FMath::FRand();
+
+	// Check to completely silence the sound.
+	if (Modifiers.SilenceModifier > Random)
+	{
+		Volume = ENoiseLevel::None;
+
+#if WITH_EDITOR
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Silenced volume when generating clank!"));
+#endif
+	}
+	// Check to reduce the volume.
+	else if (Modifiers.SneakModifier > Random)
+	{
+		Volume = static_cast<ENoiseLevel>((uint8)Volume - 1);
+
+#if WITH_EDITOR
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Green, FString("Lowered volume when generating clank: ") + FString::FromInt((uint8)Volume));
+#endif
+	}
+
+	return Volume;
 }

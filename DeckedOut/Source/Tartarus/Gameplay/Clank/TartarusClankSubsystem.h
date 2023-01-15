@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Audio/TartarusSoundData.h"
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
 
@@ -38,6 +39,9 @@ protected:
 	// TODO: Create a subsystem setting to set this value.
 	float ClankGenerationInterval = 3.0f;
 
+	// TODO: Create a subsystem setting to set this value.
+	ENoiseLevel PassiveClankVolume = ENoiseLevel::Faint;
+
 	int32 ClankLevel = 0;
 
 	// Resets the ClankLevel back to 0.
@@ -48,6 +52,8 @@ protected:
 
 	// Increases the clank level based on the passive noise generated.
 	void GeneratePassiveClank();
+
+	ENoiseLevel ApplyGameModifers(const ENoiseLevel NoiseLevel) const;
 
 private:
 	FClankLevelChanged ClankLevelChangedEvent = FClankLevelChanged();
