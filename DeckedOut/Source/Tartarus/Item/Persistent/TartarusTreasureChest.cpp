@@ -52,14 +52,14 @@ bool ATartarusTreasureChest::StartInteraction(const TObjectPtr<AController> Inst
 		return false;
 	}
 
-	const FGuid LinkedKeyInventoryStackId = TreasureSubsystem->GetTreasureKey(this);
+	const FInventoryStackId LinkedKeyInventoryStackId = TreasureSubsystem->GetTreasureKey(this);
 	if (!LinkedKeyInventoryStackId.IsValid())
 	{
 		return false;
 	}
 
 	// Retrieve the number of required keys, fail if there are not enough keys.
-	const bool bHasRetrievedItem = Inventory->RetrieveItem(LinkedKeyInventoryStackId, NumKeysRequired);
+	const bool bHasRetrievedItem = Inventory->RetrieveEntry(LinkedKeyInventoryStackId, NumKeysRequired);
 	if (!bHasRetrievedItem)
 	{
 		return false;

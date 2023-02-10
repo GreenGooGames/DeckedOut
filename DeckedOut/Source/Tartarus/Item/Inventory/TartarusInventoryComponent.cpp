@@ -5,124 +5,122 @@
 
 #include "Logging/TartarusLogChannels.h"
 
-#pragma region FInventoryItemStack
-FInventoryItemStack::FInventoryItemStack(const int32 NewItemId, const int32 NewStackSize)
-{
-	StackId = FGuid::NewGuid();
-
-	ItemId = NewItemId;
-	StackSize = NewStackSize;
-}
-#pragma endregion
-
-// Sets default values for this component's properties
-UTartarusInventoryComponent::UTartarusInventoryComponent()
-{
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
-
-	// ...
-}
-
 // Called when the game starts
 void UTartarusInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Initialize all slots.
-	InventorySlots.SetNum(NumberOfSlots);
+	if (ToCreateSubInventories.Num() <= 0)
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to create subinventory entries: No subinventories were set to be created!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	for (const EInventoryType InventoryId : TEnumRange<EInventoryType>())
+	{
+		SubInventories.Add(InventoryId, FSubInventory(InventoryId, NumberOfSlots));
+	}
 }
 
-FGuid UTartarusInventoryComponent::StoreItem(const int32 ItemId, const int32 StackSize)
+FInventoryStackId UTartarusInventoryComponent::StoreEntry(const EInventoryType InventoryId, const int32 EntryId, const int32 StackSize)
 {
 	// Verify the given parameters.
-	if (ItemId == FTartarusHelpers::InvalidItemId)
+	if (InventoryId == EInventoryType::MAX)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the item: ItemId was invalid!"), *FString(__FUNCTION__));
-		return FGuid();
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the entry: InventoryType was invalid!"), *FString(__FUNCTION__));
+		return FInventoryStackId();
+	}
+	
+	if (EntryId == FTartarusHelpers::InvalidItemId)
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the entry: ItemId was invalid!"), *FString(__FUNCTION__));
+		return FInventoryStackId();
 	}
 
 	if (StackSize <= 0)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the item: StackSize was  <= 0 !"), *FString(__FUNCTION__));
-		return FGuid();
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the entry: StackSize was  <= 0 !"), *FString(__FUNCTION__));
+		return FInventoryStackId();
 	}
 
-	const bool bIsStackableItem = ItemId > FTartarusHelpers::InvalidItemId;
+	// TODO: Probably should not use positive and negatives to differentiate between stackable and non-stackable.
+	const bool bIsStackableItem = EntryId > FTartarusHelpers::InvalidItemId;
 	if (!bIsStackableItem && StackSize > 1)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the item: Trying to add multiples of a unique item in the same stack!"), *FString(__FUNCTION__));
-		return FGuid();
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the entry: Trying to add multiples of a unique entry in the same stack!"), *FString(__FUNCTION__));
+		return FInventoryStackId();
 	}
 
-	// Search if there is a stackable duplicate.
-	int32 SlotIndex = FindSlot(ItemId);
-
-	if (bIsStackableItem && SlotIndex != INDEX_NONE)
+	// Try to add the entry to the specified sub inventory.
+	const FInventoryStackId StackId = SubInventories[InventoryId].AddEntry(EntryId, StackSize);
+	if (!StackId.IsValid())
 	{
-		// Stackable Duplicate is found, increase the Stacksize.
-		InventorySlots[SlotIndex].StackSize += StackSize;
+		return FInventoryStackId();
 	}
-	else
-	{
-		// No duplicate is found/item is non-stackable, Is there a slot available to add a new entry?
-		SlotIndex = FindSlot(FTartarusHelpers::InvalidItemId);
+	
+	OnInventoryChanged().Broadcast(EInventoryChanged::Stored, StackId, SubInventories[InventoryId].FindStack(StackId)->StackSize);
 
-		if (SlotIndex == INDEX_NONE)
-		{
-			UE_LOG(LogTartarus, Log, TEXT("%s: Unable to store the item: Inventory is full!"), *FString(__FUNCTION__));
-			return FGuid();
-		}
-
-		// Add a new entry.
-		FInventoryItemStack NewStack = FInventoryItemStack(ItemId, StackSize);
-
-		InventorySlots[SlotIndex] = NewStack;
-	}
-
-	OnInventoryChanged().Broadcast(EInventoryChanged::Stored, InventorySlots[SlotIndex].GetStackId(), InventorySlots[SlotIndex].StackSize);
-
-	return InventorySlots[SlotIndex].GetStackId();
+	return StackId;
 }
 
-bool UTartarusInventoryComponent::RetrieveItem(const int32 ItemId, const int32 StackSize)
+bool UTartarusInventoryComponent::RetrieveEntry(const EInventoryType InventoryId, const int32 EntryId, const int32 StackSize)
 {
-	// Verify the given ItemId.
-	if (ItemId == FTartarusHelpers::InvalidItemId)
+	// Verify the given EntryId.
+	if (EntryId == FTartarusHelpers::InvalidItemId)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to retrieve the item: ItemId was invalid!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to retrieve the entry: EntryId was invalid!"), *FString(__FUNCTION__));
 		return false;
 	}
 
-	const int32 SlotIndex = FindSlot(ItemId);
-	const bool bHasReduced = ReduceStack(SlotIndex, StackSize);
+	// Get the stack that contains the Entry.
+	const FInventoryStackId* const StackId = SubInventories[InventoryId].FindStackId(EntryId);
+	if (StackId == nullptr)
+	{
+		return false;
+	}
 
-	return bHasReduced;
+	return RetrieveEntry(*StackId, StackSize);
 }
 
-bool UTartarusInventoryComponent::RetrieveItem(const FGuid& StackId, const int32 StackSize)
+bool UTartarusInventoryComponent::RetrieveEntry(const FInventoryStackId& StackId, const int32 StackSize)
 {
 	// Verify the given StackId.
 	if (!StackId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to retrieve the item: ItemId was invalid!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to retrieve the entry: EntryId was invalid!"), *FString(__FUNCTION__));
 		return false;
 	}
 
-	const int32 SlotIndex = FindSlot(StackId);
-	const bool bHasReduced = ReduceStack(SlotIndex, StackSize);
+	// Retrieve the Entry from the inventory.
+	const bool bHasRemoved = SubInventories[StackId.GetInventoryId()].RemoveEntry(StackId, StackSize);
+	if (!bHasRemoved)
+	{
+		return false;
+	}
 
-	return bHasReduced;
+	const FInventoryStack* const EntryStack = SubInventories.Contains(StackId.GetInventoryId()) ? SubInventories[StackId.GetInventoryId()].FindStack(StackId) : nullptr;
+	const int32 RemainingStackSize = EntryStack != nullptr ? EntryStack->StackSize : 0;
+
+	OnInventoryChanged().Broadcast(EInventoryChanged::Retrieved, StackId, RemainingStackSize);
+
+	return true;
 }
 
-const TArray<const FInventoryItemStack*> UTartarusInventoryComponent::GetOverviewMulti(const int32 ItemId) const
+const TArray<FInventoryStack>& UTartarusInventoryComponent::GetOverview(const EInventoryType InventoryId) const
+{ 
+	check(SubInventories.Num() > 0);
+	check(SubInventories.Contains(InventoryId));
+
+	return SubInventories[InventoryId].GetContents();
+}
+
+const TArray<const FInventoryStack*> UTartarusInventoryComponent::GetOverviewMulti(const EInventoryType InventoryId, const int32 EntryId) const
 {
-	TArray<const FInventoryItemStack*> MatchingItemSlots = TArray<const FInventoryItemStack*>();
+	TArray<const FInventoryStack*> MatchingItemSlots = TArray<const FInventoryStack*>();
 	
-	for (const FInventoryItemStack& Stack : InventorySlots)
+	for (const FInventoryStack& Stack : SubInventories[InventoryId].GetContents())
 	{
-		if (Stack.GetItemId() == ItemId)
+		if (Stack.GetEntryId() == EntryId)
 		{
 			MatchingItemSlots.Add(&Stack);
 		}
@@ -131,49 +129,31 @@ const TArray<const FInventoryItemStack*> UTartarusInventoryComponent::GetOvervie
 	return MatchingItemSlots;
 }
 
-const FInventoryItemStack* UTartarusInventoryComponent::GetOverviewSingle(const FGuid StackId) const
+const FInventoryStack* UTartarusInventoryComponent::GetOverviewSingle(const FInventoryStackId& StackId) const
 {
-	int32 SlotIndex = FindSlot(StackId);
-
-	if (SlotIndex == INDEX_NONE)
-	{
-		return nullptr;
-	}
-
-	return &InventorySlots[SlotIndex];
+	return SubInventories[StackId.GetInventoryId()].FindStack(StackId);
 }
 
-int32 UTartarusInventoryComponent::GetAvailableSlotCount() const
+int32 UTartarusInventoryComponent::GetAvailableSlotCount(const EInventoryType InventoryId) const
 {
-	int32 NumAvailableSlots = 0;
-
-	for (const FInventoryItemStack& Stack : InventorySlots)
-	{
-		if (Stack.GetItemId() == FTartarusHelpers::InvalidItemId)
-		{
-			NumAvailableSlots++;
-		}
-	}
-
-	return NumAvailableSlots;
+	return GetOverviewMulti(InventoryId, FTartarusHelpers::InvalidItemId).Num();
 }
 
-bool UTartarusInventoryComponent::Contains(const int32 ItemId) const
+bool UTartarusInventoryComponent::Contains(const EInventoryType InventoryId, const int32 EntryId) const
 {
-	for (const FInventoryItemStack& Stack : InventorySlots)
+	// Get the stack that contains the Entry.
+	const FInventoryStackId* const StackId = SubInventories[InventoryId].FindStackId(EntryId);
+	if (StackId == nullptr)
 	{
-		if (Stack.GetItemId() == ItemId)
-		{
-			return true;
-		}
+		return false;
 	}
-
-	return false;
+	
+	return Contains(*StackId);
 }
 
-bool UTartarusInventoryComponent::Contains(const FGuid StackId) const
+bool UTartarusInventoryComponent::Contains(const FInventoryStackId& StackId) const
 {
-	for (const FInventoryItemStack& Stack : InventorySlots)
+	for (const FInventoryStack& Stack : SubInventories[StackId.GetInventoryId()].GetContents())
 	{
 		if (Stack.GetStackId() == StackId)
 		{
@@ -182,73 +162,4 @@ bool UTartarusInventoryComponent::Contains(const FGuid StackId) const
 	}
 
 	return false;
-}
-
-int32 UTartarusInventoryComponent::FindSlot(const int32 ItemId) const
-{
-	for (int32 i = 0; i < InventorySlots.Num(); i++)
-	{
-		const FInventoryItemStack& Stack = InventorySlots[i];
-
-		if (Stack.GetItemId() == ItemId)
-		{
-			return i;
-		}
-	}
-
-	return INDEX_NONE;
-}
-
-int32 UTartarusInventoryComponent::FindSlot(const FGuid& StackId) const
-{
-	for (int32 i = 0; i < InventorySlots.Num(); i++)
-	{
-		const FInventoryItemStack& Stack = InventorySlots[i];
-
-		if (Stack.GetStackId() == StackId)
-		{
-			return i;
-		}
-	}
-
-	return INDEX_NONE;
-}
-
-bool UTartarusInventoryComponent::ReduceStack(const int32 SlotIndex, const int32 StackSize)
-{
-	// Verify that a correct slot is given.
-	if (SlotIndex == INDEX_NONE)
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to reduce stack: the item was not stored in the inventory!"), *FString(__FUNCTION__));
-		return false;
-	}
-
-	// Verify that an valid attempt is being made to reduce the stack and not increase it.
-	if (StackSize <= 0)
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to reduce stack: StackSize to reduce with was  <= 0 !"), *FString(__FUNCTION__));
-		return false;
-	}
-
-	// Check if there are enough stored items.
-	const int32 StoredStackSize = InventorySlots[SlotIndex].StackSize;
-
-	if (StoredStackSize < StackSize)
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to reduce stack:: trying to retrieve more items than there are stored!"), *FString(__FUNCTION__));
-		return false;
-	}
-
-	// Reduce the stored stacksize with the reduction.
-	const int32 RemainingStackSize = InventorySlots[SlotIndex].StackSize -= StackSize;
-
-	OnInventoryChanged().Broadcast(EInventoryChanged::Retrieved, InventorySlots[SlotIndex].GetStackId(), InventorySlots[SlotIndex].StackSize);
-
-	if (RemainingStackSize <= 0)
-	{
-		// The whole stack is retrieved, invalidate this slot.
-		InventorySlots[SlotIndex] = FInventoryItemStack();
-	}
-
-	return true;
 }

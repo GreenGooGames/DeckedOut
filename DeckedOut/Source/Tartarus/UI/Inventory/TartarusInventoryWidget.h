@@ -3,47 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "System/TartarusASyncLoadData.h"
-#include "System/TartarusHelpers.h"
 #include "UI/Foundation/TartarusActivatableWidget.h"
 
 #include "TartarusInventoryWidget.generated.h"
 
-class UCommonTileView;
-class UTartarusInventorySlotWidget;
-
-struct FStreamableHandle;
-struct FItemTableRow;
-
-DECLARE_EVENT_TwoParams(UTartarusInventoryWidget, FUpdateInventoryUIRequestCompletedEvent, FGuid /*RequestId*/, TWeakObjectPtr<UTexture2D> /*DisplayTexture*/)
-
-USTRUCT()
-struct FUpdateInventoryUIRequestInfo : public FASyncLoadRequest
-{
-	GENERATED_BODY()
-
-public:
-	FUpdateInventoryUIRequestInfo() {}
-	FUpdateInventoryUIRequestInfo(const FUpdateInventoryUIRequestCompletedEvent& OnCompleted, const int32 ItemToLoadId, UTartarusInventorySlotWidget* const Widget)
-	{
-		RequestId = FGuid::NewGuid();
-
-		OnRequestCompleteEvent = OnCompleted;
-		ItemId = ItemToLoadId;
-		SlotWidget = Widget;
-	}
-
-	const FUpdateInventoryUIRequestCompletedEvent& OnUpdateUIRequestCompleted() const { return OnRequestCompleteEvent; }
-	int32 GetItemId() const { return ItemId; }
-	TWeakObjectPtr<UTartarusInventorySlotWidget> GetWidget() const { return SlotWidget; }
-
-private:
-	FUpdateInventoryUIRequestCompletedEvent OnRequestCompleteEvent = FUpdateInventoryUIRequestCompletedEvent();
-
-	int32 ItemId = FTartarusHelpers::InvalidItemId;
-	TWeakObjectPtr<UTartarusInventorySlotWidget> SlotWidget = nullptr;
-};
-
+class UCommonVisibilitySwitcher;
+class UTartarusSubInventoryView;
+class UTartarusSwitcherWidget;
 
 /**
  * 
@@ -55,14 +21,18 @@ class TARTARUS_API UTartarusInventoryWidget : public UTartarusActivatableWidget
 
 protected:
 	virtual void NativeOnInitialized() override;
-	virtual void NativeOnActivated() override;
 
 protected:
-	UPROPERTY(meta = (BindWidget))
-		TObjectPtr<UCommonTileView> TileView = nullptr;
+	/*
+	* Reference to the class used to create the sub-inventory views.
+	*/
+	UPROPERTY(EditDefaultsOnly)
+		TSoftClassPtr<UTartarusSubInventoryView> SubInventoryViewClass = nullptr;
 
+	/*
+	* Creates a Sub-Inventory view widget for each Sub-Inventory owned by the owner inventory component.
+	*/
 	void ConstructInventoryView();
-	void UpdateSlotDisplays();
 
 #pragma region BoundActions
 protected:
@@ -83,33 +53,23 @@ private:
 	void HandleSortAction();
 #pragma endregion
 
-#pragma region ASyncLoading
+#pragma region Navbar
 protected:
 	/*
-	* Creates a request to update the texture of a slot for a given item.
-	* Return: The Guid of the async load request.
+	* Widget containing the nagivation tools to switch between different sub-menu's.
 	*/
-	FGuid AsyncRequestSetDisplayTexture(UTartarusInventorySlotWidget* const SlotWidget, const int32 ItemId, FUpdateInventoryUIRequestCompletedEvent& OnRequestCompletedEvent);
-
-	// Notfies the requester that the request has succeeded and removes the request from the queue.
-	void HandleRequestSuccess(const FUpdateInventoryUIRequestInfo* const SuccessRequest, TWeakObjectPtr<UTexture2D> Texture);
-
-	// Notifies the requester that the request failed and removes the request from the queue.
-	void HandleRequestFailed(const FUpdateInventoryUIRequestInfo* const FailedRequest);
-
-	// Called when the items their data is loaded.
-	void HandleItemsDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData);
+	UPROPERTY(meta = (BindWidget))
+		TObjectPtr<UTartarusSwitcherWidget> SubInventoryMenuSwitcher = nullptr;
 
 	/*
-	* Creates a request to load a texture.
-	* Return: The Guid of the async load request.
+	* Visibility Switcher owning all sub-inventories.
 	*/
-	FGuid AsyncRequestLoadTexture(const FItemTableRow& ItemDefinitionn);
+	UPROPERTY(meta = (BindWidget))
+		TObjectPtr<UCommonVisibilitySwitcher> SubInventoryVisibilitySwitcher = nullptr;
 
-	// Called when the Item UI Display Texture is loaded.
-	void HandleTextureLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle);
-
-private:
-	TArray<FUpdateInventoryUIRequestInfo> UpdateUIRequests;
+	/*
+	* Links the MenuSwitcher to the Visibility Switcher.
+	*/
+	void SetupMenuSwitcher();
 #pragma endregion
 };

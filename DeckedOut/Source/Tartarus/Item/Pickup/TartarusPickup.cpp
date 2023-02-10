@@ -24,15 +24,14 @@ bool ATartarusPickup::HandlePickedup(const TObjectPtr<AController> InstigatorCon
 {
 	// As base behavior, any item interacted with is stored into the instigator inventory.
 	UTartarusInventoryComponent* const InstigatorInventory = InstigatorController->FindComponentByClass<UTartarusInventoryComponent>();
-
 	if (!IsValid(InstigatorInventory))
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Controller has no inventory!"), *FString(__FUNCTION__));
 		return false;
 	}
 
-	const bool bIsStored = InstigatorInventory->StoreItem(GetItemId(), StackSize).IsValid();
-
+	// TODO: Make a request to the item Subsystem to retrieve the data for this item, otherwise non-artifacts will also be stored in the artifact inventory.
+	const bool bIsStored = InstigatorInventory->StoreEntry(EInventoryType::Artifact, GetItemId(), StackSize).IsValid();
 	if (!bIsStored)
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Could not store the item in the inventory!"), *FString(__FUNCTION__));
@@ -41,7 +40,7 @@ bool ATartarusPickup::HandlePickedup(const TObjectPtr<AController> InstigatorCon
 
 	Destroy();
 
-	return true;;
+	return true;
 }
 
 #pragma region TartarusInteractableTargetInterface

@@ -31,7 +31,7 @@ void FSpawnPointData::Reset()
 	}
 }
 
-void FSpawnPointData::Reserve(const FGuid& KeyInventoryId)
+void FSpawnPointData::Reserve(const FInventoryStackId& KeyInventoryId)
 {
 	bIsAvailable = false;
 	KeyInventoryStackId = KeyInventoryId;
@@ -135,7 +135,7 @@ void UTartarusTreasureSubsystem::HandleGameRunningStateChanged(ETreasureHuntStat
 	}
 }
 
-FVector UTartarusTreasureSubsystem::GetTreasureLocation(const FGuid& KeyInventoryId) const
+FVector UTartarusTreasureSubsystem::GetTreasureLocation(const FInventoryStackId& KeyInventoryId) const
 {
 	if (!KeyInventoryId.IsValid())
 	{
@@ -155,11 +155,11 @@ FVector UTartarusTreasureSubsystem::GetTreasureLocation(const FGuid& KeyInventor
 	return FTartarusHelpers::InvalidLocation;
 }
 
-FGuid UTartarusTreasureSubsystem::GetTreasureKey(const ATartarusTreasureChest* const Treasure)
+FInventoryStackId UTartarusTreasureSubsystem::GetTreasureKey(const ATartarusTreasureChest* const Treasure)
 {
 	if (!IsValid(Treasure))
 	{
-		return FGuid();
+		return FInventoryStackId();
 	}
 
 	for (const FSpawnPointData& SpawnPoint : SpawnPoints)
@@ -172,7 +172,7 @@ FGuid UTartarusTreasureSubsystem::GetTreasureKey(const ATartarusTreasureChest* c
 		return SpawnPoint.GetKeyId();
 	}
 
-	return FGuid();
+	return FInventoryStackId();
 }
 
 void UTartarusTreasureSubsystem::HandleTreasureKeysDataReceived(FGuid ASyncLoadRequestId, TArray<FItemTableRow> TreasureKeysData)
@@ -197,9 +197,9 @@ void UTartarusTreasureSubsystem::HandleTreasureKeysDataReceived(FGuid ASyncLoadR
 	// Loop over each treasure Key, and look if the player has it in their inventory.
 	for (const FItemTableRow& TreasureKey : TreasureKeysData)
 	{
-		const TArray<const FInventoryItemStack*> InventoryTreasureKeys = Inventory->GetOverviewMulti(TreasureKey.UniqueItemId);
+		const TArray<const FInventoryStack*> InventoryTreasureKeys = Inventory->GetOverviewMulti(TreasureKey.InventoryType, TreasureKey.UniqueItemId);
 
-		for (const FInventoryItemStack* const ItemStack : InventoryTreasureKeys)
+		for (const FInventoryStack* const ItemStack : InventoryTreasureKeys)
 		{
 			// Spawn a treasure chest and link it to the treasure key.
 			FSpawnAndLinkRequestCompletedEvent OnRequestCompleted;
@@ -241,7 +241,7 @@ FSpawnPointData* UTartarusTreasureSubsystem::FindAvailableSpawnpoint()
 #pragma endregion
 
 #pragma region AsyncLoading
-FGuid UTartarusTreasureSubsystem::AsyncRequestSpawnAndLink(const FGuid KeyInventoryStackId, FSpawnAndLinkRequestCompletedEvent& OnRequestCompletedEvent)
+FGuid UTartarusTreasureSubsystem::AsyncRequestSpawnAndLink(const FInventoryStackId KeyInventoryStackId, FSpawnAndLinkRequestCompletedEvent& OnRequestCompletedEvent)
 {
 	// Is the Key valid?
 	if (!KeyInventoryStackId.IsValid())

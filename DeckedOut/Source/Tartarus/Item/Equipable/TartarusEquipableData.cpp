@@ -6,7 +6,7 @@
 #include "Logging/TartarusLogChannels.h"
 
 #pragma region FEquipmentInfo
-void FEquipmentInfo::SetInventoryItemStackId(const FGuid& InventoryStackIdReference)
+void FEquipmentInfo::SetInventoryItemStackId(const FInventoryStackId& InventoryStackIdReference)
 {
 	if (InventoryStackId.IsValid())
 	{
@@ -19,6 +19,6 @@ void FEquipmentInfo::SetInventoryItemStackId(const FGuid& InventoryStackIdRefere
 void FEquipmentInfo::Reset()
 {
 	Item = nullptr;
-	InventoryStackId = FGuid();
+	InventoryStackId = FInventoryStackId();
 }
 #pragma endregion

@@ -6,6 +6,7 @@
 #include "CoreMinimal.h"
 #include "Item/TartarusItemBase.h"
 #include "Item/Equipable/TartarusEquipableData.h"
+#include "Item/Inventory/TartarusInventoryData.h"
 #include "System/TartarusHelpers.h"
 
 #include "TartarusItemData.generated.h"
@@ -37,8 +38,13 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 		int32 UniqueItemId = FTartarusHelpers::InvalidItemId;
 
+	// The type of the item.
 	UPROPERTY(EditDefaultsOnly)
 		EItemType ItemType = EItemType::None;
+
+	// The id of the inventory to store the item in.
+	UPROPERTY(EditDefaultsOnly)
+		EInventoryType InventoryType = EInventoryType::MAX;
 
 	// Name to represent the item.
 	UPROPERTY(EditDefaultsOnly)

@@ -5,14 +5,13 @@
 
 #include "GameFramework/Character.h"
 #include "Item/Equipable/TartarusEquipableInterface.h"
-#include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/System/TartarusItemSubsystem.h"
 #include "Item/TartarusItemBase.h"
 #include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
 
 #pragma region ASyncEquip
-FEquipRequestInfo::FEquipRequestInfo(const FGuid& StackId, const EEquipmentSlot Slots)
+FEquipRequestInfo::FEquipRequestInfo(const FInventoryStackId& StackId, const EEquipmentSlot Slots)
 {
 	RequestId = FGuid::NewGuid();
 
@@ -52,7 +51,7 @@ void UTartarusEquipableManager::BeginPlay()
 	}
 }
 
-bool UTartarusEquipableManager::Unequip(const FGuid& InventoryStackId)
+bool UTartarusEquipableManager::Unequip(const FInventoryStackId& InventoryStackId)
 {
 	// Find the equipped item using the inventory stack Id.
 	for (TPair<EEquipmentSlot, FEquipmentInfo>& EquipmentSlot : EquipmentSlots)
@@ -141,7 +140,7 @@ EEquipmentSlot UTartarusEquipableManager::FindAvailableSlot(const uint8 SlotsMas
 }
 
 #pragma region ASyncEquip
-bool UTartarusEquipableManager::ASyncRequestEquip(const FGuid& InventoryStackId, const EEquipmentSlot RequestedSlots)
+bool UTartarusEquipableManager::ASyncRequestEquip(const FInventoryStackId& InventoryStackId, const EEquipmentSlot RequestedSlots)
 {
 	// Make a request to get the Item specifc data.
 	const FGuid ASyncRequestId = RequestItemData(InventoryStackId);
@@ -294,7 +293,7 @@ FGuid UTartarusEquipableManager::RequestItemsSpawn(const TArray<FItemTableRow>& 
 	return ASyncRequestId;
 }
 
-FGuid UTartarusEquipableManager::RequestItemData(const FGuid& InventoryStackId)
+FGuid UTartarusEquipableManager::RequestItemData(const FInventoryStackId& InventoryStackId)
 {
 	// Check if all components are accesible.
 	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
@@ -323,9 +322,9 @@ FGuid UTartarusEquipableManager::RequestItemData(const FGuid& InventoryStackId)
 	OnDataRequestCompleted.AddUObject(this, &UTartarusEquipableManager::HandleItemDataLoaded);
 
 	// Create a new request to the ItemSubsytem to load item data.
-	const FInventoryItemStack* const ItemStack = Inventory->GetOverviewSingle(InventoryStackId);
+	const FInventoryStack* const ItemStack = Inventory->GetOverviewSingle(InventoryStackId);
 	TArray<int32> ToSpawnItemIds;
-	ToSpawnItemIds.Add(ItemStack->GetItemId());
+	ToSpawnItemIds.Add(ItemStack->GetEntryId());
 
 	const FGuid ASyncRequestId = ItemSubsystem->AsyncRequestGetItemsData(ToSpawnItemIds, OnDataRequestCompleted);
 
@@ -387,7 +386,7 @@ UTartarusInventoryComponent* UTartarusEquipableManager::GetOwnerInventory()
 	return Inventory;
 }
 
-void UTartarusEquipableManager::HandleInventoryUpdated(EInventoryChanged ChangeType, FGuid InventoryStackId, int32 StackSize)
+void UTartarusEquipableManager::HandleInventoryUpdated(EInventoryChanged ChangeType, FInventoryStackId InventoryStackId, int32 StackSize)
 {
 	// Something in the inventory changed,
 	switch (ChangeType)
@@ -407,7 +406,7 @@ void UTartarusEquipableManager::HandleInventoryUpdated(EInventoryChanged ChangeT
 	}
 }
 
-void UTartarusEquipableManager::HandleInventoryItemRetrieved(const FGuid& InventoryStackId, const int32 StackSize)
+void UTartarusEquipableManager::HandleInventoryItemRetrieved(const FInventoryStackId& InventoryStackId, const int32 StackSize)
 {
 	for (TPair<EEquipmentSlot, FEquipmentInfo> Slot : EquipmentSlots)
 	{
@@ -443,7 +442,7 @@ void UTartarusEquipableManager::HandleInventoryItemRetrieved(const FGuid& Invent
 	}
 }
 
-void UTartarusEquipableManager::HandleInventoryItemStored(const FGuid& InventoryStackId)
+void UTartarusEquipableManager::HandleInventoryItemStored(const FInventoryStackId& InventoryStackId)
 {
 	// The inventory received a new item, if this is to be auto-equipped do so.
 	UTartarusInventoryComponent* const Inventory = GetOwnerInventory();
@@ -453,7 +452,7 @@ void UTartarusEquipableManager::HandleInventoryItemStored(const FGuid& Inventory
 		return;
 	}
 
-	const FInventoryItemStack* const StoredItemStack = Inventory->GetOverviewSingle(InventoryStackId);
+	const FInventoryStack* const StoredItemStack = Inventory->GetOverviewSingle(InventoryStackId);
 	if (!StoredItemStack)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not find ItemStack in inventory!"), *FString(__FUNCTION__));
@@ -461,7 +460,7 @@ void UTartarusEquipableManager::HandleInventoryItemStored(const FGuid& Inventory
 	}
 
 	TArray<int32> ItemIds;
-	ItemIds.Add(StoredItemStack->GetItemId());
+	ItemIds.Add(StoredItemStack->GetEntryId());
 
 	FGetItemDataRequestCompletedEvent OnRequestCompleted;
 	OnRequestCompleted.AddUObject(this, &UTartarusEquipableManager::HandleInventoryItemDataLoaded);

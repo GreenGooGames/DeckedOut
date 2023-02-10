@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Item/Inventory/TartarusInventoryData.h"
 
 #include "TartarusEquipableData.generated.h"
 
@@ -33,9 +34,9 @@ public:
 	* Retrieves the InventoryStackId that is used to reference the equipped item in the owner inventory.
 	* Return: Id of the ItemStack that represents the equipped item in the owner inventory.
 	*/
-	const FGuid& GetInventoryStackId() const { return InventoryStackId; }
+	const FInventoryStackId& GetInventoryStackId() const { return InventoryStackId; }
 
-	void SetInventoryItemStackId(const FGuid& InventoryStackIdReference);
+	void SetInventoryItemStackId(const FInventoryStackId& InventoryStackIdReference);
 
 	/*
 	* Retrieves the name of the socket that is linked to this slot.
@@ -53,5 +54,5 @@ protected:
 
 private:
 	TWeakObjectPtr<ATartarusItemBase> Item = nullptr;
-	FGuid InventoryStackId = FGuid();
+	FInventoryStackId InventoryStackId = FInventoryStackId();
 };

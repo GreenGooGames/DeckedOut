@@ -4,48 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Item/Inventory/TartarusInventoryData.h"
 #include "System/TartarusHelpers.h"
 
 #include "TartarusInventoryComponent.generated.h"
 
-UENUM()
-enum class EInventoryChanged : uint8
-{
-	Stored,
-	Retrieved
-};
-
-USTRUCT()
-struct FInventoryItemStack
-{
-	GENERATED_BODY()
-
-public:
-	FInventoryItemStack() {}
-	FInventoryItemStack(const int32 NewItemId, const int32 NewStackSize);
-
-	bool operator==(const FInventoryItemStack& rhs) { return GetStackId() == rhs.GetStackId(); }
-
-	int32 StackSize = 0;
-	
-	const FGuid& GetStackId() const { return StackId; }
-	int32 GetItemId() const { return ItemId; }
-
-private:
-	FGuid StackId = FGuid();
-	int32 ItemId = FTartarusHelpers::InvalidItemId;
-};
-
-DECLARE_EVENT_ThreeParams(UTartarusInventoryComponent, FInventoryChanged, EInventoryChanged /*ChangeType*/, FGuid /*StackId*/, int32 /*StackSize*/);
+DECLARE_EVENT_ThreeParams(UTartarusInventoryComponent, FInventoryChanged, EInventoryChanged /*ChangeType*/, FInventoryStackId /*StackId*/, int32 /*StackSize*/);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TARTARUS_API UTartarusInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
-
-public:	
-	// Sets default values for this component's properties
-	UTartarusInventoryComponent();
 
 protected:
 	// Called when the game starts
@@ -53,58 +22,58 @@ protected:
 
 public:
 	/*
-	* Stores an item into the inventory.
-	* Return: The StackId of the stack the item was added to.
+	* Stores an Entry into the inventory.
+	* Return: The StackId of the stack the Entry was added to.
 	*/
-	FGuid StoreItem(const int32 ItemId, const int32 StackSize);
+	FInventoryStackId StoreEntry(const EInventoryType InventoryId, const int32 ItemId, const int32 StackSize);
 
 	/*
-	* Retrieves an item from the inventory from a random matching stack.
-	* Return: True if the item was retrieved, False if the item was not in the inventory or if more than the stored num of items was requested.
+	* Retrieves an entry from the inventory from a random matching stack.
+	* Return: True if the entry was retrieved, False if the entry was not in the inventory or if more than the stored num of entries was requested.
 	*/
-	bool RetrieveItem(const int32 ItemId, const int32 StackSize);
+	bool RetrieveEntry(const EInventoryType InventoryId, const int32 ItemId, const int32 StackSize);
 
 	/*
-	* Retrieves an item from the inventory from a specified stack.
-	* Return: True if the item was retrieved, False if the item was not in the inventory or if more than the stored num of items was requested.
+	* Retrieves an entry from the inventory from a specified stack.
+	* Return: True if the entry was retrieved, False if the entry was not in the inventory or if more than the stored num of entries was requested.
 	*/
-	bool RetrieveItem(const FGuid& StackId, const int32 StackSize);
+	bool RetrieveEntry(const FInventoryStackId& StackId, const int32 StackSize);
 
 	/*
-	* Retrieves an overview of all the slots.
+	* Retrieves an overview of all the entries of a sub-inventory.
 	* Return: Array representing the inventory slots.
 	*/
-	const TArray<FInventoryItemStack>& GetOverview() const { return InventorySlots; }
+	const TArray<FInventoryStack>& GetOverview(const EInventoryType InventoryId) const;
 
 	/*
-	* Retrieves an overview of all items matching the id.
+	* Retrieves an overview of all entries matching the id.
 	* Return: Data stored in the inventory of each slot that contains the given id.
 	*/
-	const TArray<const FInventoryItemStack*> GetOverviewMulti(const int32 ItemId) const;
+	const TArray<const FInventoryStack*> GetOverviewMulti(const EInventoryType InventoryId, const int32 ItemId) const;
 
 	/*
 	* Retrieves an overview of a single slot.
 	* Return: Data stored in the slot.
 	*/
-	const FInventoryItemStack* GetOverviewSingle(const FGuid StackId) const;
+	const FInventoryStack* GetOverviewSingle(const FInventoryStackId& StackId) const;
 
 	/*
 	* Retrieves the number of slots in the inventory that are available for storage.
-	* Return: Number of avaialble slots.
+	* Return: Number of available slots.
 	*/
-	int32 GetAvailableSlotCount() const;
+	int32 GetAvailableSlotCount(const EInventoryType InventoryId) const;
 
 	/*
 	* Checks if the inventory contains an entry for the ItemId
-	* Return: TRue, if an entry is found/ False, if no entry is found.
+	* Return: True, if an entry is found. False, if no entry is found.
 	*/
-	bool Contains(const int32 ItemId) const;
+	bool Contains(const EInventoryType InventoryId, const int32 EntryId) const;
 
 	/*
 	* Checks if the inventory contains an entry for the StackId.
-	* Return: TRue, if an entry is found/ False, if no entry is found.
+	* Return: True, if an entry is found/ False, if no entry is found.
 	*/
-	bool Contains(const FGuid StackId) const;
+	bool Contains(const FInventoryStackId& StackId) const;
 
 	/*
 	* Event fired when the inventory contents are changed.
@@ -112,29 +81,20 @@ public:
 	*/
 	FInventoryChanged& OnInventoryChanged() { return InventoryChangedEvent; }
 
+	/*
+	* Retreives the ID's of all sub inventories owned by this Inventory.
+	* Return: Array of EInventoryType with the ID of each owned inventory.
+	*/
+	const TArray<EInventoryType>& GetSubInventoryIds() const { return ToCreateSubInventories; }
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		int32 NumberOfSlots = 20;
 
-	/*
-	* Find a slot in the inventory that contains a specified item.
-	* Return: The index of the item its slot.
-	*/
-	int32 FindSlot(const int32 ItemId) const;
-
-	/*
-	* Find a slot  in the inventory that corresponds with the StackId.
-	* Return: The index of the item its slot.
-	*/
-	int32 FindSlot(const FGuid& StackId) const;
-
-	/*
-	* Reduces the StackSize of the given slot by the given stackSize.
-	* Return: True if the stacksize is reduced. False if the stacksize is not reduced.
-	*/
-	bool ReduceStack(const int32 SlotIndex, const int32 StackSize);
+	UPROPERTY(EditDefaultsOnly)
+		TArray<EInventoryType> ToCreateSubInventories;
 
 private:
-	TArray<FInventoryItemStack> InventorySlots;
+	TMap<EInventoryType, FSubInventory> SubInventories;
 	FInventoryChanged InventoryChangedEvent;
 };

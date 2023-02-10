@@ -33,7 +33,7 @@ protected:
 	const int32 GiftTreasureKeyStackCount = 1;
 
 	// Inventory ID of the gifted treasure key to remove if the player leaves the dungeon without using it.
-	FGuid GiftedTreasureKeyInventoryId;
+	FInventoryStackId GiftedTreasureKeyInventoryId;
 
 	/*
 	* Stores starter items into the player inventory.

@@ -5,6 +5,7 @@
 
 #include "CommonTextBlock.h"
 #include "CommonVisibilitySwitcher.h"
+#include "Logging/TartarusLogChannels.h"
 #include "UI/Foundation/TartarusActivatableWidget.h"
 #include "UI/Foundation/TartarusTextButton.h"
 #include "UI/Foundation/TartarusSwitcherWidget.h"
@@ -55,8 +56,7 @@ void UTartarusSwitcherWidget::OnMenuVisibilityChanged(int32 VisibleWidgetIndex)
 	if (MenuVisibilitySwitcher.Get() && MenuNameText.Get())
 	{
 		const UTartarusActivatableWidget* const ActiveWidget = Cast<UTartarusActivatableWidget>(MenuVisibilitySwitcher->GetWidgetAtIndex(VisibleWidgetIndex));
-
-		if (ActiveWidget)
+		if (IsValid(ActiveWidget))
 		{
 			const int32 NumChildren = MenuVisibilitySwitcher->GetChildrenCount();
 			const int32 PreviousIndexRaw = VisibleWidgetIndex - 1;
@@ -69,9 +69,15 @@ void UTartarusSwitcherWidget::OnMenuVisibilityChanged(int32 VisibleWidgetIndex)
 			const UTartarusActivatableWidget* const PreviousWidget = Cast<UTartarusActivatableWidget>(MenuVisibilitySwitcher->GetWidgetAtIndex(PreviousIndex));
 			const UTartarusActivatableWidget* const NextWidget = Cast<UTartarusActivatableWidget>(MenuVisibilitySwitcher->GetWidgetAtIndex(NextIndex));
 
-			const FText CurrentText = ActiveWidget->GetWidgetName();
-			const FText PreviousText = PreviousWidget->GetWidgetName();
-			const FText NextText = NextWidget->GetWidgetName();
+			if (!IsValid(PreviousWidget) && !IsValid(NextWidget))
+			{
+				UE_LOG(LogTartarus, Error, TEXT("%s: Visibility Switcher Previous and/or next widget is NULL?"), *FString(__FUNCTION__));
+				return;
+			}
+
+			const FText CurrentText = ActiveWidget->GetLocalizedWidgetName();
+			const FText PreviousText = PreviousWidget->GetLocalizedWidgetName();
+			const FText NextText = NextWidget->GetLocalizedWidgetName();
 
 			MenuNameText->SetText(CurrentText);
 			PreviousButton->SetText(PreviousText);

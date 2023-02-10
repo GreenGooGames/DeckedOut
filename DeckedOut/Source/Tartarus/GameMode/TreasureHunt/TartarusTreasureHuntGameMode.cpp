@@ -69,7 +69,7 @@ void ATartarusTreasureHuntGameMode::StopTreasureHunt()
 		return;
 	}
 
-	Inventory->RetrieveItem(GiftedTreasureKeyInventoryId, GiftTreasureKeyStackCount);
+	Inventory->RetrieveEntry(GiftedTreasureKeyInventoryId, GiftTreasureKeyStackCount);
 }
 
 #pragma region StarterGifts
@@ -77,7 +77,6 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 {
 	// Get the player ivnentory.
 	UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
-
 	if (!IsValid(Inventory))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: No inventory found.!"), *FString(__FUNCTION__));
@@ -86,7 +85,6 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 
 	FString ContextString = "";
 	FItemTableRow* const ItemRow = StarterTreasureKeyHandle.GetRow<FItemTableRow>(ContextString);
-
 	if (!ItemRow)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not retrieve the item row!"), *FString(__FUNCTION__));
@@ -94,7 +92,7 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 	}
 
 	// TreasureKeys are unique, a StackCount > 1 will result in failure. (If multiple uniques need to be gifted, split them up in an array)
-	GiftedTreasureKeyInventoryId = Inventory->StoreItem(ItemRow->UniqueItemId, GiftTreasureKeyStackCount);
+	GiftedTreasureKeyInventoryId = Inventory->StoreEntry(ItemRow->InventoryType, ItemRow->UniqueItemId, GiftTreasureKeyStackCount);
 	if (!GiftedTreasureKeyInventoryId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not store the item in the inventory!"), *FString(__FUNCTION__));

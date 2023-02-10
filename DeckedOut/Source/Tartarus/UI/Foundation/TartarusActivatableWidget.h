@@ -15,9 +15,10 @@ class TARTARUS_API UTartarusActivatableWidget : public UCommonActivatableWidget
 	GENERATED_BODY()
 	
 public:
-	const FText& GetWidgetName() const { return WidgetName; }
+	const FText& GetLocalizedWidgetName() const { return LocalizedWidgetName; }
+	void SetLocalizedWidgetName(const FText& LocalizedName) { LocalizedWidgetName = LocalizedName; }
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
-		FText WidgetName = FText();
+		FText LocalizedWidgetName = FText();
 };

@@ -19,7 +19,7 @@ bool FDisplayCaseSlot::IsAvailable() const
 	return !InventoryStackId.IsValid();
 }
 
-void FDisplayCaseSlot::SetDisplayedItem(const FGuid& ItemInventoryStackId, ATartarusItemBase* const ToDisplay)
+void FDisplayCaseSlot::SetDisplayedItem(const FInventoryStackId& ItemInventoryStackId, ATartarusItemBase* const ToDisplay)
 {
 	InventoryStackId = ItemInventoryStackId;
 	Item = ToDisplay;
@@ -47,7 +47,7 @@ bool ATartarusDisplayCase::AddToDisplay(const int32 ItemId)
 {
 	// Store the item in the inventory.
 	// [Koen Goossens] TODO: Magic Number 1.
-	const FGuid InventoryStackId = InventoryComponent->StoreItem(ItemId, 1);
+	const FInventoryStackId InventoryStackId = InventoryComponent->StoreEntry(EInventoryType::Artifact, ItemId, 1);
 
 	if (!InventoryStackId.IsValid())
 	{
@@ -69,7 +69,7 @@ bool ATartarusDisplayCase::AddToDisplay(const int32 ItemId)
 	return bIsRequestSuccess;
 }
 
-bool ATartarusDisplayCase::RemoveFromDisplay(const FGuid& InventoryStackId)
+bool ATartarusDisplayCase::RemoveFromDisplay(const FInventoryStackId& InventoryStackId)
 {
 	if (!InventoryComponent->Contains(InventoryStackId))
 	{
@@ -100,7 +100,6 @@ bool ATartarusDisplayCase::RemoveFromDisplay(const FGuid& InventoryStackId)
 
 	// Get the itemsubssytem to despawn the display item.
 	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
-
 	if (!IsValid(ItemSubsystem))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item subsystem is invalid!"), *FString(__FUNCTION__));
@@ -108,7 +107,6 @@ bool ATartarusDisplayCase::RemoveFromDisplay(const FGuid& InventoryStackId)
 	}
 
 	const bool bIsDespawned = ItemSubsystem->DespawnItem(DisplayInstance);
-
 	if (!bIsDespawned)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item not despawned!"), *FString(__FUNCTION__));
@@ -116,10 +114,10 @@ bool ATartarusDisplayCase::RemoveFromDisplay(const FGuid& InventoryStackId)
 	}
 
 	// Clear the DisplaySlots entry,
-	DisplaySlots[SlotIndex].SetDisplayedItem(FGuid(), nullptr);
+	DisplaySlots[SlotIndex].SetDisplayedItem(FInventoryStackId(), nullptr);
 
 	// Remove the item from the inventory.
-	InventoryComponent->RetrieveItem(InventoryStackId, 1);
+	InventoryComponent->RetrieveEntry(InventoryStackId, 1);
 
 	return true;
 }
@@ -176,18 +174,18 @@ void ATartarusDisplayCase::HandleArtifactsDataReceived(FGuid ASyncLoadRequestId,
 	for (const FItemTableRow& Artifact : ArtifactsData)
 	{
 		// Get all stacks that contains the current artifact.
-		const TArray<const FInventoryItemStack*> InventoryArtifacts = PlayerInventory->GetOverviewMulti(Artifact.UniqueItemId);
+		const TArray<const FInventoryStack*> InventoryArtifacts = PlayerInventory->GetOverviewMulti(EInventoryType::Artifact, Artifact.UniqueItemId);
 
 		// For each stack, try to empty the whole stack and add it to the display.
-		for (const FInventoryItemStack* const ItemStack : InventoryArtifacts)
+		for (const FInventoryStack* const ItemStack : InventoryArtifacts)
 		{
 			// Keep reducing the current stack StackCount untill none are left in the inventory.
 			for (int32 i = 0; i < ItemStack->StackSize; i++)
 			{
-				const int32 ArtifactId = ItemStack->GetItemId();
+				const int32 ArtifactId = ItemStack->GetEntryId();
 
 				// Retrieve the artifact from the player invetory.
-				const bool bHasRetrieved = PlayerInventory->RetrieveItem(ArtifactId, 1);
+				const bool bHasRetrieved = PlayerInventory->RetrieveEntry(EInventoryType::Artifact, ArtifactId, 1);
 
 				if (!bHasRetrieved)
 				{
@@ -202,7 +200,7 @@ void ATartarusDisplayCase::HandleArtifactsDataReceived(FGuid ASyncLoadRequestId,
 					continue;
 				}
 
-				PlayerInventory->StoreItem(ArtifactId, 1);
+				PlayerInventory->StoreEntry(EInventoryType::Artifact, ArtifactId, 1);
 			}
 		}
 	}
@@ -210,7 +208,7 @@ void ATartarusDisplayCase::HandleArtifactsDataReceived(FGuid ASyncLoadRequestId,
 }
 
 #pragma region ASyncDisplay
-bool ATartarusDisplayCase::ASyncRequestDisplay(const FGuid& InventoryStackId, const int32 SlotIndex)
+bool ATartarusDisplayCase::ASyncRequestDisplay(const FInventoryStackId& InventoryStackId, const int32 SlotIndex)
 {
 	// Check that the item to display exists in the inventory.
 	if (!InventoryComponent->Contains(InventoryStackId))
@@ -241,10 +239,10 @@ bool ATartarusDisplayCase::ASyncRequestDisplay(const FGuid& InventoryStackId, co
 	OnDataRequestCompleted.AddUObject(this, &ATartarusDisplayCase::HandleItemDataLoaded);
 
 	// Get the overview of the stack.
-	const FInventoryItemStack* ItemStack = InventoryComponent->GetOverviewSingle(InventoryStackId);
+	const FInventoryStack* ItemStack = InventoryComponent->GetOverviewSingle(InventoryStackId);
 
 	TArray<int32> ToSpawnItemIds;
-	ToSpawnItemIds.Add(ItemStack->GetItemId());
+	ToSpawnItemIds.Add(ItemStack->GetEntryId());
 
 	FGuid ASyncRequestId = ItemSubsystem->AsyncRequestGetItemsData(ToSpawnItemIds, OnDataRequestCompleted);
 
@@ -274,7 +272,7 @@ void ATartarusDisplayCase::HandleRequestCompleted(const FDisplayRequestInfo* con
 	// If no item was displayed, free up the slot.
 	if (!IsValid(DisplayItem.Get()))
 	{
-		DisplaySlots[CompletedRequest->GetDisplaySlot()].SetDisplayedItem(FGuid(), nullptr);
+		DisplaySlots[CompletedRequest->GetDisplaySlot()].SetDisplayedItem(FInventoryStackId(), nullptr);
 	}
 
 	DisplayRequests.RemoveSingleSwap(*CompletedRequest);

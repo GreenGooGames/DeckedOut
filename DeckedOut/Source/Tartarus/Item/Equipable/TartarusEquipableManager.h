@@ -23,16 +23,16 @@ struct FEquipRequestInfo : public FASyncLoadRequest
 
 public:
 	FEquipRequestInfo() {}
-	FEquipRequestInfo(const FGuid& StackIds, const EEquipmentSlot Slots);
+	FEquipRequestInfo(const FInventoryStackId& StackIds, const EEquipmentSlot Slots);
 
 	EEquipmentSlot GetRequestedSlots() const { return RequestedSlots; }
-	const FGuid& GetInventoryStackId() const { return InventoryStackId; }
+	const FInventoryStackId& GetInventoryStackId() const { return InventoryStackId; }
 
 	EEquipmentSlot ReservedSlot = EEquipmentSlot::None;
 
 private:
 	EEquipmentSlot RequestedSlots = EEquipmentSlot::None;
-	FGuid InventoryStackId = FGuid();
+	FInventoryStackId InventoryStackId = FInventoryStackId();
 };
 #pragma endregion
 
@@ -53,7 +53,7 @@ public:
 	* Unequips the actor if it is equipped.
 	* Return: True, the actor was unequipped. False, Failed to unequip the actor.
 	*/
-	bool Unequip(const FGuid& InventoryStackId);
+	bool Unequip(const FInventoryStackId& InventoryStackId);
 
 	/*
 	* Searches for an equipped item.
@@ -82,7 +82,7 @@ public:
 	* Equips an actor to the owner on the prefered slot.
 	* Return: True, started request to equip the item.
 	*/
-	bool ASyncRequestEquip(const FGuid& InventoryStackId, const EEquipmentSlot RequestedSlots);
+	bool ASyncRequestEquip(const FInventoryStackId& InventoryStackId, const EEquipmentSlot RequestedSlots);
 
 protected:
 	void HandleRequestCompleted(const FEquipRequestInfo* const CompletedRequest, const TWeakObjectPtr<ATartarusItemBase> EquippedItem);
@@ -91,7 +91,7 @@ protected:
 	void HandleItemSpawned(FGuid ASyncLoadRequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedItems);
 
 	FGuid RequestItemsSpawn(const TArray<FItemTableRow>& ItemTableRows);
-	FGuid RequestItemData(const FGuid& InventoryStackId);
+	FGuid RequestItemData(const FInventoryStackId& InventoryStackId);
 
 	/*
 	* Reserves a slot with priority to the RequestedSlots, if no slot is requested an avaialble slot that cen be used is selected.
@@ -110,11 +110,11 @@ protected:
 	/*
 	* Called when a change in the inventory happens, used to unequip items that are no longer in the inventory.
 	*/
-	void HandleInventoryUpdated(EInventoryChanged ChangeType, FGuid InventoryStackId, int32 StackSize);
+	void HandleInventoryUpdated(EInventoryChanged ChangeType, FInventoryStackId InventoryStackId, int32 StackSize);
 
-	void HandleInventoryItemRetrieved(const FGuid& InventoryStackId, const int32 StackSize);
+	void HandleInventoryItemRetrieved(const FInventoryStackId& InventoryStackId, const int32 StackSize);
 
-	void HandleInventoryItemStored(const FGuid& InventoryStackId);
+	void HandleInventoryItemStored(const FInventoryStackId& InventoryStackId);
 	void HandleInventoryItemDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData);
 
 private:

@@ -3,15 +3,13 @@
 
 #include "UI/Inventory/TartarusInventoryWidget.h"
 
-#include "CommonTileView.h"
+#include "CommonVisibilitySwitcher.h"
 #include "Input/CommonUIInputTypes.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
-#include "Item/System/TartarusItemSubsystem.h"
-#include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
 #include "Player/TartarusPlayerController.h"
-#include "System/TartarusAssetManager.h"
-#include "UI/Inventory/TartarusInventorySlotWidget.h"
+#include "UI/Foundation/TartarusSwitcherWidget.h"
+#include "UI/Inventory/TartarusSubInventoryView.h"
 
 void UTartarusInventoryWidget::NativeOnInitialized()
 {
@@ -19,19 +17,12 @@ void UTartarusInventoryWidget::NativeOnInitialized()
 
 	RegisterBoundInputActions();
 	ConstructInventoryView();
-}
-
-void UTartarusInventoryWidget::NativeOnActivated()
-{
-	Super::NativeOnActivated();
-
-	UpdateSlotDisplays();
+	SetupMenuSwitcher();
 }
 
 void UTartarusInventoryWidget::ConstructInventoryView()
 {
 	const ATartarusPlayerController* const PlayerController = GetOwningPlayer<ATartarusPlayerController>();
-
 	if (!IsValid(PlayerController))
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: No player controller!"), *FString(__FUNCTION__));
@@ -39,65 +30,46 @@ void UTartarusInventoryWidget::ConstructInventoryView()
 	}
 
 	const UTartarusInventoryComponent* const InventoryComponent = PlayerController->GetInventoryComponent();
-
 	if (!IsValid(InventoryComponent))
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: No inventory found!"), *FString(__FUNCTION__));
 		return;
 	}
 
-	const TArray<FInventoryItemStack>& InventorySlots = InventoryComponent->GetOverview();
+	// Create a template sub inventory for each subinventory owned by the inventory component.
+	const TArray<EInventoryType> SubInventoryIds = InventoryComponent->GetSubInventoryIds();
 
-	// For each slot in the inventory, create a SlotWidget.
-	for (const FInventoryItemStack& InventorySlot : InventorySlots)
+	for (const EInventoryType& InventoryId : SubInventoryIds)
 	{
-		UTartarusInventorySlotWidget* const SlotWidget = CreateWidget<UTartarusInventorySlotWidget>(GetWorld(), TileView->GetEntryWidgetClass());
-
-		if (!IsValid(SlotWidget))
+		FString EnumToString = "";
+		
+		const UEnum* const InventoryTypePtr = FindObject<UEnum>(FTopLevelAssetPath(TEXT("/Script/Tartarus.EInventoryType")), true);
+		if (IsValid(InventoryTypePtr))
 		{
-			UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create an instance of Inventory Tile view!"), *FString(__FUNCTION__));
-			continue;
+			EnumToString = InventoryTypePtr->GetNameStringByValue(static_cast<int64>(InventoryId));
 		}
 
-		TileView->AddItem(SlotWidget);
-	}
-}
+		const FString WidgetName = FString("Widget_SubInventory_").Append(EnumToString);
 
-void UTartarusInventoryWidget::UpdateSlotDisplays()
-{
-	const ATartarusPlayerController* const PlayerController = GetOwningPlayer<ATartarusPlayerController>();
-
-	if (!IsValid(PlayerController))
-	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Setup inventory view failed: No player controller!"), *FString(__FUNCTION__));
-		return;
-	}
-	
-	const UTartarusInventoryComponent* const InventoryComponent = PlayerController->GetInventoryComponent();
-
-	if (!IsValid(InventoryComponent))
-	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Setup inventory view failed: No inventory found!"), *FString(__FUNCTION__));
-		return;
-	}
-	
-	const TArray<FInventoryItemStack>& InventorySlots = InventoryComponent->GetOverview();
-
-	// For each inventory slot, update the texture to the content.
-	for (int32 i = 0; i < InventorySlots.Num(); i++)
-	{
-		UTartarusInventorySlotWidget* const SlotWidget = Cast<UTartarusInventorySlotWidget>(TileView->GetItemAt(i));
-
-		if (!IsValid(SlotWidget))
+		// TODO: Async load the SubInventoryClass.
+		// Instantiate a template subinventory.
+		UTartarusSubInventoryView* const SubInventoryView = CreateWidget<UTartarusSubInventoryView>(GetWorld(), SubInventoryViewClass.LoadSynchronous(), *WidgetName);
+		if (!IsValid(SubInventoryView))
 		{
-			UE_LOG(LogTartarus, Log, TEXT("%s: Setup inventory view failed: No tile found!"), *FString(__FUNCTION__));
-			continue;
+			UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: Could not instaniate a subinventory view!"), *FString(__FUNCTION__));
+			return;
 		}
 
-		// Create an async request to load the appropriate texture.
-		FUpdateInventoryUIRequestCompletedEvent OnRequestCompleted;
+		// Set the new widget as a child of the VisibilitySwitcher.
+		const UPanelSlot* const PanelSlot = SubInventoryVisibilitySwitcher->AddChild(Cast<UWidget>(SubInventoryView));
+		if (!IsValid(PanelSlot))
+		{
+			UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: Failed to add subinventoryview as child of the visibility switcher.!"), *FString(__FUNCTION__));
+			return;
+		}
 
-		AsyncRequestSetDisplayTexture(SlotWidget, InventorySlots[i].GetItemId(), OnRequestCompleted);
+		SubInventoryView->LinkInventory(InventoryId);
+		SubInventoryView->SetLocalizedWidgetName(FText::FromString(EnumToString));
 	}
 }
 
@@ -130,169 +102,12 @@ void UTartarusInventoryWidget::HandleSortAction()
 }
 #pragma endregion
 
-#pragma region ASyncLoading
-FGuid UTartarusInventoryWidget::AsyncRequestSetDisplayTexture(UTartarusInventorySlotWidget* const SlotWidget, const int32 ItemId, FUpdateInventoryUIRequestCompletedEvent& OnRequestCompletedEvent)
+#pragma region Navbar
+void UTartarusInventoryWidget::SetupMenuSwitcher()
 {
-	// Get the ItemSubsystem.
-	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
-	
-	if (!IsValid(ItemSubsystem))
+	if (SubInventoryMenuSwitcher && SubInventoryVisibilitySwitcher)
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: ItemSubsystem was invalid!"), *FString(__FUNCTION__));
-		return FGuid();
+		SubInventoryMenuSwitcher->LinkVisibilitySwitcher(SubInventoryVisibilitySwitcher);
 	}
-
-	// Create a request to handle updating the UI.
-	FUpdateInventoryUIRequestInfo UpdateRequest = FUpdateInventoryUIRequestInfo(OnRequestCompletedEvent, ItemId, SlotWidget);
-
-	// Prepare a callback for when the itemsubsystem has loaded the items their data.
-	FGetItemDataRequestCompletedEvent OnRequestCompleted;
-	OnRequestCompleted.AddUObject(this, &UTartarusInventoryWidget::HandleItemsDataLoaded);
-
-	// Create a request to load the data.
-	TArray<int32> ItemIds;
-	ItemIds.Add(ItemId);
-
-	FGuid AsyncLoadRequestId = ItemSubsystem->AsyncRequestGetItemsData(ItemIds, OnRequestCompleted);
-		
-	if (!AsyncLoadRequestId.IsValid())
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), *FString(__FUNCTION__));
-		return FGuid();
-	}
-	
-	UpdateRequest.SetASyncLoadRequestId(AsyncLoadRequestId);
-	UpdateUIRequests.Add(UpdateRequest);
-	
-	return UpdateRequest.GetRequestId();
-}
-
-void UTartarusInventoryWidget::HandleRequestSuccess(const FUpdateInventoryUIRequestInfo* const SuccessRequest, TWeakObjectPtr<UTexture2D> Texture)
-{
-	if (!SuccessRequest)
-	{
-		return;
-	}
-
-	SuccessRequest->OnUpdateUIRequestCompleted().Broadcast(SuccessRequest->GetRequestId(), Texture);
-	UpdateUIRequests.RemoveSingleSwap(*SuccessRequest);
-}
-
-void UTartarusInventoryWidget::HandleRequestFailed(const FUpdateInventoryUIRequestInfo* const FailedRequest)
-{
-	if (!FailedRequest)
-	{
-		return;
-	}
-
-	FailedRequest->GetWidget().Get()->SetDisplayTexture(nullptr);
-
-	FailedRequest->OnUpdateUIRequestCompleted().Broadcast(FailedRequest->GetRequestId(), nullptr);
-	UpdateUIRequests.RemoveSingleSwap(*FailedRequest);
-}
-
-void UTartarusInventoryWidget::HandleItemsDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData)
-{
-	// Get the request that is being handled.
-	FUpdateInventoryUIRequestInfo* const CurrentRequest = UpdateUIRequests.FindByPredicate([&ASyncLoadRequestId](const FUpdateInventoryUIRequestInfo& Request)
-		{
-			return Request.GetASyncLoadRequestId() == ASyncLoadRequestId;
-		});
-
-	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: Could not find the request!"), *FString(__FUNCTION__));
-		return;
-	}
-
-	// Verify that the correct item is loaded.
-	if (ItemsData.IsEmpty() || ItemsData[0].UniqueItemId != CurrentRequest->GetItemId())
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: No items loaded or the wrong item got loaded.!"), *FString(__FUNCTION__));
-		HandleRequestFailed(CurrentRequest);
-
-		return;
-	}
-
-	// Find the row for the item to display.
-	const FItemTableRow& ItemRow = ItemsData[0];
-
-	// Request to load the texture.
-	 FGuid AsyncLoadRequestId = AsyncRequestLoadTexture(ItemRow);
-
-	 if (!AsyncLoadRequestId.IsValid())
-	 {
-		 UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), *FString(__FUNCTION__));
-		 HandleRequestFailed(CurrentRequest);
-
-		 return;
-	 }
-
-	 CurrentRequest->SetASyncLoadRequestId(AsyncLoadRequestId);
-}
-
-FGuid UTartarusInventoryWidget::AsyncRequestLoadTexture(const FItemTableRow& ItemDefinition)
-{
-	// Get the AsyncLoader.
-	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
-
-	if (!AssetManager.IsValid())
-	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to load texture: Asset Manager was invalid!"), *FString(__FUNCTION__));
-		return FGuid();
-	}
-
-	// Create a callback for when the item table is loaded.
-	FAsyncLoadAssetRequestCompletedEvent OnTextureLoaded;
-	OnTextureLoaded.AddUObject(this, &UTartarusInventoryWidget::HandleTextureLoaded);
-
-	// Create a request to start loading the Item Table.
-	const FGuid AsyncLoadRequestId = AssetManager.AsyncRequestLoadAsset(ItemDefinition.DisplayTexture.ToSoftObjectPath(), OnTextureLoaded);
-
-	if (!AsyncLoadRequestId.IsValid())
-	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to load texture: could not start loading texture!"), *FString(__FUNCTION__));
-		return FGuid();
-	}
-
-	return AsyncLoadRequestId;
-}
-
-void UTartarusInventoryWidget::HandleTextureLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle)
-{
-	// Get the request that is being handled.
-	FUpdateInventoryUIRequestInfo* const CurrentRequest = UpdateUIRequests.FindByPredicate([&ASyncLoadRequestId](const FUpdateInventoryUIRequestInfo& Request)
-		{
-			return Request.GetASyncLoadRequestId() == ASyncLoadRequestId;
-		});
-
-	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: Could not find the request!"), *FString(__FUNCTION__));
-		HandleRequestFailed(CurrentRequest);
-		
-		return;
-	}
-
-	if (!IsValid(CurrentRequest->GetWidget().Get()))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: Widget was invalid!"), *FString(__FUNCTION__));
-		HandleRequestFailed(CurrentRequest);
-		
-		return;
-	}
-
-	UTexture2D* const Texture = Cast<UTexture2D>(AssetHandle.Get()->GetLoadedAsset());
-
-	if (!IsValid(Texture))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: Texture was invalid!"), *FString(__FUNCTION__));
-		HandleRequestFailed(CurrentRequest);
-		
-		return;
-	}
-
-	CurrentRequest->GetWidget().Get()->SetDisplayTexture(Texture);
-	HandleRequestSuccess(CurrentRequest, Texture);
 }
 #pragma endregion

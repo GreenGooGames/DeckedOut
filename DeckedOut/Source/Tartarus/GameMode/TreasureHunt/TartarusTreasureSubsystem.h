@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "Item/Inventory/TartarusInventoryData.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "System/TartarusASyncLoadData.h"
 
@@ -28,20 +29,20 @@ public:
 	FSpawnPointData(const FTransform& SpawnPointTransform);
 
 	void Reset();
-	void Reserve(const FGuid& KeyInventoryId);
+	void Reserve(const FInventoryStackId& KeyInventoryId);
 	bool IsAvailable() { return bIsAvailable; }
 
 	const FTransform& GetTransform() const { return Transform; }
 	const ATartarusTreasureChest* GetTreasure() const { return Treasure.Get(); }
 	void SetTreasure(ATartarusTreasureChest* TreasureChest) { Treasure = TreasureChest; }
-	const FGuid GetKeyId() const { return KeyInventoryStackId; }
+	const FInventoryStackId GetKeyId() const { return KeyInventoryStackId; }
 
 private:
 	bool bIsAvailable = true;
 
 	FTransform Transform = FTransform();
 	TObjectPtr<ATartarusTreasureChest> Treasure = nullptr;
-	FGuid KeyInventoryStackId = FGuid();
+	FInventoryStackId KeyInventoryStackId = FInventoryStackId();
 };
 
 #pragma region AsyncLoading
@@ -52,7 +53,7 @@ struct FTreasureSpawnRequestInfo : public FASyncLoadRequest
 
 public:
 	FTreasureSpawnRequestInfo() {}
-	FTreasureSpawnRequestInfo(FSpawnPointData* const SpawnPoint, const FGuid ToLinkKeyInventoryStackId, FSpawnAndLinkRequestCompletedEvent& OnRequestCompleted)
+	FTreasureSpawnRequestInfo(FSpawnPointData* const SpawnPoint, const FInventoryStackId ToLinkKeyInventoryStackId, FSpawnAndLinkRequestCompletedEvent& OnRequestCompleted)
 	{
 		RequestId = FGuid::NewGuid();
 
@@ -62,7 +63,7 @@ public:
 
 	const FSpawnAndLinkRequestCompletedEvent& OnRequestCompleted() const { return RequestCompletedEvent; }
 	FSpawnPointData& GetSpawnPointData() const { return *SpawnPointData; }
-	FGuid GetKeyInventoryStackId() { return SpawnPointData->GetKeyId(); }
+	FInventoryStackId GetKeyInventoryStackId() { return SpawnPointData->GetKeyId(); }
 
 private:
 	FSpawnAndLinkRequestCompletedEvent RequestCompletedEvent = FSpawnAndLinkRequestCompletedEvent();
@@ -89,13 +90,13 @@ public:
 	* Retrieves the location of treasure that is linked to the key.
 	* Return: The location of the Treasure in the world.
 	*/
-	FVector GetTreasureLocation(const FGuid& KeyInventoryId) const;
+	FVector GetTreasureLocation(const FInventoryStackId& KeyInventoryId) const;
 
 	/*
 	* Retrieves the key used to open the given treasure.
 	* Return: the InventoryStackId of the key.
 	*/
-	FGuid GetTreasureKey(const ATartarusTreasureChest* const Treasure);
+	FInventoryStackId GetTreasureKey(const ATartarusTreasureChest* const Treasure);
 
 protected:
 	/*
@@ -130,7 +131,7 @@ public:
 	Create a request to spawn a treasure chest and link a key to it.
 	Return: The unique id of this request.
 	*/
-	FGuid AsyncRequestSpawnAndLink(const FGuid KeyInventoryStackId, FSpawnAndLinkRequestCompletedEvent& OnRequestCompletedEvent);
+	FGuid AsyncRequestSpawnAndLink(const FInventoryStackId KeyInventoryStackId, FSpawnAndLinkRequestCompletedEvent& OnRequestCompletedEvent);
 
 protected:
 	// Notfies the requester that the request has succeeded and removes the request from the queue.

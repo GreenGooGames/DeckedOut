@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Interaction/TartarusInteractableTargetInterface.h"
 #include "System/TartarusASyncLoadData.h"
+#include "Item/Inventory/TartarusInventoryData.h"
 
 #include "TartarusDisplayCase.generated.h"
 
@@ -24,9 +25,9 @@ public:
 	FDisplayCaseSlot(const FVector& SlotLocation);
 
 	bool IsAvailable() const;
-	void SetDisplayedItem(const FGuid& ItemInventoryStackId, ATartarusItemBase* const ToDisplay);
+	void SetDisplayedItem(const FInventoryStackId& ItemInventoryStackId, ATartarusItemBase* const ToDisplay);
 	
-	const FGuid& GetInventoryStackId() const { return InventoryStackId; }
+	const FInventoryStackId& GetInventoryStackId() const { return InventoryStackId; }
 	const FVector& GetSlotRelativeLocation() const { return Location; }
 	const TWeakObjectPtr<ATartarusItemBase>& GetDisplayItem() const { return Item; }
 
@@ -36,7 +37,7 @@ protected:
 
 private:
 	TWeakObjectPtr<ATartarusItemBase> Item = nullptr;
-	FGuid InventoryStackId = FGuid();
+	FInventoryStackId InventoryStackId = FInventoryStackId();
 };
 
 #pragma region ASyncDisplay
@@ -70,7 +71,7 @@ public:
 
 public:
 	bool AddToDisplay(const int32 ItemId);
-	bool RemoveFromDisplay(const FGuid& InventoryStackId);
+	bool RemoveFromDisplay(const FInventoryStackId& InventoryStackId);
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
@@ -87,7 +88,7 @@ protected:
 #pragma region ASyncDisplay
 // [Koen Goossens] TODO: Refactor the TartarusEquipableManager as the workflow is the same.
 protected:
-	bool ASyncRequestDisplay(const FGuid& InventoryStackId, const int32 SlotIndex);
+	bool ASyncRequestDisplay(const FInventoryStackId& InventoryStackId, const int32 SlotIndex);
 
 	void HandleRequestCompleted(const FDisplayRequestInfo* const CompletedRequest, const TWeakObjectPtr<ATartarusItemBase> DisplayItem);
 
