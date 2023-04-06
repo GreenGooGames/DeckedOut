@@ -24,3 +24,24 @@ bool ATartarusTreasureHuntGameState::IsTreasureHuntActive() const
 	return TreasureHuntState == ETreasureHuntState::Active;
 }
 #pragma endregion
+
+void ATartarusTreasureHuntGameState::EditGameModifier(const EGameModifier Modifier, const float Adjustment)
+{
+	switch (Modifier)
+	{
+	case EGameModifier::Sneak:
+	{
+		GameModifiers.SneakModifier += Adjustment;
+		break;
+	}
+	case EGameModifier::Silence:
+	{
+		GameModifiers.SilenceModifier += Adjustment;
+		break;
+	}
+	// Intentional fall-trough
+	case EGameModifier::None:
+	default:
+		break;
+	}
+}

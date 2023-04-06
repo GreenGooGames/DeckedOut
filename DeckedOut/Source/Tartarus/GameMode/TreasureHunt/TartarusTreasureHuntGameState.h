@@ -6,6 +6,14 @@
 #include "GameFramework/GameStateBase.h"
 #include "TartarusTreasureHuntGameState.generated.h"
 
+UENUM(BlueprintType)
+enum class EGameModifier : uint8
+{
+	None,
+	Sneak,
+	Silence
+};
+
 USTRUCT()
 struct FGameModifiers
 {
@@ -59,6 +67,11 @@ public:
 	* Return: Struct containing all modifiers applied to the game.
 	*/
 	const FGameModifiers& GetGameModifiers() const { return GameModifiers; }
+
+	/*
+	* Updates the given game modifier with the provided adjustment.
+	*/
+	void EditGameModifier(const EGameModifier Modifier, const float Adjustment);
 
 protected:
 	
