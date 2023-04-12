@@ -18,8 +18,9 @@ public class Tartarus : ModuleRules
 			new string[] { 
 				"Core", 
 				"CoreUObject", 
-				"Engine", 
-				"InputCore", 
+				"Engine",
+                "EnhancedInput",
+                "InputCore", 
 				"HeadMountedDisplay",
 				"GameplayTags",
 				"SlateCore"});

@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "TartarusPlayerController.generated.h"
 
+class UInputAction;
 class UTartarusInventoryComponent;
 class UTartarusInteractableSourceComponent;
 class UTartarusPrimaryGameLayout;
@@ -33,6 +34,10 @@ protected:
 	// Component responsible for interaction between source and targets.
 	UPROPERTY(EditDefaultsOnly)
 		TObjectPtr<UTartarusInteractableSourceComponent> InteractableComponent = nullptr;
+
+	/** Interact Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+		UInputAction* InteractAction;
 #pragma endregion
 
 #pragma region Inventory

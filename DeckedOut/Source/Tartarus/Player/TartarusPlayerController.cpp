@@ -3,6 +3,8 @@
 
 #include "Player/TartarusPlayerController.h"
 
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "Interaction/TartarusInteractableSourceComponent.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Logging/TartarusLogChannels.h"
@@ -19,7 +21,12 @@ void ATartarusPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	InputComponent->BindAction("Interact", EInputEvent::IE_Pressed, this, &ATartarusPlayerController::TryInteract);
+	// Set up action bindings
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
+	{
+		//Interact
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &ATartarusPlayerController::TryInteract);
+	}
 }
 
 #pragma region Interaction
