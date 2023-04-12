@@ -20,8 +20,18 @@ class TARTARUS_API ATartarusPlayerCharacter : public ATartarusCharacter
 public:
 	ATartarusPlayerCharacter();
 
+	void BeginPlay() override;
+
 #pragma region Template
-public:
+protected:
+	/** Pawn mesh: 1st person view (arms; seen only by self) */
+	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+		class USkeletalMeshComponent* Mesh1P;
+
+	/** First person camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		class UCameraComponent* FirstPersonCameraComponent;
+
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class USpringArmComponent* CameraBoom;
@@ -67,6 +77,10 @@ protected:
 	// End of APawn interface
 
 public:
+	/** Returns Mesh1P subobject **/
+	FORCEINLINE class USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
+	/** Returns FirstPersonCameraComponent subobject **/
+	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
@@ -77,8 +91,12 @@ public:
 
 public:
 	UTartarusEquipableManager* GetEquipableManager() const { return EquipableManager; }
+	void ToggleCameraView();
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		TObjectPtr<UTartarusEquipableManager> EquipableManager = nullptr;
+
+private:
+	bool bIsCamera1P = false;
 };
