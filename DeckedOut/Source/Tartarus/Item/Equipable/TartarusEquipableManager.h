@@ -61,6 +61,12 @@ public:
 	*/
 	const FEquipmentInfo* FindEquippedItem(const ATartarusItemBase* const ToFindItem) const;
 
+	/*
+	* Set the active mesh to equip to.
+	* If any is equipped, they will be transfered.
+	*/
+	void SetEquipableMeshComponent(USkeletalMeshComponent* const Mesh);
+
 protected:
 	// How far away should the equipped object be moved to from the player when unequipping it.
 	UPROPERTY(EditDefaultsOnly)
@@ -70,11 +76,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 		TMap<EEquipmentSlot, FEquipmentInfo> EquipmentSlots;
 
+	// The mesh to equip on.
+	TObjectPtr<USkeletalMeshComponent> EquipableMeshComponent = nullptr;
+
 	/*
 	* Finds a slot that is available to equip on.
 	* Return: A slot that is available to equip on, EEquipmentSlot::None if no slot is available.
 	*/
 	EEquipmentSlot FindAvailableSlot(const uint8 SlotsMask = 0) const;
+
+	/*
+	* Attaches the object in the slot to the Equippable mesh.
+	* Return: True if the mesh is attached, false if attachment failed.
+	*/
+	bool AttachToMesh(const EEquipmentSlot Slot);
 
 #pragma region ASyncEquip
 public:

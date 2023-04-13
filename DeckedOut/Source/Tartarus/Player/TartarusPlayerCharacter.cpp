@@ -123,6 +123,9 @@ void ATartarusPlayerCharacter::ToggleCameraView()
 		GetFirstPersonCameraComponent()->Deactivate();
 		GetFollowCamera()->Activate();
 	}
+
+	// The view has changed, tell the equippable manager that the visible mesh has changed.
+	EquipableManager->SetEquipableMeshComponent(bIsCamera1P ? GetMesh1P() : GetMesh());
 }
 #pragma endregion
 

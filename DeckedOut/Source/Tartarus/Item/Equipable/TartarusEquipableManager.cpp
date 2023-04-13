@@ -44,7 +44,6 @@ void UTartarusEquipableManager::BeginPlay()
 
 	// Subscribe to inventory updates to unequip if an item is removed.
 	UTartarusInventoryComponent* const Inventory = GetOwnerInventory();
-
 	if (IsValid(Inventory))
 	{
 		Inventory->OnInventoryChanged().AddUObject(this, &UTartarusEquipableManager::HandleInventoryUpdated);
@@ -115,6 +114,26 @@ const FEquipmentInfo* UTartarusEquipableManager::FindEquippedItem(const ATartaru
 	return nullptr;
 }
 
+void UTartarusEquipableManager::SetEquipableMeshComponent(USkeletalMeshComponent* const Mesh)
+{
+	if (!IsValid(Mesh))
+	{
+		return;
+	}
+
+	EquipableMeshComponent = Mesh;
+
+	for (auto Slot : EquipmentSlots)
+	{
+		if (!IsValid(Slot.Value.GetItem()))
+		{
+			continue;
+		}
+
+		AttachToMesh(Slot.Key);
+	}
+}
+
 EEquipmentSlot UTartarusEquipableManager::FindAvailableSlot(const uint8 SlotsMask) const
 {
 	for (TPair<EEquipmentSlot, FEquipmentInfo> EquipmentSlot : EquipmentSlots)
@@ -137,6 +156,27 @@ EEquipmentSlot UTartarusEquipableManager::FindAvailableSlot(const uint8 SlotsMas
 	}
 
 	return EEquipmentSlot::None;
+}
+
+bool UTartarusEquipableManager::AttachToMesh(const EEquipmentSlot Slot)
+{
+	// Attach the spawned item to the owner and tell the item it is equipped.
+	if (!IsValid(EquipableMeshComponent))
+	{
+		return false;
+	}
+
+	const FName& SocketName = EquipmentSlots[Slot].GetSocket();
+	if (SocketName == NAME_None)
+	{
+		return false;
+	}
+
+	ATartarusItemBase* const ItemRaw = EquipmentSlots[Slot].GetItem();
+	const FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
+	ItemRaw->AttachToComponent(EquipableMeshComponent, AttachmentRules, SocketName);
+
+	return true;
 }
 
 #pragma region ASyncEquip
@@ -244,25 +284,9 @@ void UTartarusEquipableManager::HandleItemSpawned(FGuid ASyncLoadRequestId, TArr
 	EEquipmentSlot ReservedSlot = CurrentRequest->ReservedSlot;
 	EquipmentSlots[ReservedSlot].SetItem(SpawnedItems[0].Get());
 
-	// Attach the spawned item to the owner and tell the item it is equipped.
-	const ACharacter* const Owner = Cast<ACharacter>(GetOwner());
-	if (Owner)
+	if (AttachToMesh(ReservedSlot))
 	{
-		USkeletalMeshComponent* const AttachComponent = Owner->GetMesh();
-
-		if (AttachComponent)
-		{
-			const FName& SocketName = EquipmentSlots[ReservedSlot].GetSocket();
-
-			if (SocketName != NAME_None)
-			{
-				ATartarusItemBase* const ItemRaw = EquipmentSlots[ReservedSlot].GetItem();
-				const FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
-				ItemRaw->AttachToComponent(AttachComponent, AttachmentRules, SocketName);
-
-				EquipableInterface->OnEquipped(GetOwner());
-			}
-		}
+		EquipableInterface->OnEquipped(GetOwner());
 	}
 
 	return HandleRequestCompleted(CurrentRequest, SpawnedItems[0]);
