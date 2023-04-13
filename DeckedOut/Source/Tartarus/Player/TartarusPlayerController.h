@@ -42,7 +42,7 @@ protected:
 
 #pragma region Inventory
 public:
-	UTartarusInventoryComponent* GetInventoryComponent() const { return InventoryComponent; };
+	FORCEINLINE UTartarusInventoryComponent* GetInventoryComponent() const { return InventoryComponent; };
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
@@ -53,7 +53,7 @@ protected:
 #pragma region UI
 public:
 	void ShowPrimaryGameLayoutASync();
-	TObjectPtr<UTartarusPrimaryGameLayout> GetPrimaryGameLayout() const { return PrimaryGameLayoutInstance; };
+	FORCEINLINE TObjectPtr<UTartarusPrimaryGameLayout> GetPrimaryGameLayout() const { return PrimaryGameLayoutInstance; };
 
 protected:
 	UPROPERTY(EditDefaultsOnly)

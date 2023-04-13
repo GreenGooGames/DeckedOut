@@ -8,6 +8,12 @@
 
 #include "TartarusPlayerCharacter.generated.h"
 
+class UCameraComponent;
+class UInputMappingContext;
+class UInputAction;
+class UInputComponent;
+class USkeletalMeshComponent;
+class USpringArmComponent;
 class UTartarusEquipableManager;
 
 /**
@@ -20,72 +26,77 @@ class TARTARUS_API ATartarusPlayerCharacter : public ATartarusCharacter
 
 public:
 	ATartarusPlayerCharacter();
-	void TemplateConstructor();
 
 	void BeginPlay() override;
 
 #pragma region Visual
 public:
 	/** Returns Mesh1P subobject **/
-	FORCEINLINE class USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
-	/** Returns FirstPersonCameraComponent subobject **/
+	FORCEINLINE USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 
 protected:
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-		class USkeletalMeshComponent* Mesh1P;
-#pragma endregion
-
-#pragma region Camera
-public:
-	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+		USkeletalMeshComponent* Mesh1P;
 
 private:
-	/** First person camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class UCameraComponent* FirstPersonCameraComponent;
-
-	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class USpringArmComponent* CameraBoom;
-
-	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class UCameraComponent* FollowCamera;
-
-	/** Indicator for wether we should view trough FP or TP camera. */
-	bool bIsCamera1P = false;
+	/** Create and setup cameras */
+	void ConstructVisuals();
 #pragma endregion
 
 #pragma region Input
 protected:
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-		class UInputMappingContext* DefaultMappingContext;
-	
+		UInputMappingContext* DefaultMappingContext;
+
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-		class UInputAction* JumpAction;
-	
+		UInputAction* JumpAction;
+
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-		class UInputAction* MoveAction;
-	
+		UInputAction* MoveAction;
+
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-		class UInputAction* LookAction;
-	
+		UInputAction* LookAction;
+
 	/** Toggle Camera View Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-		class UInputAction* CameraViewAction;
-	
+		UInputAction* CameraViewAction;
+
 	// APawn interface
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
+#pragma endregion
+
+#pragma region Camera
+public:
+	/** Returns FirstPersonCameraComponent subobject **/
+	FORCEINLINE UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+	/** Returns CameraBoom subobject **/
+	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	/** Returns FollowCamera subobject **/
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+private:
+	/** First person camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		UCameraComponent* FirstPersonCameraComponent;
+
+	/** Camera boom positioning the camera behind the character */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		USpringArmComponent* CameraBoom;
+
+	/** Follow camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		UCameraComponent* FollowCamera;
+
+	/** Indicator for wether we should view trough FP or TP camera. */
+	bool bIsCamera1P = false;
+
+	void ConstructCameras();
 #pragma endregion
 
 #pragma region Movement
@@ -95,11 +106,15 @@ protected:
 	
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+private:
+	void SetupMovement();
 #pragma endregion
 
 #pragma region Equippable
 public:
-	UTartarusEquipableManager* GetEquipableManager() const { return EquipableManager; }
+	FORCEINLINE UTartarusEquipableManager* GetEquipableManager() const { return EquipableManager; }
+	
 	void ToggleCameraView();
 
 protected:

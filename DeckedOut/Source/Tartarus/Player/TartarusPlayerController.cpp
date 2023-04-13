@@ -22,7 +22,7 @@ void ATartarusPlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 
 	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
+	if (UEnhancedInputComponent* const EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 	{
 		//Interact
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &ATartarusPlayerController::TryInteract);
@@ -51,7 +51,6 @@ void ATartarusPlayerController::ShowPrimaryGameLayoutASync()
 {
 	// Get the AsyncLoader.
 	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
-
 	if (!AssetManager.IsValid())
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to show GameLayout: AssetManager is invalid!"), *FString(__FUNCTION__));
@@ -62,8 +61,7 @@ void ATartarusPlayerController::ShowPrimaryGameLayoutASync()
 	FAsyncLoadAssetRequestCompletedEvent OnRequestCompleted;
 	OnRequestCompleted.AddUObject(this, &ATartarusPlayerController::HandleGameLayoutLoaded);
 
-	FGuid AsyncLoadRequestId = AssetManager.AsyncRequestLoadAsset(PrimaryGameLayoutClass.ToSoftObjectPath(), OnRequestCompleted);
-
+	const FGuid AsyncLoadRequestId = AssetManager.AsyncRequestLoadAsset(PrimaryGameLayoutClass.ToSoftObjectPath(), OnRequestCompleted);
 	if (!AsyncLoadRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show GameLayout: Could not start async load!"), *FString(__FUNCTION__));
@@ -72,8 +70,7 @@ void ATartarusPlayerController::ShowPrimaryGameLayoutASync()
 }
 void ATartarusPlayerController::HandleGameLayoutLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle)
 {
-	TSubclassOf<UTartarusPrimaryGameLayout> PrimaryGameLayoutClassRaw = Cast<UClass>(AssetHandle.Get()->GetLoadedAsset());
-
+	const TSubclassOf<UTartarusPrimaryGameLayout> PrimaryGameLayoutClassRaw = Cast<UClass>(AssetHandle.Get()->GetLoadedAsset());
 	if (!IsValid(PrimaryGameLayoutClassRaw))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show GameLayout: Loaded class was invalid!"), *FString(__FUNCTION__));
@@ -81,7 +78,6 @@ void ATartarusPlayerController::HandleGameLayoutLoaded(FGuid ASyncLoadRequestId,
 	}
 
 	PrimaryGameLayoutInstance = CreateWidget<UTartarusPrimaryGameLayout>(GetWorld(), PrimaryGameLayoutClassRaw);
-
 	if (!IsValid(PrimaryGameLayoutInstance))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show GameLayout: Could not instantiate the widget!"), *FString(__FUNCTION__));
