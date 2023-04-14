@@ -14,17 +14,17 @@ enum class EGameModifier : uint8
 	Silence
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FGameModifiers
 {
 	GENERATED_BODY()
 
 public:
 	// Has a chance to lower the volume of sound when generating clank.
-	float SneakModifier = 0.2f;
+	float SneakModifier = 0.0f;
 
 	// Has a chance to completely nullify a sound when generating clank..
-	float SilenceModifier = 0.1f;
+	float SilenceModifier = 0.0f;
 };
 
 UENUM()
@@ -73,8 +73,13 @@ public:
 	*/
 	void EditGameModifier(const EGameModifier Modifier, const float Adjustment);
 
+	/*
+	* Resets the Game Modifiers to their default values.
+	*/
+	void ResetGameModifiers() { GameModifiers = FGameModifiers(); };
+
 protected:
-	
+
 private:
 	ETreasureHuntState TreasureHuntState = ETreasureHuntState::Inactive;
 	FRunningStateChanged RunningStateChangedEvent = FRunningStateChanged();

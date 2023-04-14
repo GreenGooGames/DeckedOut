@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Item/TartarusItemInstance.h"
 #include "Interaction/TartarusInteractableTargetInterface.h"
+#include "System/TartarusAsyncLoadData.h"
 
 #include "TartarusPickup.generated.h"
 

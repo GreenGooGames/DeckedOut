@@ -7,6 +7,8 @@
 
 #include "TartarusItemData.generated.h"
 
+class UTartarusItem;
+
 UENUM(BlueprintType)
 enum class EItemType : uint8
 {

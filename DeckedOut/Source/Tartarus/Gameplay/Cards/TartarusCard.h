@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/DataAsset.h"
+#include "ITem/TartarusItem.h"
 
 #include "TartarusCard.generated.h"
 
@@ -13,15 +13,11 @@ enum class EGameModifier : uint8;
  * 
  */
 UCLASS()
-class TARTARUS_API UTartarusCard : public UDataAsset
+class TARTARUS_API UTartarusCard : public UTartarusItem
 {
 	GENERATED_BODY()
 	
-protected:
-	UPROPERTY(EditDefaultsOnly)
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "Card")
 		TMap<EGameModifier, float> Modifiers;
-
-protected:
-	void ApplyModifiers(ATartarusTreasureHuntGameState* const GameState) const;
-	void RemoveModifiers(ATartarusTreasureHuntGameState* const GameState) const;
 };
