@@ -11,7 +11,8 @@
 #include "TartarusDisplayCase.generated.h"
 
 class UTartarusInventoryComponent;
-class ATartarusItemBase;
+class UTartarusItem;
+class ATartarusItemInstance;
 
 struct FItemTableRow;
 
@@ -25,18 +26,18 @@ public:
 	FDisplayCaseSlot(const FVector& SlotLocation);
 
 	bool IsAvailable() const;
-	void SetDisplayedItem(const FInventoryStackId& ItemInventoryStackId, ATartarusItemBase* const ToDisplay);
+	void SetDisplayedItem(const FInventoryStackId& ItemInventoryStackId, ATartarusItemInstance* const ToDisplay);
 	
 	const FInventoryStackId& GetInventoryStackId() const { return InventoryStackId; }
 	const FVector& GetSlotRelativeLocation() const { return Location; }
-	const TWeakObjectPtr<ATartarusItemBase>& GetDisplayItem() const { return Item; }
+	const TWeakObjectPtr<ATartarusItemInstance>& GetDisplayItem() const { return Item; }
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		FVector Location = FVector::ZeroVector;
 
 private:
-	TWeakObjectPtr<ATartarusItemBase> Item = nullptr;
+	TWeakObjectPtr<ATartarusItemInstance> Item = nullptr;
 	FInventoryStackId InventoryStackId = FInventoryStackId();
 };
 
@@ -70,7 +71,7 @@ public:
 	ATartarusDisplayCase();
 
 public:
-	bool AddToDisplay(const int32 ItemId);
+	bool AddToDisplay(const UTartarusItem* const Item);
 	bool RemoveFromDisplay(const FInventoryStackId& InventoryStackId);
 
 protected:
@@ -81,19 +82,19 @@ protected:
 		TObjectPtr<UTartarusInventoryComponent> InventoryComponent;
 
 	int32 FindAvailableSlot() const;
-	void HandleDisplayRequestCompleted(ATartarusItemBase* const DisplayItem, const int32 DisplaySlotIndex);
+	void HandleDisplayRequestCompleted(ATartarusItemInstance* const DisplayItem, const int32 DisplaySlotIndex);
 
-	void HandleArtifactsDataReceived(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ArtifactsData);
+	void HandleArtifactsDataReceived(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ArtifactsData);
 
 #pragma region ASyncDisplay
 // [Koen Goossens] TODO: Refactor the TartarusEquipableManager as the workflow is the same.
 protected:
 	bool ASyncRequestDisplay(const FInventoryStackId& InventoryStackId, const int32 SlotIndex);
 
-	void HandleRequestCompleted(const FDisplayRequestInfo* const CompletedRequest, const TWeakObjectPtr<ATartarusItemBase> DisplayItem);
+	void HandleRequestCompleted(const FDisplayRequestInfo* const CompletedRequest, const TWeakObjectPtr<ATartarusItemInstance> DisplayItem);
 
-	void HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData);
-	void HandleItemSpawned(FGuid ASyncLoadRequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedItems);
+	void HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData);
+	void HandleItemSpawned(FGuid ASyncLoadRequestId, TArray<TWeakObjectPtr<ATartarusItemInstance>> SpawnedItems);
 
 private:
 	TArray<FDisplayRequestInfo> DisplayRequests;

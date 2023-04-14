@@ -7,7 +7,7 @@
 #include "Logging/TartarusLogChannels.h"
 
 #pragma region FInventoryItemStack
-FInventoryStack::FInventoryStack(const EInventoryType InventoryId, const int32 NewEntryId, const int32 NewStackSize)
+FInventoryStack::FInventoryStack(const EInventoryType InventoryId, const FPrimaryAssetId NewEntryId, const int32 NewStackSize)
 {
 	StackId = FInventoryStackId(InventoryId);
 
@@ -17,14 +17,12 @@ FInventoryStack::FInventoryStack(const EInventoryType InventoryId, const int32 N
 #pragma endregion
 
 #pragma region FSubInventory
-FInventoryStackId FSubInventory::AddEntry(const int32 EntryId, const int32 StackSize)
+FInventoryStackId FSubInventory::AddEntry(const FPrimaryAssetId EntryId, const bool bTryStack, const int32 StackSize)
 {
-	const bool bIsStackableItem = EntryId > FTartarusHelpers::InvalidItemId;
-
 	// Search if there is a stackable duplicate.
 	const FInventoryStackId* StackId = FindStackId(EntryId);
 
-	if (bIsStackableItem && StackId)
+	if (bTryStack && StackId)
 	{
 		// Stackable Duplicate is found, increase the Stacksize.
 		FInventoryStack* const Stack = FindEditableStack(*StackId);
@@ -86,7 +84,7 @@ bool FSubInventory::RemoveEntry(const FInventoryStackId& StackId, const int32 St
 	return true;
 }
 
-const FInventoryStackId* const FSubInventory::FindStackId(const int32 EntryId) const
+const FInventoryStackId* const FSubInventory::FindStackId(const FPrimaryAssetId EntryId) const
 {
 	for (const FInventoryStack& Entry : Content)
 	{

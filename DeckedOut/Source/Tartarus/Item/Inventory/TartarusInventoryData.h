@@ -63,18 +63,18 @@ struct FInventoryStack
 
 public:
 	FInventoryStack() {}
-	FInventoryStack(const EInventoryType InventoryId, const int32 NewEntryId, const int32 NewStackSize);
+	FInventoryStack(const EInventoryType InventoryId, const FPrimaryAssetId NewEntryId, const int32 NewStackSize);
 
 	//bool operator==(const FInventoryStack& rhs) { return GetStackId() == rhs.GetStackId(); }
 
 	int32 StackSize = 0;
 	
 	const FInventoryStackId& GetStackId() const { return StackId; }
-	int32 GetEntryId() const { return EntryId; }
+	FPrimaryAssetId GetEntryId() const { return EntryId; }
 
 private:
 	FInventoryStackId StackId = FInventoryStackId();
-	int32 EntryId = FTartarusHelpers::InvalidItemId;
+	FPrimaryAssetId EntryId = FTartarusHelpers::InvalidItemId;
 };
 
 USTRUCT()
@@ -90,10 +90,10 @@ public:
 		Content.SetNum(InventorySize);
 	}
 
-	FInventoryStackId AddEntry(const int32 EntryId, const int32 StackSize);
+	FInventoryStackId AddEntry(const FPrimaryAssetId EntryId, const bool bTryStack, const int32 StackSize);
 	bool RemoveEntry(const FInventoryStackId& StackId, const int32 StackSize);
 
-	const FInventoryStackId* const FindStackId(const int32 EntryId) const;
+	const FInventoryStackId* const FindStackId(const FPrimaryAssetId EntryId) const;
 	const TArray<FInventoryStack>& GetContents() const { return Content; }
 	const FInventoryStack* FindStack(const FInventoryStackId& StackId) const;
 

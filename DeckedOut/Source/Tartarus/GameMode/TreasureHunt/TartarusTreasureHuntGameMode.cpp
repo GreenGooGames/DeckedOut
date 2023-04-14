@@ -7,9 +7,9 @@
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
 #include "Gameplay/Ruleset/TartarusRuleSubsystem.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
+#include "Item/TartarusItem.h"
 #include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
-
 
 void ATartarusTreasureHuntGameMode::StartTreasureHunt()
 {
@@ -69,13 +69,19 @@ void ATartarusTreasureHuntGameMode::StopTreasureHunt()
 		return;
 	}
 
-	Inventory->RetrieveEntry(GiftedTreasureKeyInventoryId, GiftTreasureKeyStackCount);
+	UTartarusItem* const GiftItem = Cast<UTartarusItem>(TreaseKeyGift.LoadSynchronous());
+	if (!IsValid(GiftItem))
+	{
+		return;
+	}
+
+	Inventory->RetrieveEntry(GiftedTreasureKeyInventoryId, 1);
 }
 
 #pragma region StarterGifts
 bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const PlayerController)
 {
-	// Get the player ivnentory.
+	// Get the player inventory.
 	UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
 	if (!IsValid(Inventory))
 	{
@@ -83,16 +89,14 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 		return false;
 	}
 
-	FString ContextString = "";
-	FItemTableRow* const ItemRow = StarterTreasureKeyHandle.GetRow<FItemTableRow>(ContextString);
-	if (!ItemRow)
+	// TODO: Load the Primary Asset Async.
+	UTartarusItem* const GiftItem = Cast<UTartarusItem>(TreaseKeyGift.LoadSynchronous());
+	if (!IsValid(GiftItem))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not retrieve the item row!"), *FString(__FUNCTION__));
 		return false;
 	}
 
-	// TreasureKeys are unique, a StackCount > 1 will result in failure. (If multiple uniques need to be gifted, split them up in an array)
-	GiftedTreasureKeyInventoryId = Inventory->StoreEntry(ItemRow->InventoryType, ItemRow->UniqueItemId, GiftTreasureKeyStackCount);
+	GiftedTreasureKeyInventoryId = Inventory->StoreEntry(GiftItem, 1);
 	if (!GiftedTreasureKeyInventoryId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not store the item in the inventory!"), *FString(__FUNCTION__));

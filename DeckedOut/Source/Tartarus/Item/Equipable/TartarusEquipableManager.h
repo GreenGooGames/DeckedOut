@@ -10,7 +10,7 @@
 
 #include "TartarusEquipableManager.generated.h"
 
-class ATartarusItemBase;
+class ATartarusItemInstance;
 class UTartarusInventoryComponent;
 
 struct FItemTableRow;
@@ -59,7 +59,7 @@ public:
 	* Searches for an equipped item.
 	* Return: the Equipped info of the item, nullptr if the item is not equipped.
 	*/
-	const FEquipmentInfo* FindEquippedItem(const ATartarusItemBase* const ToFindItem) const;
+	const FEquipmentInfo* FindEquippedItem(const ATartarusItemInstance* const ToFindItem) const;
 
 	/*
 	* Set the active mesh to equip to.
@@ -100,19 +100,19 @@ public:
 	bool ASyncRequestEquip(const FInventoryStackId& InventoryStackId, const EEquipmentSlot RequestedSlots);
 
 protected:
-	void HandleRequestCompleted(const FEquipRequestInfo* const CompletedRequest, const TWeakObjectPtr<ATartarusItemBase> EquippedItem);
+	void HandleRequestCompleted(const FEquipRequestInfo* const CompletedRequest, const TWeakObjectPtr<ATartarusItemInstance> EquippedItem);
 
-	void HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData);
-	void HandleItemSpawned(FGuid ASyncLoadRequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedItems);
+	void HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData);
+	void HandleItemSpawned(FGuid ASyncLoadRequestId, TArray<TWeakObjectPtr<ATartarusItemInstance>> SpawnedItems);
 
-	FGuid RequestItemsSpawn(const TArray<FItemTableRow>& ItemTableRows);
+	FGuid RequestItemsSpawn(const TArray<UTartarusItem*>& ItemTableRows);
 	FGuid RequestItemData(const FInventoryStackId& InventoryStackId);
 
 	/*
 	* Reserves a slot with priority to the RequestedSlots, if no slot is requested an avaialble slot that cen be used is selected.
 	* Return: True if a slot is reserved for the request.
 	*/
-	bool ReserveSlot(FEquipRequestInfo* const ASyncRequest, const FItemTableRow& ItemData);
+	bool ReserveSlot(FEquipRequestInfo* const ASyncRequest, const UTartarusItem* const ItemData);
 
 private:
 	TArray<FEquipRequestInfo> EquipRequests;
@@ -130,7 +130,7 @@ protected:
 	void HandleInventoryItemRetrieved(const FInventoryStackId& InventoryStackId, const int32 StackSize);
 
 	void HandleInventoryItemStored(const FInventoryStackId& InventoryStackId);
-	void HandleInventoryItemDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData);
+	void HandleInventoryItemDataLoaded(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData);
 
 private:
 	TWeakObjectPtr<UTartarusInventoryComponent> OwnerInventory = nullptr;

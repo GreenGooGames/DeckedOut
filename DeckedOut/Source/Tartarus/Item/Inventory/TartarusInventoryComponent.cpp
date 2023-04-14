@@ -4,6 +4,7 @@
 #include "Item/Inventory/TartarusInventoryComponent.h"
 
 #include "Logging/TartarusLogChannels.h"
+#include "Item/TartarusItem.h"
 
 // Called when the game starts
 void UTartarusInventoryComponent::BeginPlay()
@@ -22,51 +23,60 @@ void UTartarusInventoryComponent::BeginPlay()
 	}
 }
 
-FInventoryStackId UTartarusInventoryComponent::StoreEntry(const EInventoryType InventoryId, const int32 EntryId, const int32 StackSize)
+// TODO: Instead of using UTartarusItem, create a UTartarusInventoryEntry type. Items can then inherit this class.
+FInventoryStackId UTartarusInventoryComponent::StoreEntry(const UTartarusItem* const Entry, const int32 StackSize)
 {
+	// Verify the entry is valid.
+	if (!IsValid(Entry))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the entry: Entry was invalid!"), *FString(__FUNCTION__));
+		return FInventoryStackId();
+	}
+
 	// Verify the given parameters.
-	if (InventoryId == EInventoryType::MAX)
+	if (Entry->InventoryType == EInventoryType::MAX)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the entry: InventoryType was invalid!"), *FString(__FUNCTION__));
 		return FInventoryStackId();
 	}
 	
-	if (EntryId == FTartarusHelpers::InvalidItemId)
+	// Verify that the asset has a valid Id.
+	if (!Entry->GetPrimaryAssetId().IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the entry: ItemId was invalid!"), *FString(__FUNCTION__));
 		return FInventoryStackId();
 	}
 
+	// Verify that the stacksize is positive.
 	if (StackSize <= 0)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the entry: StackSize was  <= 0 !"), *FString(__FUNCTION__));
 		return FInventoryStackId();
 	}
-
-	// TODO: Probably should not use positive and negatives to differentiate between stackable and non-stackable.
-	const bool bIsStackableItem = EntryId > FTartarusHelpers::InvalidItemId;
-	if (!bIsStackableItem && StackSize > 1)
+	
+	// Ensure that the entry is stackable if storing multiples.
+	if (!Entry->bIsStackable && StackSize > 1)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the entry: Trying to add multiples of a unique entry in the same stack!"), *FString(__FUNCTION__));
 		return FInventoryStackId();
 	}
 
 	// Try to add the entry to the specified sub inventory.
-	const FInventoryStackId StackId = SubInventories[InventoryId].AddEntry(EntryId, StackSize);
+	const FInventoryStackId StackId = SubInventories[Entry->InventoryType].AddEntry(Entry->GetPrimaryAssetId(), Entry->bIsStackable, StackSize);
 	if (!StackId.IsValid())
 	{
 		return FInventoryStackId();
 	}
 	
-	OnInventoryChanged().Broadcast(EInventoryChanged::Stored, StackId, SubInventories[InventoryId].FindStack(StackId)->StackSize);
+	OnInventoryChanged().Broadcast(EInventoryChanged::Stored, StackId, SubInventories[Entry->InventoryType].FindStack(StackId)->StackSize);
 
 	return StackId;
 }
 
-bool UTartarusInventoryComponent::RetrieveEntry(const EInventoryType InventoryId, const int32 EntryId, const int32 StackSize)
+bool UTartarusInventoryComponent::RetrieveEntry(const EInventoryType InventoryId, const FPrimaryAssetId EntryId, const int32 StackSize)
 {
 	// Verify the given EntryId.
-	if (EntryId == FTartarusHelpers::InvalidItemId)
+	if (!EntryId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to retrieve the entry: EntryId was invalid!"), *FString(__FUNCTION__));
 		return false;
@@ -114,7 +124,7 @@ const TArray<FInventoryStack>& UTartarusInventoryComponent::GetOverview(const EI
 	return SubInventories[InventoryId].GetContents();
 }
 
-const TArray<const FInventoryStack*> UTartarusInventoryComponent::GetOverviewMulti(const EInventoryType InventoryId, const int32 EntryId) const
+const TArray<const FInventoryStack*> UTartarusInventoryComponent::GetOverviewMulti(const EInventoryType InventoryId, const FPrimaryAssetId EntryId) const
 {
 	TArray<const FInventoryStack*> MatchingItemSlots = TArray<const FInventoryStack*>();
 	
@@ -139,7 +149,7 @@ int32 UTartarusInventoryComponent::GetAvailableSlotCount(const EInventoryType In
 	return GetOverviewMulti(InventoryId, FTartarusHelpers::InvalidItemId).Num();
 }
 
-bool UTartarusInventoryComponent::Contains(const EInventoryType InventoryId, const int32 EntryId) const
+bool UTartarusInventoryComponent::Contains(const EInventoryType InventoryId, const FPrimaryAssetId EntryId) const
 {
 	// Get the stack that contains the Entry.
 	const FInventoryStackId* const StackId = SubInventories[InventoryId].FindStackId(EntryId);

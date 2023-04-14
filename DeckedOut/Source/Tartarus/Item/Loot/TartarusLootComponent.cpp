@@ -5,7 +5,6 @@
 
 #include "Item/Loot/TartarusLootTableDataAsset.h"
 #include "Item/System/TartarusItemSubsystem.h"
-#include "Item/TartarusItemBase.h"
 #include "Logging/TartarusLogChannels.h"
 #include "System/TartarusAssetManager.h"
 
@@ -52,7 +51,7 @@ FGuid UTartarusLootComponent::AsyncRequestDropLoot(const FTransform& SpawnTransf
 	return LootDropRequest.GetRequestId();
 }
 
-void UTartarusLootComponent::HandleRequestSuccess(const FLootDropRequestInfo* const SuccessRequest, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot)
+void UTartarusLootComponent::HandleRequestSuccess(const FLootDropRequestInfo* const SuccessRequest, TArray<TWeakObjectPtr<ATartarusItemInstance>> SpawnedLoot)
 {
 	if (!SuccessRequest)
 	{
@@ -70,7 +69,7 @@ void UTartarusLootComponent::HandleRequestFailed(const FLootDropRequestInfo* con
 		return;
 	}
 
-	TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot;
+	TArray<TWeakObjectPtr<ATartarusItemInstance>> SpawnedLoot;
 
 	FailedRequest->OnDropLootRequestCompleted().Broadcast(FailedRequest->GetRequestId(), SpawnedLoot);
 	LootDropRequests.RemoveSingleSwap(*FailedRequest);
@@ -101,11 +100,10 @@ void UTartarusLootComponent::HandleLootTableLoaded(FGuid ASyncLoadRequestId, TSh
 		return;
 	}
 
-	TArray<FDataTableRowHandle> LootHandles = LootTable->GetLoot();
+	TArray<UTartarusItem*> LootHandles = LootTable->GetLoot();
 	
 	// Load the item blueprint.
 	FGuid LootLoadRequestId = AsyncRequestSpawnItems(LootHandles, CurrentRequest->GetSpawnTransform());
-
 	if (!LootLoadRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: Could not load the item async!"), *FString(__FUNCTION__));
@@ -117,7 +115,7 @@ void UTartarusLootComponent::HandleLootTableLoaded(FGuid ASyncLoadRequestId, TSh
 	CurrentRequest->SetASyncLoadRequestId(LootLoadRequestId);
 }
 
-FGuid UTartarusLootComponent::AsyncRequestSpawnItems(TArray<FDataTableRowHandle> ItemHandles, const FTransform& SpawnTransform)
+FGuid UTartarusLootComponent::AsyncRequestSpawnItems(TArray<UTartarusItem*> ItemHandles, const FTransform& SpawnTransform)
 {
 	// Get the ItemSpawner.
 	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
@@ -145,7 +143,7 @@ FGuid UTartarusLootComponent::AsyncRequestSpawnItems(TArray<FDataTableRowHandle>
 	return SpawnRequestId;
 }
 
-void UTartarusLootComponent::HandleLootSpawned(FGuid ASyncLoadRequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot)
+void UTartarusLootComponent::HandleLootSpawned(FGuid ASyncLoadRequestId, TArray<TWeakObjectPtr<ATartarusItemInstance>> SpawnedLoot)
 {
 	// Get the request that is being handled.
 	FLootDropRequestInfo* const CurrentRequest = LootDropRequests.FindByPredicate([&ASyncLoadRequestId](const FLootDropRequestInfo& Request)

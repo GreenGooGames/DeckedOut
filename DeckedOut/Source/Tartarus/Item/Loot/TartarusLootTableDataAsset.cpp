@@ -3,9 +3,11 @@
 
 #include "Item/Loot/TartarusLootTableDataAsset.h"
 
-TArray<FDataTableRowHandle> UTartarusLootTableDataAsset::GetLoot()
+#include "Item/TartarusItem.h"
+
+TArray<UTartarusItem*> UTartarusLootTableDataAsset::GetLoot()
 {
-	TArray<FDataTableRowHandle> Loot;
+	TArray<UTartarusItem*> Loot;
 	int32 TotalWeight = 0;
 
 	// Gather all potential candidates.

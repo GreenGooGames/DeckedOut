@@ -3,12 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/DataTable.h"
 #include "GameMode/TartarusGameMode.h"
+#include "Item/Inventory/TartarusInventoryData.h"
 
 #include "TartarusTreasureHuntGameMode.generated.h"
 
 class UTartarusRuleset;
+class UTartarusItem;
 
 /**
  * 
@@ -27,10 +28,7 @@ public:
 protected:
 	// TreasureKey item handle to be gifted to the players when a treasure hunt starts.
 	UPROPERTY(EditDefaultsOnly)
-		FDataTableRowHandle StarterTreasureKeyHandle;
-
-	// Stack count of the treasure key to gift. Should always be 1 for a unique.
-	const int32 GiftTreasureKeyStackCount = 1;
+		TSoftObjectPtr<UTartarusItem> TreaseKeyGift = nullptr;
 
 	// Inventory ID of the gifted treasure key to remove if the player leaves the dungeon without using it.
 	FInventoryStackId GiftedTreasureKeyInventoryId;

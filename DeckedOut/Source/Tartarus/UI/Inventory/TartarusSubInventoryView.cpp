@@ -6,6 +6,7 @@
 #include "CommonTileView.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/System/TartarusItemSubsystem.h"
+#include "Item/TartarusItem.h"
 #include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
 #include "Player/TartarusPlayerController.h"
@@ -97,7 +98,7 @@ const TArray<FInventoryStack>* UTartarusSubInventoryView::GetInventoryEntries() 
 }
 
 #pragma region ASyncLoading
-FGuid UTartarusSubInventoryView::AsyncRequestSetDisplayTexture(UTartarusInventorySlotWidget* const SlotWidget, const int32 ItemId, FUpdateInventoryUIRequestCompletedEvent& OnRequestCompletedEvent)
+FGuid UTartarusSubInventoryView::AsyncRequestSetDisplayTexture(UTartarusInventorySlotWidget* const SlotWidget, const FPrimaryAssetId ItemId, FUpdateInventoryUIRequestCompletedEvent& OnRequestCompletedEvent)
 {
 	// Get the ItemSubsystem.
 	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
@@ -109,25 +110,25 @@ FGuid UTartarusSubInventoryView::AsyncRequestSetDisplayTexture(UTartarusInventor
 
 	// Create a request to handle updating the UI.
 	FUpdateInventoryUIRequestInfo UpdateRequest = FUpdateInventoryUIRequestInfo(OnRequestCompletedEvent, ItemId, SlotWidget);
-
+	
 	// Prepare a callback for when the itemsubsystem has loaded the items their data.
 	FGetItemDataRequestCompletedEvent OnRequestCompleted;
 	OnRequestCompleted.AddUObject(this, &UTartarusSubInventoryView::HandleItemsDataLoaded);
-
+	
 	// Create a request to load the data.
-	TArray<int32> ItemIds;
+	TArray<FPrimaryAssetId> ItemIds;
 	ItemIds.Add(ItemId);
-
+	
 	FGuid AsyncLoadRequestId = ItemSubsystem->AsyncRequestGetItemsData(ItemIds, OnRequestCompleted);
 	if (!AsyncLoadRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), *FString(__FUNCTION__));
 		return FGuid();
 	}
-
+	
 	UpdateRequest.SetASyncLoadRequestId(AsyncLoadRequestId);
 	UpdateUIRequests.Add(UpdateRequest);
-
+	
 	return UpdateRequest.GetRequestId();
 }
 
@@ -155,7 +156,7 @@ void UTartarusSubInventoryView::HandleRequestFailed(const FUpdateInventoryUIRequ
 	UpdateUIRequests.RemoveSingleSwap(*FailedRequest);
 }
 
-void UTartarusSubInventoryView::HandleItemsDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData)
+void UTartarusSubInventoryView::HandleItemsDataLoaded(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData)
 {
 	// Get the request that is being handled.
 	FUpdateInventoryUIRequestInfo* const CurrentRequest = UpdateUIRequests.FindByPredicate([&ASyncLoadRequestId](const FUpdateInventoryUIRequestInfo& Request)
@@ -170,31 +171,31 @@ void UTartarusSubInventoryView::HandleItemsDataLoaded(FGuid ASyncLoadRequestId, 
 	}
 
 	// Verify that the correct item is loaded.
-	if (ItemsData.IsEmpty() || ItemsData[0].UniqueItemId != CurrentRequest->GetItemId())
+	if (ItemsData.IsEmpty() || ItemsData[0]->GetPrimaryAssetId() != CurrentRequest->GetItemId())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Set display texture failed: No items loaded or the wrong item got loaded.!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
-
+	
 		return;
 	}
-
+	
 	// Find the row for the item to display.
-	const FItemTableRow& ItemRow = ItemsData[0];
-
+	const UTartarusItem* const ItemRow = ItemsData[0];
+	
 	// Request to load the texture.
 	FGuid AsyncLoadRequestId = AsyncRequestLoadTexture(ItemRow);
 	if (!AsyncLoadRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), *FString(__FUNCTION__));
 		HandleRequestFailed(CurrentRequest);
-
+	
 		return;
 	}
-
+	
 	CurrentRequest->SetASyncLoadRequestId(AsyncLoadRequestId);
 }
 
-FGuid UTartarusSubInventoryView::AsyncRequestLoadTexture(const FItemTableRow& ItemDefinition)
+FGuid UTartarusSubInventoryView::AsyncRequestLoadTexture(const UTartarusItem* const ItemDefinition)
 {
 	// Get the AsyncLoader.
 	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
@@ -209,8 +210,7 @@ FGuid UTartarusSubInventoryView::AsyncRequestLoadTexture(const FItemTableRow& It
 	OnTextureLoaded.AddUObject(this, &UTartarusSubInventoryView::HandleTextureLoaded);
 
 	// Create a request to start loading the Item Table.
-	const FGuid AsyncLoadRequestId = AssetManager.AsyncRequestLoadAsset(ItemDefinition.DisplayTexture.ToSoftObjectPath(), OnTextureLoaded);
-
+	const FGuid AsyncLoadRequestId = AssetManager.AsyncRequestLoadAsset(ItemDefinition->DisplayTexture.ToSoftObjectPath(), OnTextureLoaded);
 	if (!AsyncLoadRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to load texture: could not start loading texture!"), *FString(__FUNCTION__));

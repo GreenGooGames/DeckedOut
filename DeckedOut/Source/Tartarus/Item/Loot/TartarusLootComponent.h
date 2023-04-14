@@ -8,13 +8,13 @@
 
 #include "TartarusLootComponent.generated.h"
 
-class ATartarusItemBase;
+class ATartarusItemInstance;
 class UTartarusLootTableDataAsset;
 
 struct FDataTableRowHandle;
 struct FStreamableHandle;
 
-DECLARE_EVENT_TwoParams(UTartarusItemSubsystem, FDropLootRequestCompletedEvent, FGuid /*RequestId*/, TArray<TWeakObjectPtr<ATartarusItemBase>> /*SpawnedItems*/)
+DECLARE_EVENT_TwoParams(UTartarusItemSubsystem, FDropLootRequestCompletedEvent, FGuid /*RequestId*/, TArray<TWeakObjectPtr<ATartarusItemInstance>> /*SpawnedItems*/)
 
 USTRUCT()
 struct FLootDropRequestInfo : public FASyncLoadRequest
@@ -63,7 +63,7 @@ public:
 
 protected:
 	// Notfies the requester that the request has succeeded and removes the request from the queue.
-	void HandleRequestSuccess(const FLootDropRequestInfo* const SuccessRequest, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot);
+	void HandleRequestSuccess(const FLootDropRequestInfo* const SuccessRequest, TArray<TWeakObjectPtr<ATartarusItemInstance>> SpawnedLoot);
 
 	// Notifies the requester that the request failed and removes the request from the queue.
 	void HandleRequestFailed(const FLootDropRequestInfo* const FailedRequest);
@@ -75,10 +75,10 @@ protected:
 	* Creates a request to load an item.
 	* Return: The Guid of the async load request.
 	*/
-	FGuid AsyncRequestSpawnItems(TArray<FDataTableRowHandle> LootHandles, const FTransform& SpawnTransform);
+	FGuid AsyncRequestSpawnItems(TArray<UTartarusItem*> ItemHandles, const FTransform& SpawnTransform);
 
 	// Called when the item blueprint is loaded.
-	void HandleLootSpawned(FGuid ASyncLoadRequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot);
+	void HandleLootSpawned(FGuid ASyncLoadRequestId, TArray<TWeakObjectPtr<ATartarusItemInstance>> SpawnedLoot);
 
 private:
 	TArray<FLootDropRequestInfo> LootDropRequests;

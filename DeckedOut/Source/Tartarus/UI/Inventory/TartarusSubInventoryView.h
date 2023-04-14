@@ -10,6 +10,7 @@
 #include "TartarusSubInventoryView.generated.h"
 
 class UCommonTileView;
+class UTartarusItem;
 class UTartarusInventorySlotWidget;
 
 struct FStreamableHandle;
@@ -24,7 +25,7 @@ struct FUpdateInventoryUIRequestInfo : public FASyncLoadRequest
 
 public:
 	FUpdateInventoryUIRequestInfo() {}
-	FUpdateInventoryUIRequestInfo(const FUpdateInventoryUIRequestCompletedEvent& OnCompleted, const int32 ItemToLoadId, UTartarusInventorySlotWidget* const Widget)
+	FUpdateInventoryUIRequestInfo(const FUpdateInventoryUIRequestCompletedEvent& OnCompleted, const FPrimaryAssetId ItemToLoadId, UTartarusInventorySlotWidget* const Widget)
 	{
 		RequestId = FGuid::NewGuid();
 
@@ -34,18 +35,15 @@ public:
 	}
 
 	const FUpdateInventoryUIRequestCompletedEvent& OnUpdateUIRequestCompleted() const { return OnRequestCompleteEvent; }
-	int32 GetItemId() const { return ItemId; }
+	FPrimaryAssetId GetItemId() const { return ItemId; }
 	TWeakObjectPtr<UTartarusInventorySlotWidget> GetWidget() const { return SlotWidget; }
 
 private:
 	FUpdateInventoryUIRequestCompletedEvent OnRequestCompleteEvent = FUpdateInventoryUIRequestCompletedEvent();
 
-	int32 ItemId = FTartarusHelpers::InvalidItemId;
+	FPrimaryAssetId ItemId = FTartarusHelpers::InvalidItemId;
 	TWeakObjectPtr<UTartarusInventorySlotWidget> SlotWidget = nullptr;
 };
-
-
-
 
 /**
  * 
@@ -93,7 +91,7 @@ protected:
 	* Creates a request to update the texture of a slot for a given item.
 	* Return: The Guid of the async load request.
 	*/
-	FGuid AsyncRequestSetDisplayTexture(UTartarusInventorySlotWidget* const SlotWidget, const int32 ItemId, FUpdateInventoryUIRequestCompletedEvent& OnRequestCompletedEvent);
+	FGuid AsyncRequestSetDisplayTexture(UTartarusInventorySlotWidget* const SlotWidget, const FPrimaryAssetId ItemId, FUpdateInventoryUIRequestCompletedEvent& OnRequestCompletedEvent);
 
 	// Notfies the requester that the request has succeeded and removes the request from the queue.
 	void HandleRequestSuccess(const FUpdateInventoryUIRequestInfo* const SuccessRequest, TWeakObjectPtr<UTexture2D> Texture);
@@ -102,13 +100,13 @@ protected:
 	void HandleRequestFailed(const FUpdateInventoryUIRequestInfo* const FailedRequest);
 
 	// Called when the items their data is loaded.
-	void HandleItemsDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData);
+	void HandleItemsDataLoaded(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData);
 
 	/*
 	* Creates a request to load a texture.
 	* Return: The Guid of the async load request.
 	*/
-	FGuid AsyncRequestLoadTexture(const FItemTableRow& ItemDefinitionn);
+	FGuid AsyncRequestLoadTexture(const UTartarusItem* const ItemDefinition);
 
 	// Called when the Item UI Display Texture is loaded.
 	void HandleTextureLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle);

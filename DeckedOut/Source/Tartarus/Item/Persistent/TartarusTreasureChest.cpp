@@ -7,7 +7,6 @@
 #include "Player/TartarusPlayerCharacter.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/Loot/TartarusLootComponent.h"
-#include "Item/TartarusItemBase.h"
 #include "logging/TartarusLogChannels.h"
 
 #include "GameMode/TreasureHunt/TartarusTreasureSubsystem.h"
@@ -19,7 +18,7 @@ ATartarusTreasureChest::ATartarusTreasureChest()
 	NoiseSourceComponent = CreateDefaultSubobject<UTartarusNoiseSourceComponent>(TEXT("Noise Source Component"));
 }
 
-void ATartarusTreasureChest::HandleLootDropped(FGuid RequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot)
+void ATartarusTreasureChest::HandleLootDropped(FGuid RequestId, TArray<TWeakObjectPtr<ATartarusItemInstance>> SpawnedLoot)
 {
 	LootedEvent.Broadcast(this);
 }

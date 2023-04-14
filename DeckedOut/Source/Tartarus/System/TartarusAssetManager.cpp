@@ -40,6 +40,25 @@ FGuid UTartarusAssetManager::AsyncRequestLoadAsset(const FSoftObjectPath& Target
 	return Request.GetRequestId();
 }
 
+FGuid UTartarusAssetManager::AsyncRequestLoadAsset(const FPrimaryAssetId& AssetId, const FAsyncLoadAssetRequestCompletedEvent& OnRequestCompletedEvent)
+{
+	TSharedPtr<FStreamableHandle> Handle = LoadPrimaryAsset(AssetId, TArray<FName>(), FStreamableDelegate::CreateUObject(this, &UTartarusAssetManager::HandleAssetLoaded));
+
+	if (!Handle.IsValid())
+	{
+		UE_LOG(LogTartarus, Fatal, TEXT("%s: Request failed: Could not start loading the asset!"), *FString(__FUNCTION__));
+		return FGuid();
+	}
+
+	FAsyncLoadAssetRequest Request = FAsyncLoadAssetRequest();
+	Request.AssetHandle = Handle;
+	Request.RequestCompletedEvent = OnRequestCompletedEvent;
+
+	AsyncLoadRequests.Add(Request);
+
+	return Request.GetRequestId();
+}
+
 FGuid UTartarusAssetManager::AsyncRequestLoadAssets(TArray<FSoftObjectPath> TargetsToLoad, const FAsyncLoadAssetRequestCompletedEvent& OnRequestCompletedEvent)
 {
 	TSharedPtr<FStreamableHandle> Handle = StreamableManager.RequestAsyncLoad(TargetsToLoad, FStreamableDelegate::CreateUObject(this, &UTartarusAssetManager::HandleAssetLoaded));
@@ -57,7 +76,25 @@ FGuid UTartarusAssetManager::AsyncRequestLoadAssets(TArray<FSoftObjectPath> Targ
 	AsyncLoadRequests.Add(Request);
 
 	return Request.GetRequestId();
+}
 
+FGuid UTartarusAssetManager::AsyncRequestLoadAssets(TArray<FPrimaryAssetId> AssetIds, const FAsyncLoadAssetRequestCompletedEvent& OnRequestCompletedEvent)
+{
+	TSharedPtr<FStreamableHandle> Handle = LoadPrimaryAssets(AssetIds, TArray<FName>(), FStreamableDelegate::CreateUObject(this, &UTartarusAssetManager::HandleAssetLoaded));
+
+	if (!Handle.IsValid())
+	{
+		UE_LOG(LogTartarus, Fatal, TEXT("%s: Request failed: Could not start loading the asset!"), *FString(__FUNCTION__));
+		return FGuid();
+	}
+
+	FAsyncLoadAssetRequest Request = FAsyncLoadAssetRequest();
+	Request.AssetHandle = Handle;
+	Request.RequestCompletedEvent = OnRequestCompletedEvent;
+
+	AsyncLoadRequests.Add(Request);
+
+	return Request.GetRequestId();
 }
 
 void UTartarusAssetManager::CancelRequest(const FGuid& RequestId)

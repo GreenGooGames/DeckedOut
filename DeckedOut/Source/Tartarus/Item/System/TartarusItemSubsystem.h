@@ -8,16 +8,15 @@
 
 #include "TartarusItemSubsystem.generated.h"
 
-class ATartarusItemBase;
-class UDataTable;
+class UTartarusItem;
+class ATartarusItemInstance;
 
 struct FStreamableHandle;
-struct FItemTableRow;
 
 enum class EItemType : uint8;
 
 #pragma region ASyncSpawn
-DECLARE_EVENT_TwoParams(UTartarusItemSubsystem, FItemSpawnRequestCompletedEvent, FGuid /*RequestId*/, TArray<TWeakObjectPtr<ATartarusItemBase>> /*SpawnedItems*/)
+DECLARE_EVENT_TwoParams(UTartarusItemSubsystem, FItemSpawnRequestCompletedEvent, FGuid /*RequestId*/, TArray<TWeakObjectPtr<ATartarusItemInstance>> /*SpawnedItems*/)
 
 USTRUCT()
 struct FLoadingItemData
@@ -25,7 +24,7 @@ struct FLoadingItemData
 	GENERATED_BODY()
 
 public:
-	int32 ItemId = FTartarusHelpers::InvalidItemId;
+	FPrimaryAssetId ItemId = FTartarusHelpers::InvalidItemId;
 	int32 Count = 0;
 	FSoftObjectPath ObjectPath = FSoftObjectPath();
 };
@@ -39,11 +38,11 @@ public:
 	FSpawnItemsRequestInfo() {}
 	FSpawnItemsRequestInfo(const FTransform& Transform, const FItemSpawnRequestCompletedEvent& OnCompleted);
 
-	void AddItemToLoad(const FSoftObjectPath& ItemObjectPath, const int32 ItemId);
+	void AddItemToLoad(const FSoftObjectPath& ItemObjectPath, const FPrimaryAssetId ItemId);
 	TArray<FSoftObjectPath> GetAssetsToLoad() const;
 	const TArray<FLoadingItemData>& GetItemsToLoad() const { return ItemsToLoad; };
 
-	int32 GetItemId(const UObject* const Asset) const;
+	FPrimaryAssetId GetItemId(const UObject* const Asset) const;
 
 	const FTransform& GetSpawnTransform() const { return SpawnTransform; }
 	const FItemSpawnRequestCompletedEvent& OnItemSpawnRequestCompleted() const { return RequestCompletedEvent; }
@@ -56,7 +55,7 @@ private:
 #pragma endregion
 
 #pragma region ASyncItemData
-DECLARE_EVENT_TwoParams(UTartarusItemSubsystem, FGetItemDataRequestCompletedEvent, FGuid /*RequestId*/, TArray<FItemTableRow> /*ItemsData*/)
+DECLARE_EVENT_TwoParams(UTartarusItemSubsystem, FGetItemDataRequestCompletedEvent, FGuid /*RequestId*/, TArray<UTartarusItem*> /*ItemsData*/)
 
 USTRUCT()
 struct FGetItemDataRequestInfo : public FASyncLoadRequest
@@ -65,16 +64,16 @@ struct FGetItemDataRequestInfo : public FASyncLoadRequest
 
 public:
 	FGetItemDataRequestInfo() {}
-	FGetItemDataRequestInfo(const TArray<int32>& ItemIdsToLoad, const FGetItemDataRequestCompletedEvent& OnCompleted);
+	FGetItemDataRequestInfo(const TArray<FPrimaryAssetId>& ItemIdsToLoad, const FGetItemDataRequestCompletedEvent& OnCompleted);
 	FGetItemDataRequestInfo(const TArray<EItemType>& ItemTypesToLoad, const FGetItemDataRequestCompletedEvent& OnCompleted);
 
 	const FGetItemDataRequestCompletedEvent& OnGetItemDataRequestCompleted() const { return RequestCompletedEvent; }
-	const TArray<int32>& GetItemIds() { return ItemIds; }
+	const TArray<FPrimaryAssetId>& GetItemIds() { return ItemIds; }
 	const TArray<EItemType>& GetItemTypes() { return ItemTypes; }
 
 private:
 	FGetItemDataRequestCompletedEvent RequestCompletedEvent = FGetItemDataRequestCompletedEvent();
-	TArray<int32> ItemIds;
+	TArray<FPrimaryAssetId> ItemIds;
 	TArray<EItemType> ItemTypes;
 };
 #pragma endregion
@@ -95,7 +94,7 @@ public:
 	* Despawns an item if managed by this system.
 	* Return: True if the item got destroyed, false if despawn failed.
 	*/
-	bool DespawnItem(ATartarusItemBase* const ToDespawn);
+	bool DespawnItem(ATartarusItemInstance* const ToDespawn);
 
 	/*
 	* Despawns an item if managed by this system.
@@ -112,10 +111,10 @@ protected:
 	* Spawns an item in the world.
 	* Return: The item that is spawned.
 	*/
-	TWeakObjectPtr<ATartarusItemBase> SpawnItem(const TSubclassOf<ATartarusItemBase>& ItemClass, const int32 ItemId, const FTransform& SpawnTransform);
+	TWeakObjectPtr<ATartarusItemInstance> SpawnItem(const TSubclassOf<ATartarusItemInstance>& ItemClass, const FPrimaryAssetId ItemId, const FTransform& SpawnTransform);
 
 private:
-	TArray<TObjectPtr<ATartarusItemBase>> ItemInstances;
+	TArray<TObjectPtr<ATartarusItemInstance>> ItemInstances;
 
 #pragma region ASyncSpawn
 public:
@@ -123,17 +122,11 @@ public:
 	* Creates an ASync request to load and spawn Items in the world.
 	* Return: The unique identifier of the request.
 	*/
-	FGuid AsyncRequestSpawnItems(const TArray<FDataTableRowHandle>& ItemTableHandles, const FTransform& SpawnTransform, const FItemSpawnRequestCompletedEvent& OnRequestCompleted);
-
-	/*
-	* Creates an ASync request to load and spawn Items in the world.
-	* Return: The unique identifier of the request.
-	*/
-	FGuid AsyncRequestSpawnItems(const TArray<FItemTableRow>& ItemTableRows, const FTransform& SpawnTransform, const FItemSpawnRequestCompletedEvent& OnRequestCompleted);
+	FGuid AsyncRequestSpawnItems(const TArray<UTartarusItem*>& ItemsData, const FTransform& SpawnTransform, const FItemSpawnRequestCompletedEvent& OnRequestCompleted);
 
 protected:
 	// Executed when a Item spawn request has completed.
-	void HandleSpawnItemRequestCompleted(const FSpawnItemsRequestInfo* const CompletedRequest, const TArray<TWeakObjectPtr<ATartarusItemBase>>& SpawnedItems);
+	void HandleSpawnItemRequestCompleted(const FSpawnItemsRequestInfo* const CompletedRequest, const TArray<TWeakObjectPtr<ATartarusItemInstance>>& SpawnedItems);
 
 	// Callback for when an Items load request completed.
 	void HandleItemsLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> StreamingHandle);
@@ -145,10 +138,10 @@ private:
 #pragma region ASyncItemData
 public:
 	/*
-	* Creates a request to load the items datatable and provide the TableRows of the requested items.
+	* Creates a request to load the item Assets.
 	* Return: The unique identifier of the request.
 	*/
-	FGuid AsyncRequestGetItemsData(const TArray<int32>& ItemIds, const FGetItemDataRequestCompletedEvent& OnRequestCompleted);
+	FGuid AsyncRequestGetItemsData(const TArray<FPrimaryAssetId>& ItemIds, const FGetItemDataRequestCompletedEvent& OnRequestCompleted);
 
 	/*
 	* Creates a request to load the items datatable and provide the TableRows of the requested item types.
@@ -157,8 +150,8 @@ public:
 	FGuid AsyncRequestGetItemsData(const TArray<EItemType>& ItemTypes, const FGetItemDataRequestCompletedEvent& OnRequestCompleted);
 
 protected:
-	void HandleGetItemsDataRequestCompleted(const FGetItemDataRequestInfo* const CompletedRequest, TArray<FItemTableRow> ItemsData);
-	void HandleItemsDataTableLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> StreamingHandle);
+	void HandleGetItemsDataRequestCompleted(const FGetItemDataRequestInfo* const CompletedRequest, TArray<UTartarusItem*>& ItemsData);
+	void HandleItemsDataTableLoaded(const FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> StreamingHandle);
 
 private:
 	TArray<FGetItemDataRequestInfo> GetItemDataRequests;

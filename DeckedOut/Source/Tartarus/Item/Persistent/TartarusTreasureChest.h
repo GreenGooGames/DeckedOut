@@ -10,7 +10,7 @@
 #include "TartarusTreasureChest.generated.h"
 
 class ATartarusCompass;
-class ATartarusItemBase;
+class ATartarusItemInstance;
 class UTartarusLootComponent;
 class UTartarusNoiseSourceComponent;
 
@@ -40,7 +40,7 @@ protected:
 		TObjectPtr<UTartarusLootComponent> LootComponent = nullptr;
 	
 	// Fired when the loot is spawned into the world.
-	void HandleLootDropped(FGuid RequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedLoot);
+	void HandleLootDropped(FGuid RequestId, TArray<TWeakObjectPtr<ATartarusItemInstance>> SpawnedLoot);
 
 private:
 	FLootedEvent LootedEvent = FLootedEvent();

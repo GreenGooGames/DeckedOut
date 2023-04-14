@@ -11,6 +11,8 @@
 
 DECLARE_EVENT_ThreeParams(UTartarusInventoryComponent, FInventoryChanged, EInventoryChanged /*ChangeType*/, FInventoryStackId /*StackId*/, int32 /*StackSize*/);
 
+class UTartarusItem;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TARTARUS_API UTartarusInventoryComponent : public UActorComponent
 {
@@ -25,13 +27,13 @@ public:
 	* Stores an Entry into the inventory.
 	* Return: The StackId of the stack the Entry was added to.
 	*/
-	FInventoryStackId StoreEntry(const EInventoryType InventoryId, const int32 ItemId, const int32 StackSize);
+	FInventoryStackId StoreEntry(const UTartarusItem* const Entry, const int32 StackSize);
 
 	/*
 	* Retrieves an entry from the inventory from a random matching stack.
 	* Return: True if the entry was retrieved, False if the entry was not in the inventory or if more than the stored num of entries was requested.
 	*/
-	bool RetrieveEntry(const EInventoryType InventoryId, const int32 ItemId, const int32 StackSize);
+	bool RetrieveEntry(const EInventoryType InventoryId, const FPrimaryAssetId EntryId, const int32 StackSize);
 
 	/*
 	* Retrieves an entry from the inventory from a specified stack.
@@ -49,7 +51,7 @@ public:
 	* Retrieves an overview of all entries matching the id.
 	* Return: Data stored in the inventory of each slot that contains the given id.
 	*/
-	const TArray<const FInventoryStack*> GetOverviewMulti(const EInventoryType InventoryId, const int32 ItemId) const;
+	const TArray<const FInventoryStack*> GetOverviewMulti(const EInventoryType InventoryId, const FPrimaryAssetId EntryId) const;
 
 	/*
 	* Retrieves an overview of a single slot.
@@ -64,10 +66,10 @@ public:
 	int32 GetAvailableSlotCount(const EInventoryType InventoryId) const;
 
 	/*
-	* Checks if the inventory contains an entry for the ItemId
+	* Checks if the inventory contains an entry for the AssetId
 	* Return: True, if an entry is found. False, if no entry is found.
 	*/
-	bool Contains(const EInventoryType InventoryId, const int32 EntryId) const;
+	bool Contains(const EInventoryType InventoryId, const FPrimaryAssetId EntryId) const;
 
 	/*
 	* Checks if the inventory contains an entry for the StackId.

@@ -9,6 +9,7 @@
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/Persistent/TartarusTreasureChest.h"
 #include "Item/System/TartarusItemSubsystem.h"
+#include "Item/TartarusItem.h"
 #include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
 #include "System/TartarusAssetManager.h"
@@ -108,7 +109,6 @@ void UTartarusTreasureSubsystem::HandleGameRunningStateChanged(ETreasureHuntStat
 	{
 		// Find all treasure keys in the inventory of the player, by first getting all treasure key id's.
 		UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
-
 		if (!IsValid(ItemSubsystem))
 		{
 			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to treasure: Item subsystem is invalid!"), *FString(__FUNCTION__));
@@ -175,11 +175,10 @@ FInventoryStackId UTartarusTreasureSubsystem::GetTreasureKey(const ATartarusTrea
 	return FInventoryStackId();
 }
 
-void UTartarusTreasureSubsystem::HandleTreasureKeysDataReceived(FGuid ASyncLoadRequestId, TArray<FItemTableRow> TreasureKeysData)
+void UTartarusTreasureSubsystem::HandleTreasureKeysDataReceived(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> TreasureKeysData)
 {
 	// Get the inventory of the player.
-	AController* const PlayerController = GetWorld()->GetFirstPlayerController<AController>();
-
+	const AController* const PlayerController = GetWorld()->GetFirstPlayerController<AController>();
 	if (!IsValid(PlayerController))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No player in the world!"), *FString(__FUNCTION__));
@@ -187,7 +186,6 @@ void UTartarusTreasureSubsystem::HandleTreasureKeysDataReceived(FGuid ASyncLoadR
 	}
 
 	UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
-
 	if (!IsValid(Inventory))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No inventory on player!"), *FString(__FUNCTION__));
@@ -195,10 +193,10 @@ void UTartarusTreasureSubsystem::HandleTreasureKeysDataReceived(FGuid ASyncLoadR
 	}
 
 	// Loop over each treasure Key, and look if the player has it in their inventory.
-	for (const FItemTableRow& TreasureKey : TreasureKeysData)
+	for (const UTartarusItem* const TreasureKey : TreasureKeysData)
 	{
-		const TArray<const FInventoryStack*> InventoryTreasureKeys = Inventory->GetOverviewMulti(TreasureKey.InventoryType, TreasureKey.UniqueItemId);
-
+		const TArray<const FInventoryStack*> InventoryTreasureKeys = Inventory->GetOverviewMulti(TreasureKey->InventoryType, TreasureKey->GetPrimaryAssetId());
+	
 		for (const FInventoryStack* const ItemStack : InventoryTreasureKeys)
 		{
 			// Spawn a treasure chest and link it to the treasure key.

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/AssetManager.h"
+
 #include "TartarusAssetManager.generated.h"
 
 DECLARE_EVENT_TwoParams(UTartarusAssetManager, FAsyncLoadAssetRequestCompletedEvent, FGuid /*RequestId*/, TSharedPtr<FStreamableHandle> /*LoadedAsset*/);
@@ -38,11 +39,13 @@ public:
 #pragma region AsyncAssetLoading
 public:
 	/*
-	* Loads a secondary asset and calls event when completed.
+	* Loads an asset and calls event when completed.
 	* Return: the unique ID of the request.	
 	*/
 	FGuid AsyncRequestLoadAsset(const FSoftObjectPath& TargetToLoad, const FAsyncLoadAssetRequestCompletedEvent& OnRequestCompletedEvent);
+	FGuid AsyncRequestLoadAsset(const FPrimaryAssetId& AssetId, const FAsyncLoadAssetRequestCompletedEvent& OnRequestCompletedEvent);
 	FGuid AsyncRequestLoadAssets(TArray<FSoftObjectPath> TargetsToLoad, const FAsyncLoadAssetRequestCompletedEvent& OnRequestCompletedEvent);
+	FGuid AsyncRequestLoadAssets(TArray<FPrimaryAssetId> AssetIds, const FAsyncLoadAssetRequestCompletedEvent& OnRequestCompletedEvent);
 
 	// Cancels the request matching the RequestId.
 	void CancelRequest(const FGuid& RequestId);

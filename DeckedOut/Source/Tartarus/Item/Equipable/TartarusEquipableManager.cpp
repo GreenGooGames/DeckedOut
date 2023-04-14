@@ -6,7 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Item/Equipable/TartarusEquipableInterface.h"
 #include "Item/System/TartarusItemSubsystem.h"
-#include "Item/TartarusItemBase.h"
+#include "Item/TartarusItem.h"
 #include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
 
@@ -61,7 +61,7 @@ bool UTartarusEquipableManager::Unequip(const FInventoryStackId& InventoryStackI
 		}
 
 		// Clear the entry in the slots, and keep a reference to the item instance for further actions.
-		ATartarusItemBase* const ToUnequip = EquipmentSlot.Value.GetItem();
+		ATartarusItemInstance* const ToUnequip = EquipmentSlot.Value.GetItem();
 		EquipmentSlot.Value.Reset();
 
 		if (!IsValid(ToUnequip))
@@ -87,7 +87,7 @@ bool UTartarusEquipableManager::Unequip(const FInventoryStackId& InventoryStackI
 	return false;
 }
 
-const FEquipmentInfo* UTartarusEquipableManager::FindEquippedItem(const ATartarusItemBase* const ToFindItem) const
+const FEquipmentInfo* UTartarusEquipableManager::FindEquippedItem(const ATartarusItemInstance* const ToFindItem) const
 {
 	if (!IsValid(ToFindItem))
 	{
@@ -96,7 +96,7 @@ const FEquipmentInfo* UTartarusEquipableManager::FindEquippedItem(const ATartaru
 
 	for (const TPair<EEquipmentSlot, FEquipmentInfo>& EquipmentSlot : EquipmentSlots)
 	{
-		const ATartarusItemBase* const EquippedItem = EquipmentSlot.Value.GetItem();
+		const ATartarusItemInstance* const EquippedItem = EquipmentSlot.Value.GetItem();
 
 		if (!IsValid(EquippedItem))
 		{
@@ -172,7 +172,7 @@ bool UTartarusEquipableManager::AttachToMesh(const EEquipmentSlot Slot)
 		return false;
 	}
 
-	ATartarusItemBase* const ItemRaw = EquipmentSlots[Slot].GetItem();
+	ATartarusItemInstance* const ItemRaw = EquipmentSlots[Slot].GetItem();
 	const FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
 	ItemRaw->AttachToComponent(EquipableMeshComponent, AttachmentRules, SocketName);
 
@@ -197,7 +197,7 @@ bool UTartarusEquipableManager::ASyncRequestEquip(const FInventoryStackId& Inven
 	return true;
 }
 
-void UTartarusEquipableManager::HandleRequestCompleted(const FEquipRequestInfo* const CompletedRequest, const TWeakObjectPtr<ATartarusItemBase> EquippedItem)
+void UTartarusEquipableManager::HandleRequestCompleted(const FEquipRequestInfo* const CompletedRequest, const TWeakObjectPtr<ATartarusItemInstance> EquippedItem)
 {
 	if (!CompletedRequest)
 	{
@@ -213,7 +213,7 @@ void UTartarusEquipableManager::HandleRequestCompleted(const FEquipRequestInfo* 
 	EquipRequests.RemoveSingleSwap(*CompletedRequest);
 }
 
-void UTartarusEquipableManager::HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData)
+void UTartarusEquipableManager::HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData)
 {
 	// Get the request that is being handled.
 	FEquipRequestInfo* const CurrentRequest = EquipRequests.FindByPredicate([&ASyncLoadRequestId](const FEquipRequestInfo& Request)
@@ -240,7 +240,7 @@ void UTartarusEquipableManager::HandleItemDataLoaded(FGuid ASyncLoadRequestId, T
 		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to equip: Could not reserve a slot"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
-
+	
 	// Create a request to spawn the item and update the request.
 	const FGuid ASyncRequestId = RequestItemsSpawn(ItemsData);
 	if (!ASyncRequestId.IsValid())
@@ -248,11 +248,11 @@ void UTartarusEquipableManager::HandleItemDataLoaded(FGuid ASyncLoadRequestId, T
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to equip: Could not request the item data!"), *FString(__FUNCTION__));
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
-
+	
 	CurrentRequest->SetASyncLoadRequestId(ASyncRequestId);
 }
 
-void UTartarusEquipableManager::HandleItemSpawned(FGuid ASyncLoadRequestId, TArray<TWeakObjectPtr<ATartarusItemBase>> SpawnedItems)
+void UTartarusEquipableManager::HandleItemSpawned(FGuid ASyncLoadRequestId, TArray<TWeakObjectPtr<ATartarusItemInstance>> SpawnedItems)
 {
 	// Get the request that is being handled.
 	FEquipRequestInfo* const CurrentRequest = EquipRequests.FindByPredicate([&ASyncLoadRequestId](const FEquipRequestInfo& Request)
@@ -292,7 +292,7 @@ void UTartarusEquipableManager::HandleItemSpawned(FGuid ASyncLoadRequestId, TArr
 	return HandleRequestCompleted(CurrentRequest, SpawnedItems[0]);
 }
 
-FGuid UTartarusEquipableManager::RequestItemsSpawn(const TArray<FItemTableRow>& ItemTableRows)
+FGuid UTartarusEquipableManager::RequestItemsSpawn(const TArray<UTartarusItem*>& ItemTableRows)
 {
 	// Get the item subsystem.
 	UWorld* const World = GetWorld();
@@ -347,20 +347,20 @@ FGuid UTartarusEquipableManager::RequestItemData(const FInventoryStackId& Invent
 
 	// Create a new request to the ItemSubsytem to load item data.
 	const FInventoryStack* const ItemStack = Inventory->GetOverviewSingle(InventoryStackId);
-	TArray<int32> ToSpawnItemIds;
+	TArray<FPrimaryAssetId> ToSpawnItemIds;
 	ToSpawnItemIds.Add(ItemStack->GetEntryId());
-
+	
 	const FGuid ASyncRequestId = ItemSubsystem->AsyncRequestGetItemsData(ToSpawnItemIds, OnDataRequestCompleted);
 
 	return ASyncRequestId;
 }
 
-bool UTartarusEquipableManager::ReserveSlot(FEquipRequestInfo* const ASyncRequest, const FItemTableRow& ItemData)
+bool UTartarusEquipableManager::ReserveSlot(FEquipRequestInfo* const ASyncRequest, const UTartarusItem* const ItemData)
 {
 	uint8 RequestedSlotsMask = (uint8)ASyncRequest->GetRequestedSlots();
 	
 	// If the request had no requestedslots, use any of the ItemData slots otherwise only use requested valid slots.
-	RequestedSlotsMask = RequestedSlotsMask == 0 ? ItemData.EquipableSlots : RequestedSlotsMask & ItemData.EquipableSlots;
+	RequestedSlotsMask = RequestedSlotsMask == 0 ? ItemData->EquipableSlots : RequestedSlotsMask & ItemData->EquipableSlots;
 
 	if (RequestedSlotsMask == 0)
 	{
@@ -457,7 +457,7 @@ void UTartarusEquipableManager::HandleInventoryItemRetrieved(const FInventorySta
 				UTartarusItemSubsystem* const ItemSubsystem = World->GetSubsystem<UTartarusItemSubsystem>();
 				if (IsValid(ItemSubsystem))
 				{
-					ItemSubsystem->DespawnItem(Cast<ATartarusItemBase>(Slot.Value.GetItem()));
+					ItemSubsystem->DespawnItem(Cast<ATartarusItemInstance>(Slot.Value.GetItem()));
 				}
 			}
 		}
@@ -483,7 +483,7 @@ void UTartarusEquipableManager::HandleInventoryItemStored(const FInventoryStackI
 		return;
 	}
 
-	TArray<int32> ItemIds;
+	TArray<FPrimaryAssetId> ItemIds;
 	ItemIds.Add(StoredItemStack->GetEntryId());
 
 	FGetItemDataRequestCompletedEvent OnRequestCompleted;
@@ -507,12 +507,12 @@ void UTartarusEquipableManager::HandleInventoryItemStored(const FInventoryStackI
 	EquipRequests.Add(EquipRequest);
 }
 
-void UTartarusEquipableManager::HandleInventoryItemDataLoaded(FGuid ASyncLoadRequestId, TArray<FItemTableRow> ItemsData)
+void UTartarusEquipableManager::HandleInventoryItemDataLoaded(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData)
 {
 	// For each item that got loaded, check if it can be equipped.
-	for (const FItemTableRow& ItemData : ItemsData)
+	for (const UTartarusItem* const ItemData : ItemsData)
 	{
-		if (!ItemData.bCanAutoEquip)
+		if (!ItemData->bCanAutoEquip)
 		{
 			continue;
 		}

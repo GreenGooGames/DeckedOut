@@ -25,10 +25,10 @@ public:
 	* Retrieves the item that is being held by this slot.
 	* Return: Pointer to the item being held, nullptr if no item exist.
 	*/
-	ATartarusItemBase* GetItem() const { return Item.Get(); }
+	ATartarusItemInstance* GetItem() const { return Item.Get(); }
 
 	// Sets the Item instance that is equipped to this slot.
-	void SetItem(ATartarusItemBase* const ItemInstance) { Item = ItemInstance; }
+	void SetItem(ATartarusItemInstance* const ItemInstance) { Item = ItemInstance; }
 
 	/*
 	* Retrieves the InventoryStackId that is used to reference the equipped item in the owner inventory.
@@ -53,6 +53,6 @@ protected:
 		FName Socket = NAME_None;
 
 private:
-	TWeakObjectPtr<ATartarusItemBase> Item = nullptr;
+	TWeakObjectPtr<ATartarusItemInstance> Item = nullptr;
 	FInventoryStackId InventoryStackId = FInventoryStackId();
 };

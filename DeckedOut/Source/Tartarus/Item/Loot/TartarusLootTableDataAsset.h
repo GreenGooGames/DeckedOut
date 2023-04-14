@@ -17,7 +17,7 @@ struct FLootTableEntry
 public:
 	// Reference to the item to include in the loot.
 	UPROPERTY(EditDefaultsOnly)
-		FDataTableRowHandle ItemHandle = FDataTableRowHandle();
+		TObjectPtr<UTartarusItem> ItemHandle = nullptr;
 
 	// Weight of the item, negative value means guarenteed.
 	UPROPERTY(EditDefaultsOnly)
@@ -37,7 +37,7 @@ public:
 	* Picks random loot from the candidates.
 	* Return: Candidates to loot.
 	*/
-	TArray<FDataTableRowHandle> GetLoot();
+	TArray<UTartarusItem*> GetLoot();
 
 protected:
 	// Maximum number of candidates when loot is requested (Excluding guarenteed loot).

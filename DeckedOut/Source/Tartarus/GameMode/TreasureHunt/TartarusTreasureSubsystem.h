@@ -111,7 +111,8 @@ protected:
 	// Fired when the GameState changes, Spawns/Despawns all treasures.
 	void HandleGameRunningStateChanged(ETreasureHuntState OldState, ETreasureHuntState NewState);
 
-	void HandleTreasureKeysDataReceived(FGuid ASyncLoadRequestId, TArray<FItemTableRow> TreasureKeysData);
+	// Fired when all of the treasure keys their data has been received.
+	void HandleTreasureKeysDataReceived(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> TreasureKeysData);
 
 #pragma region SpawnPoint
 public:
