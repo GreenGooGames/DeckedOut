@@ -112,7 +112,6 @@ FGuid ATartarusPickup::RequestItemData()
 	return ASyncRequestId;
 }
 
-#pragma optimize("", off)
 void ATartarusPickup::HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData)
 {
 	// Get the request that is being handled.
@@ -149,7 +148,6 @@ void ATartarusPickup::HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray<UTar
 
 	HandleRequestCompleted(CurrentRequest, ItemsData[0]);
 }
-#pragma optimize("", on)
 
 void ATartarusPickup::HandleRequestCompleted(const FPickupRequestInfo* const CompletedRequest, const UTartarusItem* const ItemData)
 {
