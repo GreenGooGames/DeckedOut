@@ -4,8 +4,9 @@
 #include "Audio/TartarusNoiseSourceComponent.h"
 
 #include "Audio/TartarusSoundData.h"
-#include "Gameplay/Clank/TartarusClankSubsystem.h"
+#include "Engine/World.h"
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
+#include "Gameplay/Clank/TartarusClankSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties

@@ -3,7 +3,9 @@
 
 #include "Item/Equipable/TartarusEquipableManager.h"
 
+#include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/Controller.h"
 #include "Item/Equipable/TartarusEquipableInterface.h"
 #include "Item/System/TartarusItemSubsystem.h"
 #include "Item/TartarusItem.h"

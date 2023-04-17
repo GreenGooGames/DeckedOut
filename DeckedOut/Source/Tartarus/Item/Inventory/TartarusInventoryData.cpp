@@ -3,8 +3,8 @@
 
 #include "Item/Inventory/TartarusInventoryData.h"
 
-#include "System/TartarusHelpers.h"
 #include "Logging/TartarusLogChannels.h"
+#include "System/TartarusHelpers.h"
 
 #pragma region FInventoryItemStack
 FInventoryStack::FInventoryStack(const EInventoryType InventoryId, const FPrimaryAssetId NewEntryId, const int32 NewStackSize)

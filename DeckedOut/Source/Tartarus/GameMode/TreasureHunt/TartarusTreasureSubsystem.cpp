@@ -3,6 +3,7 @@
 
 #include "GameMode/TreasureHunt/TartarusTreasureSubsystem.h"
 
+#include "Engine/World.h"
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
 #include "GameMode/TreasureHunt/TartarusTreasureSubsystemSettings.h"
 #include "Item/Equipable/Equipment/TartarusCompass.h"

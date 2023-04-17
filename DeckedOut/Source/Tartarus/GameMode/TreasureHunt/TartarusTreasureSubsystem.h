@@ -12,6 +12,7 @@
 
 class ATartarusCompass; 
 class ATartarusTreasureChest;
+class UTartarusItem;
 
 enum class ETreasureHuntState : uint8;
 

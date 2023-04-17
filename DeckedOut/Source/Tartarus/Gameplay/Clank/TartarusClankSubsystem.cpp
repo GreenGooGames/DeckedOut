@@ -3,7 +3,10 @@
 
 #include "Gameplay/Clank/TartarusClankSubsystem.h"
 
+#include "Engine/Engine.h"
+#include "Engine/World.h"
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
+#include "TimerManager.h"
 
 void UTartarusClankSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {

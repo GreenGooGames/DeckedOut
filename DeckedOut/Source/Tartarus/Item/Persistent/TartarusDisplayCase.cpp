@@ -3,12 +3,16 @@
 
 #include "Item/Persistent/TartarusDisplayCase.h"
 
+#include "Components/PrimitiveComponent.h"
+#include "Engine/World.h"
+#include "GameFramework/Controller.h"
+#include "GameFramework/PlayerController.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
+#include "Item/Inventory/TartarusInventoryData.h"
 #include "Item/System/TartarusItemSubsystem.h"
 #include "Item/TartarusItem.h"
 #include "Item/TartarusItemData.h"
 #include "Item/TartarusItemInstance.h"
-#include "Item/Inventory/TartarusInventoryData.h"
 #include "Logging/TartarusLogChannels.h"
 
 #pragma region FDisplayCaseSlot

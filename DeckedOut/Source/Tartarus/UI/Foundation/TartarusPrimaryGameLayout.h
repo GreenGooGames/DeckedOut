@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "CommonUserWidget.h"
+#include "CoreMinimal.h"
+#include "Engine/StreamableManager.h"
 #include "System/TartarusASyncLoadData.h"
 
 #include "TartarusPrimaryGameLayout.generated.h"

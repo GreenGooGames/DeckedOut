@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Character/TartarusCharacter.h"
+#include "CoreMinimal.h"
 #include "InputActionValue.h"
 
 #include "TartarusPlayerCharacter.generated.h"

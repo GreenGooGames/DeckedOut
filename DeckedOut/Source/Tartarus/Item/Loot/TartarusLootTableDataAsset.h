@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-
 #include "Engine/DataTable.h"
 
 #include "TartarusLootTableDataAsset.generated.h"
+
+class UTartarusItem;
 
 USTRUCT(BlueprintType)
 struct FLootTableEntry

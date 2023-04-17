@@ -25,14 +25,7 @@ struct FUpdateInventoryUIRequestInfo : public FASyncLoadRequest
 
 public:
 	FUpdateInventoryUIRequestInfo() {}
-	FUpdateInventoryUIRequestInfo(const FUpdateInventoryUIRequestCompletedEvent& OnCompleted, const FPrimaryAssetId ItemToLoadId, UTartarusInventorySlotWidget* const Widget)
-	{
-		RequestId = FGuid::NewGuid();
-
-		OnRequestCompleteEvent = OnCompleted;
-		ItemId = ItemToLoadId;
-		SlotWidget = Widget;
-	}
+	FUpdateInventoryUIRequestInfo(const FUpdateInventoryUIRequestCompletedEvent& OnCompleted, const FPrimaryAssetId ItemToLoadId, UTartarusInventorySlotWidget* const Widget);
 
 	const FUpdateInventoryUIRequestCompletedEvent& OnUpdateUIRequestCompleted() const { return OnRequestCompleteEvent; }
 	FPrimaryAssetId GetItemId() const { return ItemId; }

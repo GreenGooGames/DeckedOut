@@ -4,6 +4,7 @@
 #include "UI/Inventory/TartarusSubInventoryView.h"
 
 #include "CommonTileView.h"
+#include "Engine/Texture2D.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/System/TartarusItemSubsystem.h"
 #include "Item/TartarusItem.h"
@@ -12,6 +13,17 @@
 #include "Player/TartarusPlayerController.h"
 #include "System/TartarusAssetManager.h"
 #include "UI/Inventory/TartarusInventorySlotWidget.h"
+
+#pragma region FUpdateInventoryUIRequestInfo
+FUpdateInventoryUIRequestInfo::FUpdateInventoryUIRequestInfo(const FUpdateInventoryUIRequestCompletedEvent& OnCompleted, const FPrimaryAssetId ItemToLoadId, UTartarusInventorySlotWidget* const Widget)
+{
+	RequestId = FGuid::NewGuid();
+
+	OnRequestCompleteEvent = OnCompleted;
+	ItemId = ItemToLoadId;
+	SlotWidget = Widget;
+}
+#pragma endregion
 
 void UTartarusSubInventoryView::LinkInventory(const EInventoryType SubInventoryId)
 {

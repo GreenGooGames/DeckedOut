@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "CommonButtonBase.h"
+#include "CoreMinimal.h"
 
 #include "TartarusTextButton.generated.h"
 

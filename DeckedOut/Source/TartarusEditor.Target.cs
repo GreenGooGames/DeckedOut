@@ -10,6 +10,8 @@ public class TartarusEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
+		bUseUnityBuild = false;
+		bUsePCHFiles = false;
 		ExtraModuleNames.Add("Tartarus");
 	}
 }

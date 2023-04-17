@@ -3,6 +3,8 @@
 
 #include "Gameplay/Hazard/TartarusHazard.h"
 
+#include "Engine/Engine.h"
+#include "Engine/World.h"
 #include "Gameplay/Hazard/TartarusHazardSubsystem.h"
 
 // Sets default values

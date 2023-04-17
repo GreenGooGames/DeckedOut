@@ -3,8 +3,8 @@
 
 #include "Item/Inventory/TartarusInventoryComponent.h"
 
-#include "Logging/TartarusLogChannels.h"
 #include "Item/TartarusItem.h"
+#include "Logging/TartarusLogChannels.h"
 
 // Called when the game starts
 void UTartarusInventoryComponent::BeginPlay()

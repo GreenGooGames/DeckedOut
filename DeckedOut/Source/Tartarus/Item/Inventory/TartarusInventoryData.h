@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
+#include "Misc/EnumRange.h"
 #include "System/TartarusHelpers.h"
 
 #include "TartarusInventoryData.generated.h"

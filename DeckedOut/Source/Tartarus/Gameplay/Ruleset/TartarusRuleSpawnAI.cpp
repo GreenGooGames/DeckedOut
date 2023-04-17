@@ -3,6 +3,9 @@
 
 #include "Gameplay/Ruleset/TartarusRuleSpawnAI.h"
 
+#include "Engine/Engine.h"
+#include "Engine/World.h"
+
 bool UTartarusRuleSpawnAI::StartRule(UWorld* const World)
 {
 	if (!IsValid(World))

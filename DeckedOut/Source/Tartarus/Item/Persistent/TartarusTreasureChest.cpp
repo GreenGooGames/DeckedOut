@@ -4,12 +4,13 @@
 #include "Item/Persistent/TartarusTreasureChest.h"
 
 #include "Audio/TartarusNoiseSourceComponent.h"
-#include "Player/TartarusPlayerCharacter.h"
+#include "Engine/World.h"
+#include "GameFramework/Controller.h"
+#include "GameMode/TreasureHunt/TartarusTreasureSubsystem.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/Loot/TartarusLootComponent.h"
+#include "Player/TartarusPlayerCharacter.h"
 #include "logging/TartarusLogChannels.h"
-
-#include "GameMode/TreasureHunt/TartarusTreasureSubsystem.h"
 
 ATartarusTreasureChest::ATartarusTreasureChest()
 {

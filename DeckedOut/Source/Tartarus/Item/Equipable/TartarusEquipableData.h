@@ -7,6 +7,8 @@
 
 #include "TartarusEquipableData.generated.h"
 
+class ATartarusItemInstance;
+
 UENUM(BlueprintType, meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
 enum class EEquipmentSlot : uint8
 {
@@ -28,7 +30,7 @@ public:
 	ATartarusItemInstance* GetItem() const { return Item.Get(); }
 
 	// Sets the Item instance that is equipped to this slot.
-	void SetItem(ATartarusItemInstance* const ItemInstance) { Item = ItemInstance; }
+	void SetItem(ATartarusItemInstance* const ItemInstance);
 
 	/*
 	* Retrieves the InventoryStackId that is used to reference the equipped item in the owner inventory.

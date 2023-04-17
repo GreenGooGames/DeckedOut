@@ -4,6 +4,7 @@
 #include "UI/Inventory/TartarusInventoryWidget.h"
 
 #include "CommonVisibilitySwitcher.h"
+#include "Engine/Engine.h"
 #include "Input/CommonUIInputTypes.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Logging/TartarusLogChannels.h"

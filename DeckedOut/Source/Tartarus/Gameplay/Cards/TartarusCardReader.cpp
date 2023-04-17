@@ -4,11 +4,12 @@
 #include "Gameplay/Cards/TartarusCardReader.h"
 
 #include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
+#include "Gameplay/Cards/TartarusCard.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/System/TartarusItemSubsystem.h"
-#include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
 #include "Logging/TartarusLogChannels.h"
-#include "Gameplay/Cards/TartarusCard.h"
 
 #pragma region ASyncLoading
 FGetCardDataRequestInfo::FGetCardDataRequestInfo(ATartarusTreasureHuntGameState* const TargetGameState, TArray<FPrimaryAssetId>& CardsToLoad)

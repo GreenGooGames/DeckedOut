@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Sound/SoundBase.h"
 
 #include "TartarusSoundData.generated.h"
 

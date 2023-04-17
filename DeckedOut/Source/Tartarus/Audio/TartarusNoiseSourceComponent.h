@@ -2,9 +2,9 @@
 
 #pragma once
 
+#include "Audio/TartarusSoundData.h"
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Audio/TartarusSoundData.h"
 
 #include "TartarusNoiseSourceComponent.generated.h"
 

@@ -3,6 +3,8 @@
 
 #include "UI/Foundation/TartarusGameMenuWidget.h"
 
+#include "CommonVisibilitySwitcher.h"
+#include "Engine/Engine.h"
 #include "Input/CommonUIInputTypes.h"
 #include "Player/TartarusPlayerController.h"
 #include "UI/Foundation/TartarusPrimaryGameLayout.h"

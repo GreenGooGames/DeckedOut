@@ -2,14 +2,15 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "CoreMinimal.h"
 #include "System/TartarusASyncLoadData.h"
 
 #include "TartarusLootComponent.generated.h"
 
 class ATartarusItemInstance;
 class UTartarusLootTableDataAsset;
+class UTartarusItem;
 
 struct FDataTableRowHandle;
 struct FStreamableHandle;

@@ -3,6 +3,7 @@
 
 #include "System/TartarusAssetManager.h"
 
+#include "Engine/Engine.h"
 #include "Logging/TartarusLogChannels.h"
 
 UTartarusAssetManager& UTartarusAssetManager::Get()

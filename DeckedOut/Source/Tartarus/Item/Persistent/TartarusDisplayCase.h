@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interaction/TartarusInteractableTargetInterface.h"
-#include "System/TartarusASyncLoadData.h"
 #include "Item/Inventory/TartarusInventoryData.h"
+#include "System/TartarusASyncLoadData.h"
 
 #include "TartarusDisplayCase.generated.h"
 

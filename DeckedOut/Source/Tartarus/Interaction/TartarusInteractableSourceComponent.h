@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+
 #include "TartarusInteractableSourceComponent.generated.h"
 
 class ITartarusInteractableTargetInterface;

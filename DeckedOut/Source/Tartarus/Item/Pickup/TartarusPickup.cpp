@@ -3,9 +3,11 @@
 
 #include "Item/Pickup/TartarusPickup.h"
 
-#include "Item/TartarusItem.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/Controller.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/System/TartarusItemSubsystem.h"
+#include "Item/TartarusItem.h"
 #include "Logging/TartarusLogChannels.h"
 
 #pragma region FPickupRequestInfo

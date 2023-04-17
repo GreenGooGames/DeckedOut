@@ -3,9 +3,15 @@
 
 #include "Item/Equipable/TartarusEquipableData.h"
 
+#include "Item/TartarusItemInstance.h"
 #include "Logging/TartarusLogChannels.h"
 
 #pragma region FEquipmentInfo
+void FEquipmentInfo::SetItem(ATartarusItemInstance* const ItemInstance)
+{
+	Item = ItemInstance;
+}
+
 void FEquipmentInfo::SetInventoryItemStackId(const FInventoryStackId& InventoryStackIdReference)
 {
 	if (InventoryStackId.IsValid())

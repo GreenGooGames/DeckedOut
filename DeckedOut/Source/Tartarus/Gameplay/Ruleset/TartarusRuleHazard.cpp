@@ -3,6 +3,7 @@
 
 #include "Gameplay/Ruleset/TartarusRuleHazard.h"
 
+#include "Engine/World.h"
 #include "Gameplay/Hazard/TartarusHazardSubsystem.h"
 
 bool UTartarusRuleHazard::StartRule(UWorld* const World)

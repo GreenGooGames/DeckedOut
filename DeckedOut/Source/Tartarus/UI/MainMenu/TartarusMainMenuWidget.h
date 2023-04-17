@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "CommonActivatableWidget.h"
+#include "CoreMinimal.h"
+
 #include "TartarusMainMenuWidget.generated.h"
 
 /**

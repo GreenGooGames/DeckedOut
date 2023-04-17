@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Item/Inventory/TartarusInventoryComponent.h"
+#include "CoreMinimal.h"
 #include "Item/Equipable/TartarusEquipableData.h"
+#include "Item/Inventory/TartarusInventoryComponent.h"
 #include "System/TartarusASyncLoadData.h"
 
 #include "TartarusEquipableManager.generated.h"

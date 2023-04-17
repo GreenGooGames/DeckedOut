@@ -3,6 +3,8 @@
 
 #include "Item/Equipable/TartarusEquipableItem.h"
 
+#include "Components/StaticMeshComponent.h"
+
 #pragma region EquipableInterface
 void ATartarusEquipableItem::OnEquipped(AActor* const EquippedActor)
 {

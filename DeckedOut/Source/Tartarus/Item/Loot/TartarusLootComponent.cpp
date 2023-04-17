@@ -3,6 +3,7 @@
 
 #include "Item/Loot/TartarusLootComponent.h"
 
+#include "Engine/World.h"
 #include "Item/Loot/TartarusLootTableDataAsset.h"
 #include "Item/System/TartarusItemSubsystem.h"
 #include "Logging/TartarusLogChannels.h"
@@ -23,7 +24,6 @@ FGuid UTartarusLootComponent::AsyncRequestDropLoot(const FTransform& SpawnTransf
 {
 	// Get the AsyncLoader.
 	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
-
 	if (!AssetManager.IsValid())
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), *FString(__FUNCTION__));
@@ -35,7 +35,6 @@ FGuid UTartarusLootComponent::AsyncRequestDropLoot(const FTransform& SpawnTransf
 	OnRequestCompleted.AddUObject(this, &UTartarusLootComponent::HandleLootTableLoaded);
 
 	FGuid AsyncLoadRequestId = AssetManager.AsyncRequestLoadAsset(LootTable.ToSoftObjectPath(), OnRequestCompleted);
-
 	if (!AsyncLoadRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), *FString(__FUNCTION__));
@@ -119,7 +118,6 @@ FGuid UTartarusLootComponent::AsyncRequestSpawnItems(TArray<UTartarusItem*> Item
 {
 	// Get the ItemSpawner.
 	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
-	
 	if (!IsValid(ItemSubsystem))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: ItemSubsystem was invalid!"), *FString(__FUNCTION__));
@@ -132,7 +130,6 @@ FGuid UTartarusLootComponent::AsyncRequestSpawnItems(TArray<UTartarusItem*> Item
 	
 	FString ContextString;
 	const FGuid SpawnRequestId = ItemSubsystem->AsyncRequestSpawnItems(ItemHandles, SpawnTransform, OnSpawnRequestCompleted);
-	
 	if (!SpawnRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: Could not start a spawn request!"), *FString(__FUNCTION__));
@@ -153,7 +150,7 @@ void UTartarusLootComponent::HandleLootSpawned(FGuid ASyncLoadRequestId, TArray<
 
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: Could not find the request!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: Request was invalid!"), *FString(__FUNCTION__));
 		return;
 	}
 

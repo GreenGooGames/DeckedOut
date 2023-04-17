@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+
 #include "TartarusInteractableTargetInterface.generated.h"
 
 class AController;

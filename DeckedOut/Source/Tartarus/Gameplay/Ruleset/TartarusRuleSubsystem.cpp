@@ -3,6 +3,7 @@
 
 #include "Gameplay/Ruleset/TartarusRuleSubsystem.h"
 
+#include "Engine/World.h"
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
 #include "Gameplay/Clank/TartarusClankSubsystem.h"
 #include "Gameplay/Ruleset/TartarusRuleset.h"

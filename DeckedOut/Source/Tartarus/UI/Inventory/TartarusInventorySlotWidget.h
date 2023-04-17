@@ -3,8 +3,8 @@
 #pragma once
 
 #include "Blueprint/IUserObjectListEntry.h"
-#include "CoreMinimal.h"
 #include "CommonActivatableWidget.h"
+#include "CoreMinimal.h"
 
 #include "TartarusInventorySlotWidget.generated.h"
 

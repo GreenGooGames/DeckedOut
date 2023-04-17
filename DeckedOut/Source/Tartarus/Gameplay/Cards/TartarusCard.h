@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ITem/TartarusItem.h"
+#include "Item/TartarusItem.h"
 
 #include "TartarusCard.generated.h"
 

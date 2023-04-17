@@ -3,6 +3,7 @@
 
 #include "Player/TartarusPlayerController.h"
 
+#include "Engine/Engine.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Interaction/TartarusInteractableSourceComponent.h"

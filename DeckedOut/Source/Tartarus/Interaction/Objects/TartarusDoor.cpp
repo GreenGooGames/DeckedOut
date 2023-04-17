@@ -5,6 +5,7 @@
 
 #include "Audio/TartarusNoiseSourceComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
 
 // Sets default values
 ATartarusDoor::ATartarusDoor()

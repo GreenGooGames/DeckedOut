@@ -3,6 +3,7 @@
 
 #include "UI/Gameplay/TartarusGameplayWidget.h"
 
+#include "Engine/Engine.h"
 #include "Input/CommonUIInputTypes.h"
 #include "Logging/TartarusLogChannels.h"
 #include "Player/TartarusPlayerController.h"

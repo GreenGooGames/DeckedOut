@@ -7,8 +7,8 @@
 #include "CommonVisibilitySwitcher.h"
 #include "Logging/TartarusLogChannels.h"
 #include "UI/Foundation/TartarusActivatableWidget.h"
-#include "UI/Foundation/TartarusTextButton.h"
 #include "UI/Foundation/TartarusSwitcherWidget.h"
+#include "UI/Foundation/TartarusTextButton.h"
 
 void UTartarusSwitcherWidget::NativeOnInitialized()
 {
