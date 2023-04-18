@@ -56,6 +56,10 @@ protected:
 public:
 	virtual bool IsInteractable() const override;
 	virtual bool StartInteraction(const TObjectPtr<AController> InstigatorController) override;
+	virtual void DisableInteraction() override;
+
+private:
+	bool bIsInteractable = true;
 #pragma endregion
 
 #pragma region AsyncLoading

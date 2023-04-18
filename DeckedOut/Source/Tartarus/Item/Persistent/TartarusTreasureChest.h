@@ -49,6 +49,7 @@ private:
 public:
 	virtual bool IsInteractable() const override;
 	virtual bool StartInteraction(const TObjectPtr<AController> InstigatorController) override;
+	virtual void DisableInteraction() override;
 #pragma endregion
 
 #pragma region Audio

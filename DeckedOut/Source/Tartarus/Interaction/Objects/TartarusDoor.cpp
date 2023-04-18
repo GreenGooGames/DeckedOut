@@ -6,6 +6,7 @@
 #include "Audio/TartarusNoiseSourceComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Logging/TartarusLogChannels.h"
 
 // Sets default values
 ATartarusDoor::ATartarusDoor()
@@ -103,6 +104,12 @@ bool ATartarusDoor::StartInteraction(const TObjectPtr<AController> InstigatorCon
 	}
 
 	return bHasStateChanged;
+}
+
+void ATartarusDoor::DisableInteraction()
+{
+	check(false);
+	UE_LOG(LogTartarus, Warning, TEXT("%s: Not Implemented!"), *FString(__FUNCTION__));
 }
 #pragma endregion
 

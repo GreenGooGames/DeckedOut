@@ -37,4 +37,8 @@ public:
 	*/
 	virtual bool StartInteraction(const TObjectPtr<AController> InstigatorController) = 0;
 
+	/*
+	* Disables future possible interactions.
+	*/
+	virtual void DisableInteraction() = 0;
 };

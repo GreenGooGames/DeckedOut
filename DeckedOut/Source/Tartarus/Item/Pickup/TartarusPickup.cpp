@@ -67,7 +67,7 @@ bool ATartarusPickup::HandlePickedup(const TObjectPtr<AController> InstigatorCon
 #pragma region TartarusInteractableTargetInterface
 bool ATartarusPickup::IsInteractable() const
 {
-	return WasRecentlyRendered();
+	return WasRecentlyRendered() && bIsInteractable;
 }
 
 bool ATartarusPickup::StartInteraction(const TObjectPtr<AController> InstigatorController)
@@ -87,6 +87,11 @@ bool ATartarusPickup::StartInteraction(const TObjectPtr<AController> InstigatorC
 	const bool bSuccess = HandlePickedup(InstigatorController);
 
 	return bSuccess;
+}
+
+void ATartarusPickup::DisableInteraction()
+{
+	bIsInteractable = false;
 }
 #pragma endregion
 

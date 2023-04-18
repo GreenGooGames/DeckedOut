@@ -93,6 +93,12 @@ bool ATartarusCardReader::StartInteraction(const TObjectPtr<AController> Instiga
 
 	return true;
 }
+
+void ATartarusCardReader::DisableInteraction()
+{
+	check(false);
+	UE_LOG(LogTartarus, Warning, TEXT("%s: Not Implemented!"), *FString(__FUNCTION__));
+}
 #pragma endregion
 
 #pragma region ASyncLoading

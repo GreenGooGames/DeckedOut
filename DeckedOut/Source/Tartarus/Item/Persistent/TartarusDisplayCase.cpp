@@ -271,6 +271,11 @@ void ATartarusDisplayCase::HandleRequestCompleted(const FDisplayRequestInfo* con
 	{
 		DisplaySlots[CompletedRequest->GetDisplaySlot()].SetDisplayedItem(FInventoryStackId(), nullptr);
 	}
+	// If the item is an interactable, disable interaction.
+	else if(ITartarusInteractableTargetInterface* const Interactable = Cast<ITartarusInteractableTargetInterface>(DisplayItem.Get()))
+	{
+		Interactable->DisableInteraction();
+	}
 
 	DisplayRequests.RemoveSingleSwap(*CompletedRequest);
 }
@@ -399,5 +404,11 @@ bool ATartarusDisplayCase::StartInteraction(const TObjectPtr<AController> Instig
 	}
 
 	return true;
+}
+
+void ATartarusDisplayCase::DisableInteraction()
+{
+	check(false);
+	UE_LOG(LogTartarus, Warning, TEXT("%s: Not Implemented!"), *FString(__FUNCTION__));
 }
 #pragma endregion

@@ -76,4 +76,10 @@ bool ATartarusTreasureChest::StartInteraction(const TObjectPtr<AController> Inst
 
 	return true;
 }
+
+void ATartarusTreasureChest::DisableInteraction()
+{
+	check(false);
+	UE_LOG(LogTartarus, Warning, TEXT("%s: Not Implemented!"), *FString(__FUNCTION__));
+}
 #pragma endregion
