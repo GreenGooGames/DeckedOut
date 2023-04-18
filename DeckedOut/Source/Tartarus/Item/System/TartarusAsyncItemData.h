@@ -28,13 +28,20 @@ struct FItemSpawnParameters
 
 	EItemSpawnMethod GetSpawnMethod() const { return SpawnMethod; }
 	float GetOrbitRadius() const { return OrbitRadius; }
+	bool IsManaged() const { return bIsManaged; }
 
 protected:
+	// The method to use when spawning items.
 	UPROPERTY(EditDefaultsOnly)
 		EItemSpawnMethod SpawnMethod = EItemSpawnMethod::Point;
 
+	// Radius defning how far from the center items will spawn away from.
 	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "SpawnMethod == EItemSpawnMethod::Orbit", EditConditionHides))
 		float OrbitRadius = 250.0f;
+
+	// Is the item managed by the requester. If false the ItemSubsystem will manage the item.
+	UPROPERTY(EditDefaultsOnly)
+		bool bIsManaged = false;
 };
 
 DECLARE_EVENT_TwoParams(UTartarusItemSubsystem, FItemSpawnRequestCompletedEvent, FGuid /*RequestId*/, TArray<TWeakObjectPtr<ATartarusItemInstance>> /*SpawnedItems*/)

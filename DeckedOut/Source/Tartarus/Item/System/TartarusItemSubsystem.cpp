@@ -3,6 +3,7 @@
 #include "Item/System/TartarusItemSubsystem.h"
 
 #include "Engine/World.h"
+#include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
 #include "Item/System/TartarusItemSubsystemSettings.h"
 #include "Item/TartarusItem.h"
 #include "Item/TartarusItemData.h"
@@ -20,6 +21,18 @@ UTartarusItemSubsystem::UTartarusItemSubsystem()
 	}
 }
 
+void UTartarusItemSubsystem::OnWorldBeginPlay(UWorld& InWorld)
+{
+	ATartarusTreasureHuntGameState* const GameState = InWorld.GetGameState<ATartarusTreasureHuntGameState>();
+
+	if (!IsValid(GameState))
+	{
+		return;
+	}
+
+	GameState->OnRunningStateChanged().AddUObject(this, &UTartarusItemSubsystem::HandleGameRunningStateChanged);
+}
+
 bool UTartarusItemSubsystem::DespawnItem(ATartarusItemInstance* const ToDespawn)
 {
 	if (!IsValid(ToDespawn))
@@ -28,8 +41,8 @@ bool UTartarusItemSubsystem::DespawnItem(ATartarusItemInstance* const ToDespawn)
 		return false;
 	}
 
-	const int32 RemovedIndex = ItemInstances.RemoveSingleSwap(ToDespawn);
-	if (RemovedIndex == INDEX_NONE)
+	const int32 NumRemovedEntries = ItemInstances.RemoveSingleSwap(ToDespawn);
+	if (NumRemovedEntries == 0)
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to despawn item: The item was not found in the instance list!"), *FString(__FUNCTION__));
 		return false;
@@ -47,7 +60,7 @@ bool UTartarusItemSubsystem::DespawnItem(AActor* const ToDespawn)
 	return DespawnItem(AsItem);
 }
 
-TWeakObjectPtr<ATartarusItemInstance> UTartarusItemSubsystem::SpawnItem(const TSubclassOf<ATartarusItemInstance>& ItemClass, const FPrimaryAssetId ItemId, const FTransform& SpawnTransform)
+TWeakObjectPtr<ATartarusItemInstance> UTartarusItemSubsystem::SpawnItem(const TSubclassOf<ATartarusItemInstance>& ItemClass, const FPrimaryAssetId ItemId, const FTransform& SpawnTransform, const FItemSpawnParameters& ItemSpawnParameters)
 {
 	const FActorSpawnParameters SpawnParams = FActorSpawnParameters();
 
@@ -60,9 +73,31 @@ TWeakObjectPtr<ATartarusItemInstance> UTartarusItemSubsystem::SpawnItem(const TS
 	}
 
 	ItemInstance->SetItemId(ItemId);
-	ItemInstances.Add(ItemInstance);
+
+	if (!ItemSpawnParameters.IsManaged())
+	{
+		ItemInstances.Add(ItemInstance);
+	}
 
 	return ItemInstance;
+}
+
+void UTartarusItemSubsystem::HandleGameRunningStateChanged(ETreasureHuntState OldState, ETreasureHuntState NewState)
+{
+	if (NewState == ETreasureHuntState::Inactive)
+	{
+		for (ATartarusItemInstance* const ItemInstance : ItemInstances)
+		{
+			if (!IsValid(ItemInstance))
+			{
+				continue;
+			}
+
+			ItemInstance->Destroy();
+		}
+	}
+
+	ItemInstances.Empty();
 }
 
 #pragma region ASyncSpawn
@@ -175,7 +210,7 @@ void UTartarusItemSubsystem::HandleItemsLoaded(FGuid ASyncLoadRequestId, TShared
 			}
 
 			// Spawn the item in the world and add it to the spawned array.
-			TWeakObjectPtr<ATartarusItemInstance> SpawnedItem = SpawnItem(AsItemClass, LoadingItemData.ItemId, SpawnTransform);
+			TWeakObjectPtr<ATartarusItemInstance> SpawnedItem = SpawnItem(AsItemClass, LoadingItemData.ItemId, SpawnTransform, CurrentRequest->GetSpawnParameters());
 			if (!IsValid(SpawnedItem.Get()))
 			{
 				continue;

@@ -12,6 +12,8 @@ class UDataTable;
 
 struct FStreamableHandle;
 
+enum class ETreasureHuntState : uint8;
+
 /**
  * 
  */
@@ -22,6 +24,9 @@ class TARTARUS_API UTartarusItemSubsystem : public UWorldSubsystem
 	
 public:
 	UTartarusItemSubsystem();
+
+protected:
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
 public:
 	/* 
@@ -45,7 +50,10 @@ protected:
 	* Spawns an item in the world.
 	* Return: The item that is spawned.
 	*/
-	TWeakObjectPtr<ATartarusItemInstance> SpawnItem(const TSubclassOf<ATartarusItemInstance>& ItemClass, const FPrimaryAssetId ItemId, const FTransform& SpawnTransform);
+	TWeakObjectPtr<ATartarusItemInstance> SpawnItem(const TSubclassOf<ATartarusItemInstance>& ItemClass, const FPrimaryAssetId ItemId, const FTransform& SpawnTransform, const FItemSpawnParameters& ItemSpawnParameters);
+
+	// Fired when the GameState changes, Spawns/Despawns all treasures.
+	void HandleGameRunningStateChanged(ETreasureHuntState OldState, ETreasureHuntState NewState);
 
 private:
 	TArray<TObjectPtr<ATartarusItemInstance>> ItemInstances;

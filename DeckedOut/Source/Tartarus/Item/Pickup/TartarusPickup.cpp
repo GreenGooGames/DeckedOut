@@ -158,11 +158,21 @@ void ATartarusPickup::HandleRequestCompleted(const FPickupRequestInfo* const Com
 		return;
 	}
 
-	if (IsValid(ItemData))
+	PickupRequests.RemoveSingleSwap(*CompletedRequest);
+
+	// Despawn the item if it is managed by the item manager, otherwise it is up to the owner to despawn this.
+	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
+	if (!IsValid(ItemSubsystem))
 	{
-		Destroy();
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to despawn pickup: Item subsystem is invalid!"), *FString(__FUNCTION__));
+		return;
 	}
 
-	PickupRequests.RemoveSingleSwap(*CompletedRequest);
+	const bool bIsDespawned = ItemSubsystem->DespawnItem(this);
+	if (!bIsDespawned)
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to despawn pickup: despawn failed!"), *FString(__FUNCTION__));
+		return;
+	}
 }
 #pragma endregion

@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Interaction/TartarusInteractableTargetInterface.h"
 #include "Item/Inventory/TartarusInventoryData.h"
+#include "Item/System/TartarusAsyncItemData.h"
 #include "System/TartarusASyncLoadData.h"
 
 #include "TartarusDisplayCase.generated.h"
@@ -75,11 +76,17 @@ public:
 	bool RemoveFromDisplay(const FInventoryStackId& InventoryStackId);
 
 protected:
+	// Slots used to dispaly items in the inventory.
 	UPROPERTY(EditDefaultsOnly)
 		TArray<FDisplayCaseSlot> DisplaySlots;
 	
+	// Inventory component.
 	UPROPERTY(EditDefaultsOnly)
 		TObjectPtr<UTartarusInventoryComponent> InventoryComponent;
+
+	// Spawn parameters for items to display.
+	UPROPERTY(EditDefaultsOnly)
+		FItemSpawnParameters ItemSpawnParameters = FItemSpawnParameters();
 
 	int32 FindAvailableSlot() const;
 	void HandleDisplayRequestCompleted(ATartarusItemInstance* const DisplayItem, const int32 DisplaySlotIndex);

@@ -304,7 +304,6 @@ void ATartarusDisplayCase::HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
-	const FItemSpawnParameters ItemSpawnParameters = FItemSpawnParameters();
 	FItemSpawnRequestCompletedEvent OnItemsSpawned;
 	OnItemsSpawned.AddUObject(this, &ATartarusDisplayCase::HandleItemSpawned);
 	
