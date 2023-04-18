@@ -311,10 +311,11 @@ FGuid UTartarusEquipableManager::RequestItemsSpawn(const TArray<UTartarusItem*>&
 		return FGuid();
 	}
 
+	const FItemSpawnParameters ItemSpawnParameters = FItemSpawnParameters();
 	FItemSpawnRequestCompletedEvent OnItemsSpawned;
 	OnItemsSpawned.AddUObject(this, &UTartarusEquipableManager::HandleItemSpawned);
 
-	const FGuid ASyncRequestId = ItemSubsystem->AsyncRequestSpawnItems(ItemTableRows, FTransform::Identity, OnItemsSpawned);
+	const FGuid ASyncRequestId = ItemSubsystem->AsyncRequestSpawnItems(ItemTableRows, FTransform::Identity, ItemSpawnParameters, OnItemsSpawned);
 
 	return ASyncRequestId;
 }

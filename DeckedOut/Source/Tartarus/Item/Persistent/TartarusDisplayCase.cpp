@@ -304,10 +304,11 @@ void ATartarusDisplayCase::HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray
 		return HandleRequestCompleted(CurrentRequest, nullptr);
 	}
 
+	const FItemSpawnParameters ItemSpawnParameters = FItemSpawnParameters();
 	FItemSpawnRequestCompletedEvent OnItemsSpawned;
 	OnItemsSpawned.AddUObject(this, &ATartarusDisplayCase::HandleItemSpawned);
 	
-	FGuid ASyncRequestId = ItemSubsystem->AsyncRequestSpawnItems(ItemsData, FTransform::Identity, OnItemsSpawned);
+	FGuid ASyncRequestId = ItemSubsystem->AsyncRequestSpawnItems(ItemsData, FTransform::Identity, ItemSpawnParameters, OnItemsSpawned);
 	if (!ASyncRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Could not request the item data!"), *FString(__FUNCTION__));

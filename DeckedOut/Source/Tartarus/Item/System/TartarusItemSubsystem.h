@@ -56,7 +56,7 @@ public:
 	* Creates an ASync request to load and spawn Items in the world.
 	* Return: The unique identifier of the request.
 	*/
-	FGuid AsyncRequestSpawnItems(const TArray<UTartarusItem*>& ItemsData, const FTransform& SpawnTransform, const FItemSpawnRequestCompletedEvent& OnRequestCompleted);
+	FGuid AsyncRequestSpawnItems(const TArray<UTartarusItem*>& ItemsData, const FTransform& SpawnTransform, const FItemSpawnParameters& SpawnParameters, const FItemSpawnRequestCompletedEvent& OnRequestCompleted);
 
 protected:
 	// Executed when a Item spawn request has completed.

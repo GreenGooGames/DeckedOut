@@ -8,11 +8,13 @@
 #include "Item/TartarusItemInstance.h"
 
 #pragma region FSpawnItemsRequestInfo
-FSpawnItemsRequestInfo::FSpawnItemsRequestInfo(const FTransform& Transform, const FItemSpawnRequestCompletedEvent& OnCompleted)
+FSpawnItemsRequestInfo::FSpawnItemsRequestInfo(const FTransform& Transform, const FItemSpawnParameters& ItemSpawnParameters, const FItemSpawnRequestCompletedEvent& OnCompleted)
 {
 	RequestId = FGuid::NewGuid();
 
 	SpawnTransform = Transform;
+	SpawnParameters = ItemSpawnParameters;
+
 	RequestCompletedEvent = OnCompleted;
 }
 

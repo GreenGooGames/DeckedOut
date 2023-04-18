@@ -4,6 +4,7 @@
 
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
+#include "Item/System/TartarusAsyncItemData.h"
 #include "System/TartarusASyncLoadData.h"
 
 #include "TartarusLootComponent.generated.h"
@@ -54,6 +55,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		TSoftObjectPtr<UTartarusLootTableDataAsset> LootTable = nullptr;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		FItemSpawnParameters SpawnParameters = FItemSpawnParameters();
+
 #pragma region AsyncLoading
 public:
 	/*
@@ -76,7 +80,7 @@ protected:
 	* Creates a request to load an item.
 	* Return: The Guid of the async load request.
 	*/
-	FGuid AsyncRequestSpawnItems(TArray<UTartarusItem*> ItemHandles, const FTransform& SpawnTransform);
+	FGuid AsyncRequestSpawnItems(TArray<UTartarusItem*> ItemHandles, const FTransform& SpawnTransform, const FItemSpawnParameters& ItemSpawnParameters);
 
 	// Called when the item blueprint is loaded.
 	void HandleLootSpawned(FGuid ASyncLoadRequestId, TArray<TWeakObjectPtr<ATartarusItemInstance>> SpawnedLoot);

@@ -90,7 +90,6 @@ void UTartarusLootComponent::HandleLootTableLoaded(FGuid ASyncLoadRequestId, TSh
 
 	// Get a reference to the DataTable that got loaded.
 	LootTable = Cast<UTartarusLootTableDataAsset>(AssetHandle.Get()->GetLoadedAsset());
-
 	if (!IsValid(LootTable.Get()))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: LootTable was not loaded!"), *FString(__FUNCTION__));
@@ -102,7 +101,7 @@ void UTartarusLootComponent::HandleLootTableLoaded(FGuid ASyncLoadRequestId, TSh
 	TArray<UTartarusItem*> LootHandles = LootTable->GetLoot();
 	
 	// Load the item blueprint.
-	FGuid LootLoadRequestId = AsyncRequestSpawnItems(LootHandles, CurrentRequest->GetSpawnTransform());
+	FGuid LootLoadRequestId = AsyncRequestSpawnItems(LootHandles, CurrentRequest->GetSpawnTransform(), SpawnParameters);
 	if (!LootLoadRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: Could not load the item async!"), *FString(__FUNCTION__));
@@ -114,7 +113,7 @@ void UTartarusLootComponent::HandleLootTableLoaded(FGuid ASyncLoadRequestId, TSh
 	CurrentRequest->SetASyncLoadRequestId(LootLoadRequestId);
 }
 
-FGuid UTartarusLootComponent::AsyncRequestSpawnItems(TArray<UTartarusItem*> ItemHandles, const FTransform& SpawnTransform)
+FGuid UTartarusLootComponent::AsyncRequestSpawnItems(TArray<UTartarusItem*> ItemHandles, const FTransform& SpawnTransform, const FItemSpawnParameters& ItemSpawnParameters)
 {
 	// Get the ItemSpawner.
 	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
@@ -129,7 +128,7 @@ FGuid UTartarusLootComponent::AsyncRequestSpawnItems(TArray<UTartarusItem*> Item
 	OnSpawnRequestCompleted.AddUObject(this, &UTartarusLootComponent::HandleLootSpawned);
 	
 	FString ContextString;
-	const FGuid SpawnRequestId = ItemSubsystem->AsyncRequestSpawnItems(ItemHandles, SpawnTransform, OnSpawnRequestCompleted);
+	const FGuid SpawnRequestId = ItemSubsystem->AsyncRequestSpawnItems(ItemHandles, SpawnTransform, SpawnParameters, OnSpawnRequestCompleted);
 	if (!SpawnRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Spawn Loot failed: Could not start a spawn request!"), *FString(__FUNCTION__));

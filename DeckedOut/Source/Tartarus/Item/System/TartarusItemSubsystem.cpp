@@ -66,7 +66,7 @@ TWeakObjectPtr<ATartarusItemInstance> UTartarusItemSubsystem::SpawnItem(const TS
 }
 
 #pragma region ASyncSpawn
-FGuid UTartarusItemSubsystem::AsyncRequestSpawnItems(const TArray<UTartarusItem*>& ItemsData, const FTransform& SpawnTransform, const FItemSpawnRequestCompletedEvent& OnRequestCompleted)
+FGuid UTartarusItemSubsystem::AsyncRequestSpawnItems(const TArray<UTartarusItem*>& ItemsData, const FTransform& SpawnTransform, const FItemSpawnParameters& SpawnParameters, const FItemSpawnRequestCompletedEvent& OnRequestCompleted)
 {
 	// Get the AsyncLoader.
 	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
@@ -77,7 +77,7 @@ FGuid UTartarusItemSubsystem::AsyncRequestSpawnItems(const TArray<UTartarusItem*
 	}
 
 	// Create a request to handle spawning the items;
-	FSpawnItemsRequestInfo SpawnRequest = FSpawnItemsRequestInfo(SpawnTransform, OnRequestCompleted);
+	FSpawnItemsRequestInfo SpawnRequest = FSpawnItemsRequestInfo(SpawnTransform, SpawnParameters, OnRequestCompleted);
 
 	// Gather all the Item instances to load.
 	for (const UTartarusItem* ItemData : ItemsData)
@@ -135,21 +135,42 @@ void UTartarusItemSubsystem::HandleItemsLoaded(FGuid ASyncLoadRequestId, TShared
 		return;
 	}
 
-	// For each item that is loaded, spawn the number of requested instances.
 	TArray<TWeakObjectPtr<ATartarusItemInstance>> SpawnedItens;
+	const int32 NumItemsToSpawn = CurrentRequest->GetItemsToLoad().Num();
 
-	for (const FLoadingItemData& LoadingData : CurrentRequest->GetItemsToLoad())
+	for (int32 i = 0; i < NumItemsToSpawn; i++)
 	{
+		FTransform SpawnTransform = CurrentRequest->GetSpawnTransform();
+
+		// Calculate the position to spawn at if required.
+		switch (CurrentRequest->GetSpawnParameters().GetSpawnMethod())
+		{
+		case EItemSpawnMethod::Orbit:
+		{
+			const float Interval = (2 * PI) / NumItemsToSpawn;
+			const float OrbitAngle = Interval * i;
+			const FVector2D UnitOffset = FVector2D(cos(OrbitAngle), sin(OrbitAngle));
+			const FVector2D OrbitOffset = UnitOffset * CurrentRequest->GetSpawnParameters().GetOrbitRadius();
+
+			SpawnTransform.SetLocation(SpawnTransform.GetLocation() + FVector(OrbitOffset, 0));
+			break;
+		}
+		default:
+			break;
+		}
+
+		// Retrieve the class to spawn and spawn it in the world.
+		const FLoadingItemData& LoadingData = CurrentRequest->GetItemsToLoad()[i];
 		TSubclassOf<ATartarusItemInstance> AsItemClass = Cast<UClass>(LoadingData.ObjectPath.ResolveObject());
 		if (!IsValid(AsItemClass))
 		{
 			continue;
 		}
 
-		for (int32 i = 0; i < LoadingData.Count; i++)
+		// For each item that is loaded, spawn the number of requested instances.
+		for (int32 j = 0; j < LoadingData.Count; j++)
 		{
-			TWeakObjectPtr<ATartarusItemInstance> SpawnedItem = SpawnItem(AsItemClass, LoadingData.ItemId, CurrentRequest->GetSpawnTransform());
-
+			TWeakObjectPtr<ATartarusItemInstance> SpawnedItem = SpawnItem(AsItemClass, LoadingData.ItemId, SpawnTransform);
 			if (!IsValid(SpawnedItem.Get()))
 			{
 				continue;
