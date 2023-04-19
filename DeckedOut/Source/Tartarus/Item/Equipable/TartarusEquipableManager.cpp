@@ -207,7 +207,7 @@ void UTartarusEquipableManager::HandleRequestCompleted(const FEquipRequestInfo* 
 	}
 
 	// If no item was equipped, free up the slot.
-	if (!IsValid(EquippedItem.Get()))
+	if (!IsValid(EquippedItem.Get()) && EquipmentSlots.Contains(CompletedRequest->ReservedSlot))
 	{
 		EquipmentSlots[CompletedRequest->ReservedSlot].Reset();
 	}
@@ -297,7 +297,7 @@ void UTartarusEquipableManager::HandleItemSpawned(FGuid ASyncLoadRequestId, TArr
 FGuid UTartarusEquipableManager::RequestItemsSpawn(const TArray<UTartarusItem*>& ItemTableRows)
 {
 	// Get the item subsystem.
-	UWorld* const World = GetWorld();
+	const UWorld* const World = GetWorld();
 	if (!IsValid(World))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to request spawn of items: World is invalid!"), *FString(__FUNCTION__));
@@ -311,7 +311,6 @@ FGuid UTartarusEquipableManager::RequestItemsSpawn(const TArray<UTartarusItem*>&
 		return FGuid();
 	}
 
-	const FItemSpawnParameters ItemSpawnParameters = FItemSpawnParameters();
 	FItemSpawnRequestCompletedEvent OnItemsSpawned;
 	OnItemsSpawned.AddUObject(this, &UTartarusEquipableManager::HandleItemSpawned);
 
@@ -453,16 +452,7 @@ void UTartarusEquipableManager::HandleInventoryItemRetrieved(const FInventorySta
 		if (IsValid(Slot.Value.GetItem()))
 		{
 			Unequip(Slot.Value.GetInventoryStackId());
-
-			UWorld* const World = GetWorld();
-			if (IsValid(World))
-			{
-				UTartarusItemSubsystem* const ItemSubsystem = World->GetSubsystem<UTartarusItemSubsystem>();
-				if (IsValid(ItemSubsystem))
-				{
-					ItemSubsystem->DespawnItem(Cast<ATartarusItemInstance>(Slot.Value.GetItem()));
-				}
-			}
+			Slot.Value.GetItem()->Destroy();
 		}
 
 		Slot.Value.Reset();

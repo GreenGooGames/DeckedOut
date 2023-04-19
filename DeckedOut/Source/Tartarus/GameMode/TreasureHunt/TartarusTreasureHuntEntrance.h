@@ -16,18 +16,18 @@ class TARTARUS_API ATartarusTreasureHuntEntrance : public ATartarusDoor
 	GENERATED_BODY()
 	
 public:
-	ATartarusTreasureHuntEntrance();
+	virtual void PostInitializeComponents() override;
 
 protected:
-	// Trigger to determine the player is on the other side of the door.
-	UPROPERTY(EditDefaultsOnly)
-		TObjectPtr<UBoxComponent> CloseTrigger = nullptr;
-
 	virtual bool CanChangeState(const EDoorState NewState) const;
 
-	// Executed when the player overlaps with the close trigger.
+	// Executed when the player begins overlaps with the trigger.
 	UFUNCTION()
-		void OnCloseTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+		void OnColliderBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	// Executed when the player ends overlaps with the trigger.
+	UFUNCTION()
+		void OnColliderEndOverlap(	UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 #pragma region ITartarusInteractableTargetInterface
 public:

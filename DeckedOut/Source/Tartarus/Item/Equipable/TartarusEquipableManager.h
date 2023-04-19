@@ -6,6 +6,7 @@
 #include "CoreMinimal.h"
 #include "Item/Equipable/TartarusEquipableData.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
+#include "Item/System/TartarusAsyncItemData.h"
 #include "System/TartarusASyncLoadData.h"
 
 #include "TartarusEquipableManager.generated.h"
@@ -75,6 +76,10 @@ protected:
 	// All possible slots with related data.
 	UPROPERTY(EditDefaultsOnly)
 		TMap<EEquipmentSlot, FEquipmentInfo> EquipmentSlots;
+
+	// Settings to use when spawning an equipped item in the world.
+	UPROPERTY(EditDefaultsOnly)
+		FItemSpawnParameters ItemSpawnParameters = FItemSpawnParameters();
 
 	// The mesh to equip on.
 	TObjectPtr<USkeletalMeshComponent> EquipableMeshComponent = nullptr;

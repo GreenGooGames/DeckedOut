@@ -8,15 +8,12 @@
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
 #include "Logging/TartarusLogChannels.h"
 
-ATartarusTreasureHuntEntrance::ATartarusTreasureHuntEntrance()
+void ATartarusTreasureHuntEntrance::PostInitializeComponents()
 {
-	// Close Trigger.
-	CloseTrigger = CreateDefaultSubobject<UBoxComponent>(TEXT("Closing Trigger"));
-	CloseTrigger->SetSimulatePhysics(false);
-	CloseTrigger->SetCollisionProfileName(FName("Trigger"), false);
-	CloseTrigger->OnComponentBeginOverlap.AddUniqueDynamic(this, &ATartarusTreasureHuntEntrance::OnCloseTriggerOverlap);
+	Super::PostInitializeComponents();
 
-	CloseTrigger->SetupAttachment(RootComponent);
+	Collider->OnComponentBeginOverlap.AddUniqueDynamic(this, &ATartarusTreasureHuntEntrance::OnColliderBeginOverlap);
+	Collider->OnComponentEndOverlap.AddUniqueDynamic(this, &ATartarusTreasureHuntEntrance::OnColliderEndOverlap);
 }
 
 bool ATartarusTreasureHuntEntrance::CanChangeState(const EDoorState NewState) const
@@ -38,7 +35,6 @@ bool ATartarusTreasureHuntEntrance::CanChangeState(const EDoorState NewState) co
 		GameMode->StartTreasureHunt();
 
 		ATartarusTreasureHuntGameState* const GameState = GetWorld()->GetGameState<ATartarusTreasureHuntGameState>();
-
 		if (!GameState->IsTreasureHuntActive())
 		{
 			return false;
@@ -54,7 +50,6 @@ bool ATartarusTreasureHuntEntrance::CanChangeState(const EDoorState NewState) co
 		GameMode->StopTreasureHunt();
 
 		ATartarusTreasureHuntGameState* const GameState = GetWorld()->GetGameState<ATartarusTreasureHuntGameState>();
-
 		if (GameState->IsTreasureHuntActive())
 		{
 			return false;
@@ -68,7 +63,7 @@ bool ATartarusTreasureHuntEntrance::CanChangeState(const EDoorState NewState) co
 	return true;
 }
 
-void ATartarusTreasureHuntEntrance::OnCloseTriggerOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ATartarusTreasureHuntEntrance::OnColliderBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// Check if the OtherActor is the player.
 	APawn* const OtherPawn = Cast<APawn>(OtherActor);
@@ -82,17 +77,45 @@ void ATartarusTreasureHuntEntrance::OnCloseTriggerOverlap(UPrimitiveComponent* O
 		return;
 	}
 
-	// Check if the game is in progress.
-	ATartarusTreasureHuntGameState* const GameState = GetWorld()->GetGameState<ATartarusTreasureHuntGameState>();
-	if (!IsValid(GameState) || !GameState->IsTreasureHuntActive())
+	// Try changing the state of the door.
+	const EDoorState NewState = EDoorState::Open;
+	
+	const bool bHasStateChanged = ChangeState(NewState);
+	if (bHasStateChanged)
+	{
+		HandleStateChanged(NewState, OtherPawn->GetController());
+		GenerateNoise();
+	}
+}
+
+void ATartarusTreasureHuntEntrance::OnColliderEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	// Check if the OtherActor is the player.
+	APawn* const OtherPawn = Cast<APawn>(OtherActor);
+	if (!IsValid(OtherPawn))
 	{
 		return;
 	}
 
-	// Close the door.
-	EDoorState NewState = EDoorState::Closed;
-	bool bHasStateChanged = ChangeState(NewState);
+	if (!OtherPawn->IsPlayerControlled())
+	{
+		return;
+	}
 
+	// Check if the player is outside the game area.
+	const FVector2D CenterToPlayer = FVector2D(OtherPawn->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+	const FVector2D Forward2D = FVector2D(GetActorForwardVector()).GetSafeNormal();
+	const float DotResult = CenterToPlayer.Dot(Forward2D);
+
+	if (DotResult < 0) // Dot smaller than 0 means the Pawn is behind the center and thus still in the dungeon.
+	{
+		return;
+	}
+
+	// Try changing the state of the door.
+	const EDoorState NewState = EDoorState::Closed;
+
+	const bool bHasStateChanged = ChangeState(NewState);
 	if (bHasStateChanged)
 	{
 		HandleStateChanged(NewState, OtherPawn->GetController());
@@ -103,17 +126,6 @@ void ATartarusTreasureHuntEntrance::OnCloseTriggerOverlap(UPrimitiveComponent* O
 #pragma region ITartarusInteractableTargetInterface
 bool ATartarusTreasureHuntEntrance::IsInteractable() const
 {
-	bool bIsInteractable = Super::IsInteractable();
-
-	ATartarusTreasureHuntGameState* const GameState = GetWorld()->GetGameState<ATartarusTreasureHuntGameState>();
-
-	if (!IsValid(GameState))
-	{
-		return false;
-	}
-
-	bIsInteractable = bIsInteractable && !GameState->IsTreasureHuntActive();
-
-	return bIsInteractable;
+	return false;
 }
 #pragma endregion
