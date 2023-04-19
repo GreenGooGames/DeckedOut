@@ -21,13 +21,14 @@ struct FGetCardDataRequestInfo : public FASyncLoadRequest
 
 public:
 	FGetCardDataRequestInfo() {}
-	FGetCardDataRequestInfo(ATartarusTreasureHuntGameState* const TargetGameState, TArray<FPrimaryAssetId>& CardsToLoad);
+	FGetCardDataRequestInfo(ATartarusTreasureHuntGameState* const TargetGameState, TMap<FPrimaryAssetId, int32>& CardsToLoad);
 
 	ATartarusTreasureHuntGameState* GetGameState() const { return GameState.Get(); }
-	TArray<FPrimaryAssetId> GetCardsToLoad() const { return CardIds; }
+	const TMap<FPrimaryAssetId, int32>& GetCardsToLoad() const { return CardIdsToCount; }
+	TArray<FPrimaryAssetId> GetCardIdsToLoad() const;
 
 private:
-	TArray<FPrimaryAssetId> CardIds;
+	TMap<FPrimaryAssetId, int32> CardIdsToCount;
 	TWeakObjectPtr<ATartarusTreasureHuntGameState> GameState = nullptr;
 };
 #pragma endregion

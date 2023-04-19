@@ -12,11 +12,23 @@
 #include "Logging/TartarusLogChannels.h"
 
 #pragma region ASyncLoading
-FGetCardDataRequestInfo::FGetCardDataRequestInfo(ATartarusTreasureHuntGameState* const TargetGameState, TArray<FPrimaryAssetId>& CardsToLoad)
+FGetCardDataRequestInfo::FGetCardDataRequestInfo(ATartarusTreasureHuntGameState* const TargetGameState, TMap<FPrimaryAssetId, int32>& CardsToLoad)
 {
 	RequestId = FGuid::NewGuid();
 	GameState = TargetGameState;
-	CardIds = CardsToLoad;
+	CardIdsToCount = CardsToLoad;
+}
+
+TArray<FPrimaryAssetId> FGetCardDataRequestInfo::GetCardIdsToLoad() const
+{
+	TArray<FPrimaryAssetId> CardIds;
+
+	for (const auto& Data : CardIdsToCount)
+	{
+		CardIds.Add(Data.Key);
+	}
+
+	return CardIds;
 }
 #pragma endregion
 
@@ -61,7 +73,7 @@ bool ATartarusCardReader::StartInteraction(const TObjectPtr<AController> Instiga
 
 	// TODO: Show a UI to have the player select cards from their inventory and only activate a few select ones.
 	// Retrieve the effect of each card in the inventory.
-	TArray<FPrimaryAssetId> CardsToLoad;
+	TMap<FPrimaryAssetId, int32> CardsToLoad;
 
 	for (const FInventoryStack& InventoryStack : InventoryCards)
 	{
@@ -70,8 +82,7 @@ bool ATartarusCardReader::StartInteraction(const TObjectPtr<AController> Instiga
 			continue;
 		}
 
-		// TODO: Cards can be stacked, so we need to apply x times where x is the stacksize.
-		CardsToLoad.Add(InventoryStack.GetEntryId());
+		CardsToLoad.Add(InventoryStack.GetEntryId(), InventoryStack.StackSize);
 	}
 
 	// No need to continue if no cards are in the inventory.
@@ -80,14 +91,15 @@ bool ATartarusCardReader::StartInteraction(const TObjectPtr<AController> Instiga
 		return false;
 	}
 
+	FGetCardDataRequestInfo RequestInfo = FGetCardDataRequestInfo(GameState, CardsToLoad);
+
 	// AsyncLoad the data of all the cards.
-	const FGuid RequestId = RequestCardsDataASync(CardsToLoad);
+	const FGuid RequestId = RequestCardsDataASync(RequestInfo.GetCardIdsToLoad());
 	if (!RequestId.IsValid())
 	{
 		return false;
 	}
 
-	FGetCardDataRequestInfo RequestInfo = FGetCardDataRequestInfo(GameState, CardsToLoad);
 	RequestInfo.SetASyncLoadRequestId(RequestId);
 	GetCardDataRequests.Add(RequestInfo);
 
@@ -161,19 +173,19 @@ void ATartarusCardReader::HandleCardsDataLoaded(FGuid ASyncLoadRequestId, TArray
 
 		for (const auto& Modifier : Card->Modifiers)
 		{
-			GameState->EditGameModifier(Modifier.Key, Modifier.Value);
+			GameState->EditGameModifier(Modifier.Key, Modifier.Value * CurrentRequest->GetCardsToLoad()[CardData->GetPrimaryAssetId()]);
 
 #if WITH_EDITOR
 			FString EnumToString = "";
-			const UEnum* const ModiferTypePtr = FindObject<UEnum>(FTopLevelAssetPath(TEXT("/Script/Tartarus.EGameModifer")), true);
+			const UEnum* const ModiferTypePtr = FindObject<UEnum>(FTopLevelAssetPath(TEXT("/Script/Tartarus.EGameModifier")), true);
 			if (IsValid(ModiferTypePtr))
 			{
 				EnumToString = ModiferTypePtr->GetNameStringByValue(static_cast<int64>(Modifier.Key));
 			}
 
-			UE_LOG(LogTartarus, Warning, TEXT("%s: Applied modifer %s with value %d!"), *FString(__FUNCTION__), *EnumToString, Modifier.Value);
+			UE_LOG(LogTartarus, Warning, TEXT("%s: Applied modifer %s with value %d!"), *FString(__FUNCTION__), *EnumToString, Modifier.Value * CurrentRequest->GetCardsToLoad()[CardData->GetPrimaryAssetId()]);
 
-			FString Text = FString("Applied modifer ") + EnumToString + FString(" with value ") + FString::SanitizeFloat(Modifier.Value);
+			FString Text = FString("Applied modifer ") + EnumToString + FString(" with value ") + FString::SanitizeFloat(Modifier.Value * CurrentRequest->GetCardsToLoad()[CardData->GetPrimaryAssetId()]);
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, Text);
 #endif
 		}
