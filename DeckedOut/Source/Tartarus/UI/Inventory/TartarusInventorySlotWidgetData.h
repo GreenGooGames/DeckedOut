@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Styling/SlateBrush.h"
+#include "System/TartarusHelpers.h"
 
 #include "TartarusInventorySlotWidgetData.generated.h"
 
@@ -26,5 +26,5 @@ public:
 
 protected:
 	TSoftObjectPtr<UTexture2D> Texture = nullptr;
-	FPrimaryAssetId ItemId = FPrimaryAssetId(); // FTartarusHelpers::InvalidItemId;
+	FPrimaryAssetId ItemId = FTartarusHelpers::InvalidItemId;
 };

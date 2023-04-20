@@ -13,9 +13,7 @@ class UCommonTileView;
 class UTartarusItem;
 class UTartarusInventorySlotWidgetData;
 
-struct FStreamableHandle;
-struct FItemTableRow;
-
+#pragma region ASyncLoading
 DECLARE_EVENT_OneParam(UTartarusInventoryWidget, FUpdateInventoryUIRequestCompletedEvent, FGuid /*RequestId*/)
 
 USTRUCT()
@@ -35,6 +33,7 @@ private:
 
 	UTartarusInventorySlotWidgetData* SlotWidgetData = nullptr;
 };
+#pragma endregion
 
 /**
  * 

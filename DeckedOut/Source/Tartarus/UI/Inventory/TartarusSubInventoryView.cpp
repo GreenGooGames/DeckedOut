@@ -8,10 +8,8 @@
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/System/TartarusItemSubsystem.h"
 #include "Item/TartarusItem.h"
-#include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
 #include "Player/TartarusPlayerController.h"
-#include "System/TartarusAssetManager.h"
 
 #include "UI/Inventory/TartarusInventorySlotWidgetData.h"
 
