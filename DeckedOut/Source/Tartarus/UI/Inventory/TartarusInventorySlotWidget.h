@@ -17,10 +17,6 @@ UCLASS()
 class TARTARUS_API UTartarusInventorySlotWidget : public UCommonActivatableWidget, public IUserObjectListEntry
 {
 	GENERATED_BODY()
-	
-public:
-	void SetDisplayTexture(UTexture2D* Texture);
-	void SetSoftDisplayTexture(TSoftObjectPtr<UTexture2D> Texture);
 
 protected:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))

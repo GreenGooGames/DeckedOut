@@ -4,45 +4,21 @@
 #include "UI/Inventory/TartarusInventorySlotWidget.h"
 
 #include "CommonLazyImage.h"
-#include "Engine/Texture2D.h"
-
-void UTartarusInventorySlotWidget::SetDisplayTexture(UTexture2D* Texture)
-{
-	if (IsValid(DisplayImage))
-	{
-		if (IsValid(Texture))
-		{
-			DisplayImage->SetBrushFromTexture(Texture);
-			
-			// Reset Tint Aplha value to 1.0f
-			DisplayImage->Brush.TintColor = FSlateColor(FColor::White);
-		}
-		else
-		{
-			DisplayImage->SetBrush(EmptySlotBrush);
-		}
-	}
-}
-
-void UTartarusInventorySlotWidget::SetSoftDisplayTexture(TSoftObjectPtr<UTexture2D> Texture)
-{
-	if (IsValid(DisplayImage))
-	{
-		// Reset Tint Aplha value to 1.0f
-		DisplayImage->Brush.TintColor = FSlateColor(FColor::White);
-
-		DisplayImage->SetBrushFromLazyTexture(Texture);
-	}
-}
+#include "UI/Inventory/TartarusInventorySlotWidgetData.h"
 
 void UTartarusInventorySlotWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
 	IUserObjectListEntry::NativeOnListItemObjectSet(ListItemObject);
 
-	UTartarusInventorySlotWidget* const ListItem = Cast<UTartarusInventorySlotWidget>(ListItemObject);
-
-	if (ListItem)
+	const UTartarusInventorySlotWidgetData* const ListItem = Cast<UTartarusInventorySlotWidgetData>(ListItemObject);
+	if (IsValid(ListItem) && ListItem->GetTexture().ToSoftObjectPath().IsValid())
 	{
-		DisplayImage->SetBrush(ListItem->DisplayImage->Brush);
+		DisplayImage->SetBrushFromLazyTexture(ListItem->GetTexture());
 	}
+	else
+	{
+		DisplayImage->SetBrush(EmptySlotBrush);
+	}
+
+	// TODO: Should this subscribe to an OnUpdate event of ListItem so that when the data gets updated, this Entry reflects those changes.
 }
