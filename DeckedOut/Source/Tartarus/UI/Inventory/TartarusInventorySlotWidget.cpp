@@ -4,15 +4,16 @@
 #include "UI/Inventory/TartarusInventorySlotWidget.h"
 
 #include "CommonLazyImage.h"
+#include "Engine/Texture2D.h"
 
 void UTartarusInventorySlotWidget::SetDisplayTexture(UTexture2D* Texture)
 {
-	if (DisplayImage)
+	if (IsValid(DisplayImage))
 	{
-		if (Texture)
+		if (IsValid(Texture))
 		{
 			DisplayImage->SetBrushFromTexture(Texture);
-
+			
 			// Reset Tint Aplha value to 1.0f
 			DisplayImage->Brush.TintColor = FSlateColor(FColor::White);
 		}
@@ -23,8 +24,21 @@ void UTartarusInventorySlotWidget::SetDisplayTexture(UTexture2D* Texture)
 	}
 }
 
+void UTartarusInventorySlotWidget::SetSoftDisplayTexture(TSoftObjectPtr<UTexture2D> Texture)
+{
+	if (IsValid(DisplayImage))
+	{
+		// Reset Tint Aplha value to 1.0f
+		DisplayImage->Brush.TintColor = FSlateColor(FColor::White);
+
+		DisplayImage->SetBrushFromLazyTexture(Texture);
+	}
+}
+
 void UTartarusInventorySlotWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
+	IUserObjectListEntry::NativeOnListItemObjectSet(ListItemObject);
+
 	UTartarusInventorySlotWidget* const ListItem = Cast<UTartarusInventorySlotWidget>(ListItemObject);
 
 	if (ListItem)

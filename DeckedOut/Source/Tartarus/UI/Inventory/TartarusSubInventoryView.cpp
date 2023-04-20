@@ -46,6 +46,10 @@ void UTartarusSubInventoryView::NativeOnActivated()
 
 void UTartarusSubInventoryView::ConstructTiles()
 {
+	// TODO: I think this is not how ListView is designed to work.
+	// You should only add UDataAssets to the TileView refered to as ITEM.
+	// Then have a Template used to display refered to as ENTRY.
+	// the ENTRY template inherits from an interface were you can define all the data that needs to be set.
 	const TArray<FInventoryStack>& InventoryEntries = *GetInventoryEntries();
 
 	// Create a slot for each Entry in the SubInventory.
@@ -192,10 +196,10 @@ void UTartarusSubInventoryView::HandleItemsDataLoaded(FGuid ASyncLoadRequestId, 
 	}
 	
 	// Find the row for the item to display.
-	const UTartarusItem* const ItemRow = ItemsData[0];
+	const UTartarusItem* const ItemData = ItemsData[0];
 	
 	// Request to load the texture.
-	FGuid AsyncLoadRequestId = AsyncRequestLoadTexture(ItemRow);
+	FGuid AsyncLoadRequestId = AsyncRequestLoadTexture(ItemData);
 	if (!AsyncLoadRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), *FString(__FUNCTION__));
@@ -266,6 +270,8 @@ void UTartarusSubInventoryView::HandleTextureLoaded(FGuid ASyncLoadRequestId, TS
 	}
 
 	CurrentRequest->GetWidget().Get()->SetDisplayTexture(Texture);
+	TileView->RegenerateAllEntries();
+
 	HandleRequestSuccess(CurrentRequest, Texture);
 }
 #pragma endregion
