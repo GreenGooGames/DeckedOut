@@ -3,6 +3,7 @@
 
 #include "UI/Inventory/TartarusInventoryWidget.h"
 
+#include "CommonTileView.h"
 #include "CommonVisibilitySwitcher.h"
 #include "Engine/Engine.h"
 #include "Input/CommonUIInputTypes.h"
@@ -11,6 +12,10 @@
 #include "Player/TartarusPlayerController.h"
 #include "UI/Foundation/TartarusSwitcherWidget.h"
 #include "UI/Inventory/TartarusSubInventoryView.h"
+
+#include "UI/Inventory/TartarusInventorySlotWidgetData.h"
+#include "UI/Inventory/TartarusInventoryInfoWidget.h"
+#include "Item/System/TartarusItemSubsystem.h"
 
 void UTartarusInventoryWidget::NativeOnInitialized()
 {
@@ -21,6 +26,7 @@ void UTartarusInventoryWidget::NativeOnInitialized()
 	SetupMenuSwitcher();
 }
 
+#pragma region Sub-Inventory
 void UTartarusInventoryWidget::ConstructInventoryView()
 {
 	const ATartarusPlayerController* const PlayerController = GetOwningPlayer<ATartarusPlayerController>();
@@ -71,8 +77,12 @@ void UTartarusInventoryWidget::ConstructInventoryView()
 
 		SubInventoryView->LinkInventory(InventoryId);
 		SubInventoryView->SetLocalizedWidgetName(FText::FromString(EnumToString));
+
+		// TODO: Does this also work for Gamepad?
+		SubInventoryView->GetTileView()->OnItemIsHoveredChanged().AddUObject(this, &UTartarusInventoryWidget::HandleItemFocuschanged);
 	}
 }
+#pragma endregion
 
 #pragma region BoundActions
 void UTartarusInventoryWidget::RegisterBoundInputActions()
@@ -110,5 +120,23 @@ void UTartarusInventoryWidget::SetupMenuSwitcher()
 	{
 		SubInventoryMenuSwitcher->LinkVisibilitySwitcher(SubInventoryVisibilitySwitcher);
 	}
+}
+#pragma endregion
+
+#pragma region ItemInfo
+void UTartarusInventoryWidget::HandleItemFocuschanged(UObject* Item, bool bIsHovered)
+{
+	UTartarusInventorySlotWidgetData* const WidgetData = Cast<UTartarusInventorySlotWidgetData>(Item);
+	if (!IsValid(WidgetData))
+	{
+		return;
+	}
+
+	if (!bIsHovered)
+	{
+		return;
+	}
+
+	SelectedItemInfo->SetItemReference(WidgetData->GetItemId());
 }
 #pragma endregion

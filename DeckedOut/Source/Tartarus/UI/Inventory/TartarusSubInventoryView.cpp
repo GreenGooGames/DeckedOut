@@ -28,6 +28,11 @@ void UTartarusSubInventoryView::LinkInventory(const EInventoryType SubInventoryI
 	InventoryId = SubInventoryId;
 }
 
+UCommonTileView* UTartarusSubInventoryView::GetTileView() const
+{
+	return TileView;
+}
+
 void UTartarusSubInventoryView::NativeOnActivated()
 {
 	Super::NativeOnActivated();

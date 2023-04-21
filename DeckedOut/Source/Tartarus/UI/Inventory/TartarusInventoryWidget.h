@@ -8,6 +8,7 @@
 #include "TartarusInventoryWidget.generated.h"
 
 class UCommonVisibilitySwitcher;
+class UTartarusInventoryInfoWidget;
 class UTartarusSubInventoryView;
 class UTartarusSwitcherWidget;
 
@@ -22,6 +23,7 @@ class TARTARUS_API UTartarusInventoryWidget : public UTartarusActivatableWidget
 protected:
 	virtual void NativeOnInitialized() override;
 
+#pragma region Sub-Inventory
 protected:
 	/*
 	* Reference to the class used to create the sub-inventory views.
@@ -33,6 +35,7 @@ protected:
 	* Creates a Sub-Inventory view widget for each Sub-Inventory owned by the owner inventory component.
 	*/
 	void ConstructInventoryView();
+#pragma endregion
 
 #pragma region BoundActions
 protected:
@@ -71,5 +74,14 @@ protected:
 	* Links the MenuSwitcher to the Visibility Switcher.
 	*/
 	void SetupMenuSwitcher();
+#pragma endregion
+
+#pragma region ItemInfo
+protected:
+	UFUNCTION()
+		void HandleItemFocuschanged(UObject* Item, bool bIsHovered);
+
+	UPROPERTY(meta = (BindWidget))
+		TObjectPtr<UTartarusInventoryInfoWidget> SelectedItemInfo = nullptr;
 #pragma endregion
 };

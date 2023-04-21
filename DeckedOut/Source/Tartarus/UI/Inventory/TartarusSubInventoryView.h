@@ -46,6 +46,8 @@ class TARTARUS_API UTartarusSubInventoryView : public UTartarusActivatableWidget
 public:
 	void LinkInventory(const EInventoryType SubInventoryId);
 
+	UCommonTileView* GetTileView() const;
+
 protected:
 	virtual void NativeOnActivated() override;
 
