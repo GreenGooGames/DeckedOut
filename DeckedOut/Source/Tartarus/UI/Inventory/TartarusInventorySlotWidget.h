@@ -9,6 +9,7 @@
 #include "TartarusInventorySlotWidget.generated.h"
 
 class UCommonLazyImage;
+class UCommonTextBlock;
 
 /**
  * 
@@ -24,6 +25,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 		FSlateBrush EmptySlotBrush = FSlateBrush();
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+		TObjectPtr<UCommonTextBlock> StackSizeText = nullptr;
 
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
 };

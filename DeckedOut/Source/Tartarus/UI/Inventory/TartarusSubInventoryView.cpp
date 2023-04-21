@@ -56,6 +56,7 @@ void UTartarusSubInventoryView::InitializeData()
 		}
 
 		SlotData->SetItemId(Stack.GetEntryId());
+		SlotData->SetStackSize(Stack.StackSize);
 
 		// Create an async request link the appropriate texture.
 		FUpdateInventoryUIRequestCompletedEvent OnRequestCompleted;
