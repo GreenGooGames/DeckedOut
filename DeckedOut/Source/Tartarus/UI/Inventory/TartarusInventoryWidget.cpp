@@ -23,6 +23,8 @@ void UTartarusInventoryWidget::NativeOnInitialized()
 	RegisterBoundInputActions();
 	ConstructInventoryView();
 	SetupMenuSwitcher();
+
+	SelectedItemInfo->DeactivateWidget();
 }
 
 #pragma region Sub-Inventory

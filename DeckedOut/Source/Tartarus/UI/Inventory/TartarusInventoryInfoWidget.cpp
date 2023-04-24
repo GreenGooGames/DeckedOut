@@ -97,12 +97,15 @@ void UTartarusInventoryInfoWidget::HandleRequestCompleted(const FItemInfoRequest
 
 	if (IsValid(RepresentingItem))
 	{
+		ActivateWidget();
+
 		NameTextBlock->SetText(RepresentingItem->Name);
 		DescriptionTextBlock->SetText(RepresentingItem->Description);
 	}
 	else
 	{
-		// TODO: this->Deactivate/RemoveFromStack
+		DeactivateWidget();
+
 		NameTextBlock->SetText(FText::FromString(""));
 		DescriptionTextBlock->SetText(FText::FromString(""));
 	}
