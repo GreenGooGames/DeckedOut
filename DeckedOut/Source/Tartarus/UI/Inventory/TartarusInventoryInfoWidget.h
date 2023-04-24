@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "CommonActivatableWidget.h"
-#include "System/TartarusHelpers.h"
+#include "CoreMinimal.h"
 #include "System/TartarusAsyncLoadData.h"
+#include "System/TartarusHelpers.h"
 
 #include "TartarusInventoryInfoWidget.generated.h"
 

@@ -8,14 +8,13 @@
 #include "Engine/Engine.h"
 #include "Input/CommonUIInputTypes.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
+#include "Item/System/TartarusItemSubsystem.h"
 #include "Logging/TartarusLogChannels.h"
 #include "Player/TartarusPlayerController.h"
 #include "UI/Foundation/TartarusSwitcherWidget.h"
-#include "UI/Inventory/TartarusSubInventoryView.h"
-
-#include "UI/Inventory/TartarusInventorySlotWidgetData.h"
 #include "UI/Inventory/TartarusInventoryInfoWidget.h"
-#include "Item/System/TartarusItemSubsystem.h"
+#include "UI/Inventory/TartarusInventorySlotWidgetData.h"
+#include "UI/Inventory/TartarusSubInventoryView.h"
 
 void UTartarusInventoryWidget::NativeOnInitialized()
 {

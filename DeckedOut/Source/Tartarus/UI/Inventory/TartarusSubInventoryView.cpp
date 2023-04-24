@@ -10,7 +10,6 @@
 #include "Item/TartarusItem.h"
 #include "Logging/TartarusLogChannels.h"
 #include "Player/TartarusPlayerController.h"
-
 #include "UI/Inventory/TartarusInventorySlotWidgetData.h"
 
 #pragma region FUpdateInventoryUIRequestInfo
