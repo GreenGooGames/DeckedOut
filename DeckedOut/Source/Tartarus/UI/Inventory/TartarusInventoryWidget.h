@@ -7,8 +7,11 @@
 
 #include "TartarusInventoryWidget.generated.h"
 
+class UCommonActivatableWidgetStack;
 class UCommonVisibilitySwitcher;
+class UTartarusContextMenu;
 class UTartarusInventoryInfoWidget;
+class UTartarusInventorySlotWidgetData;
 class UTartarusSubInventoryView;
 class UTartarusSwitcherWidget;
 
@@ -79,9 +82,21 @@ protected:
 #pragma region ItemInfo
 protected:
 	UFUNCTION()
-		void HandleItemFocuschanged(UObject* Item, bool bIsHovered);
+		void HandleItemFocusChanged(UObject* Item, bool bIsHovered);
 
 	UPROPERTY(meta = (BindWidget))
 		TObjectPtr<UTartarusInventoryInfoWidget> SelectedItemInfo = nullptr;
+#pragma endregion
+
+#pragma region Context
+protected:
+	UPROPERTY(EditDefaultsOnly)
+		TSoftClassPtr<UTartarusContextMenu> ContextMenuTemplate;
+
+	void HandleItemClicked(UObject* Item);
+
+private:
+	UPROPERTY(meta = (BindWidget))
+		TObjectPtr<UCommonActivatableWidgetStack> ContextStack = nullptr;
 #pragma endregion
 };

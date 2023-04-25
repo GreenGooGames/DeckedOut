@@ -11,7 +11,9 @@
 
 DECLARE_EVENT_ThreeParams(UTartarusInventoryComponent, FInventoryChanged, EInventoryChanged /*ChangeType*/, FInventoryStackId /*StackId*/, int32 /*StackSize*/);
 
+class UTartarusContextAction;
 class UTartarusItem;
+class UTartarusSubInventoryData;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TARTARUS_API UTartarusInventoryComponent : public UActorComponent
@@ -87,14 +89,19 @@ public:
 	* Retreives the ID's of all sub inventories owned by this Inventory.
 	* Return: Array of EInventoryType with the ID of each owned inventory.
 	*/
-	const TArray<EInventoryType>& GetSubInventoryIds() const { return ToCreateSubInventories; }
+	TArray<EInventoryType> GetSubInventoryIds() const;
+	
+	/*
+	* Retreives the Name of a sub inventory.
+	* Return: Localized Name of the inventory.
+	*/
+	FText GetSubInventoryName(const EInventoryType InventoryId) const;
+
+	TArray<UTartarusContextAction*> GetSubInventoryContextActions(const EInventoryType InventoryId) const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
-		int32 NumberOfSlots = 20;
-
-	UPROPERTY(EditDefaultsOnly)
-		TArray<EInventoryType> ToCreateSubInventories;
+		TArray<TObjectPtr<UTartarusSubInventoryData>> ToCreateSubInventories;
 
 private:
 	TMap<EInventoryType, FSubInventory> SubInventories;

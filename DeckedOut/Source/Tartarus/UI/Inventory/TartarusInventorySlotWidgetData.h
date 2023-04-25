@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Item/Inventory/TartarusInventoryData.h"
 #include "System/TartarusHelpers.h"
 
 #include "TartarusInventorySlotWidgetData.generated.h"
@@ -24,11 +25,15 @@ public:
 	void SetItemId(const FPrimaryAssetId& Id) { ItemId = Id; }
 	FPrimaryAssetId GetItemId() const { return ItemId; }
 
+	void SetInventoryStackId(const FInventoryStackId& Id) { InventoryStackId = Id; }
+	const FInventoryStackId& GetInventoryStackId() const { return InventoryStackId; }
+
 	void SetStackSize(const int32 NumInStack) { StackSize = NumInStack; }
 	int32 GetStackSize() const { return StackSize; }
 
 protected:
 	TSoftObjectPtr<UTexture2D> Texture = nullptr;
 	FPrimaryAssetId ItemId = FTartarusHelpers::InvalidItemId;
+	FInventoryStackId InventoryStackId = FInventoryStackId();
 	int32 StackSize = 0;
 };

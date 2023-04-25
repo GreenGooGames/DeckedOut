@@ -10,8 +10,9 @@
 #include "TartarusSubInventoryView.generated.h"
 
 class UCommonTileView;
-class UTartarusItem;
+class UTartarusContextAction;
 class UTartarusInventorySlotWidgetData;
+class UTartarusItem;
 
 #pragma region ASyncLoading
 DECLARE_EVENT_OneParam(UTartarusInventoryWidget, FUpdateInventoryUIRequestCompletedEvent, FGuid /*RequestId*/)
@@ -45,6 +46,7 @@ class TARTARUS_API UTartarusSubInventoryView : public UTartarusActivatableWidget
 	
 public:
 	void LinkInventory(const EInventoryType SubInventoryId);
+	TArray<UTartarusContextAction*> GetContextActions();
 
 	UCommonTileView* GetTileView() const;
 

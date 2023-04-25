@@ -10,6 +10,7 @@
 #include "Item/TartarusItem.h"
 #include "Logging/TartarusLogChannels.h"
 #include "Player/TartarusPlayerController.h"
+#include "UI/ContextAction/TartarusContextAction.h"
 #include "UI/Inventory/TartarusInventorySlotWidgetData.h"
 
 #pragma region FUpdateInventoryUIRequestInfo
@@ -25,6 +26,30 @@ FUpdateInventoryUIRequestInfo::FUpdateInventoryUIRequestInfo(const FUpdateInvent
 void UTartarusSubInventoryView::LinkInventory(const EInventoryType SubInventoryId)
 {
 	InventoryId = SubInventoryId;
+}
+
+TArray<UTartarusContextAction*> UTartarusSubInventoryView::GetContextActions()
+{
+	TArray<UTartarusContextAction*> ContextActions;
+
+	// Get the contents of the subinventory this View belongs to.
+	const ATartarusPlayerController* const PlayerController = GetOwningPlayer<ATartarusPlayerController>();
+	if (!IsValid(PlayerController))
+	{
+		UE_LOG(LogTartarus, Log, TEXT("%s: Construct Inventory Tiles failed: No player controller!"), *FString(__FUNCTION__));
+		return ContextActions;
+	}
+
+	const UTartarusInventoryComponent* const InventoryComponent = PlayerController->GetInventoryComponent();
+	if (!IsValid(InventoryComponent))
+	{
+		UE_LOG(LogTartarus, Log, TEXT("%s: Construct Inventory Tiles failed: No inventory found!"), *FString(__FUNCTION__));
+		return ContextActions;
+	}
+
+	ContextActions = InventoryComponent->GetSubInventoryContextActions(InventoryId);
+
+	return ContextActions;
 }
 
 UCommonTileView* UTartarusSubInventoryView::GetTileView() const
@@ -61,6 +86,7 @@ void UTartarusSubInventoryView::InitializeData()
 
 		SlotData->SetItemId(Stack.GetEntryId());
 		SlotData->SetStackSize(Stack.StackSize);
+		SlotData->SetInventoryStackId(Stack.GetStackId());
 
 		// Create an async request link the appropriate texture.
 		FUpdateInventoryUIRequestCompletedEvent OnRequestCompleted;

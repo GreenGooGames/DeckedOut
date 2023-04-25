@@ -11,10 +11,13 @@
 #include "Item/System/TartarusItemSubsystem.h"
 #include "Logging/TartarusLogChannels.h"
 #include "Player/TartarusPlayerController.h"
+#include "UI/ContextAction/TartarusContextAction.h"
+#include "UI/Foundation/TartarusContextMenu.h"
 #include "UI/Foundation/TartarusSwitcherWidget.h"
 #include "UI/Inventory/TartarusInventoryInfoWidget.h"
 #include "UI/Inventory/TartarusInventorySlotWidgetData.h"
 #include "UI/Inventory/TartarusSubInventoryView.h"
+#include "Widgets/CommonActivatableWidgetContainer.h"
 
 void UTartarusInventoryWidget::NativeOnInitialized()
 {
@@ -49,15 +52,7 @@ void UTartarusInventoryWidget::ConstructInventoryView()
 
 	for (const EInventoryType& InventoryId : SubInventoryIds)
 	{
-		FString EnumToString = "";
-		
-		const UEnum* const InventoryTypePtr = FindObject<UEnum>(FTopLevelAssetPath(TEXT("/Script/Tartarus.EInventoryType")), true);
-		if (IsValid(InventoryTypePtr))
-		{
-			EnumToString = InventoryTypePtr->GetNameStringByValue(static_cast<int64>(InventoryId));
-		}
-
-		const FString WidgetName = FString("Widget_SubInventory_").Append(EnumToString);
+		const FString WidgetName = FString("Widget_SubInventory_").Append(InventoryComponent->GetSubInventoryName(InventoryId).ToString());
 
 		// TODO: Async load the SubInventoryClass.
 		// Instantiate a template subinventory.
@@ -77,10 +72,11 @@ void UTartarusInventoryWidget::ConstructInventoryView()
 		}
 
 		SubInventoryView->LinkInventory(InventoryId);
-		SubInventoryView->SetLocalizedWidgetName(FText::FromString(EnumToString));
+		SubInventoryView->SetLocalizedWidgetName(InventoryComponent->GetSubInventoryName(InventoryId));
 
 		// TODO: Does this also work for Gamepad?
-		SubInventoryView->GetTileView()->OnItemIsHoveredChanged().AddUObject(this, &UTartarusInventoryWidget::HandleItemFocuschanged);
+		SubInventoryView->GetTileView()->OnItemIsHoveredChanged().AddUObject(this, &UTartarusInventoryWidget::HandleItemFocusChanged);
+		SubInventoryView->GetTileView()->OnItemClicked().AddUObject(this, &UTartarusInventoryWidget::HandleItemClicked);
 	}
 }
 #pragma endregion
@@ -125,7 +121,7 @@ void UTartarusInventoryWidget::SetupMenuSwitcher()
 #pragma endregion
 
 #pragma region ItemInfo
-void UTartarusInventoryWidget::HandleItemFocuschanged(UObject* Item, bool bIsHovered)
+void UTartarusInventoryWidget::HandleItemFocusChanged(UObject* Item, bool bIsHovered)
 {
 	UTartarusInventorySlotWidgetData* const WidgetData = Cast<UTartarusInventorySlotWidgetData>(Item);
 	if (!IsValid(WidgetData))
@@ -139,5 +135,61 @@ void UTartarusInventoryWidget::HandleItemFocuschanged(UObject* Item, bool bIsHov
 	}
 
 	SelectedItemInfo->SetItemReference(WidgetData->GetItemId());
+}
+#pragma endregion
+
+#pragma region Context
+void UTartarusInventoryWidget::HandleItemClicked(UObject* Item)
+{
+	// Get the data of the item that is being represented by the clicked slot.
+	UTartarusInventorySlotWidgetData* SlotData = Cast<UTartarusInventorySlotWidgetData>(Item);
+	if (!IsValid(SlotData))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, Slot is not of class UTartarusInventorySlotData!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	if (SlotData->GetItemId() == FTartarusHelpers::InvalidItemId)
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, Slot does not contain a valid item!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	// Create a new Widget or re-use one in the pool to represent the context menu.
+	if (!IsValid(ContextStack))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, ContextStack is invalid!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	UTartarusContextMenu* const ContextMenu = ContextStack->AddWidget<UTartarusContextMenu>(ContextMenuTemplate.LoadSynchronous());
+	if (!IsValid(ContextMenu))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, Could not create a contextmenu widget!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	// A Context Menu is now available, store a reference to the item that it has to represent.
+	ContextMenu->SetContextItem(SlotData);
+
+	// Create all the buttons required to show.
+	if (ContextMenu->ContainsEntries())
+	{
+		return;
+	}
+
+	UTartarusSubInventoryView* const SubInventoryWidget = Cast<UTartarusSubInventoryView>(SubInventoryVisibilitySwitcher->GetActiveWidget());
+	if (!IsValid(SubInventoryWidget))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, SubInventoryWidget is invalid!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	const TArray<UTartarusContextAction*>& ContextActions = SubInventoryWidget->GetContextActions();
+	for (UTartarusContextAction* const ContextAction : ContextActions)
+	{
+		ContextAction->SetParentMenu(ContextMenu);
+		ContextMenu->AddEntry(ContextAction);
+	}
 }
 #pragma endregion

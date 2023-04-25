@@ -3,8 +3,10 @@
 
 #include "Item/Inventory/TartarusInventoryComponent.h"
 
+#include "Item/Inventory/TartarusSubInventoryData.h"
 #include "Item/TartarusItem.h"
 #include "Logging/TartarusLogChannels.h"
+#include "UI/ContextAction/TartarusContextAction.h"
 
 // Called when the game starts
 void UTartarusInventoryComponent::BeginPlay()
@@ -17,9 +19,15 @@ void UTartarusInventoryComponent::BeginPlay()
 		return;
 	}
 
-	for (const EInventoryType InventoryId : TEnumRange<EInventoryType>())
+	for (const TObjectPtr<UTartarusSubInventoryData>& SubInventoryData : ToCreateSubInventories)
 	{
-		SubInventories.Add(InventoryId, FSubInventory(InventoryId, NumberOfSlots));
+		if (!IsValid(SubInventoryData))
+		{
+			UE_LOG(LogTartarus, Error, TEXT("%s: Unable to create subinventory entries: The SubInventory to create is null!"), *FString(__FUNCTION__));
+			continue;
+		}
+
+		SubInventories.Add(SubInventoryData->GetType(), FSubInventory(SubInventoryData->GetType(), SubInventoryData->GetNumberOfSlots()));
 	}
 }
 
@@ -172,4 +180,48 @@ bool UTartarusInventoryComponent::Contains(const FInventoryStackId& StackId) con
 	}
 
 	return false;
+}
+
+TArray<EInventoryType> UTartarusInventoryComponent::GetSubInventoryIds() const
+{
+	TArray<EInventoryType> Ids;
+
+	for (const auto& SubInventory : SubInventories)
+	{
+		Ids.Add(SubInventory.Key);
+	}
+
+	return Ids;
+}
+
+FText UTartarusInventoryComponent::GetSubInventoryName(const EInventoryType InventoryId) const
+{
+	for (const auto& SubInventoryData : ToCreateSubInventories)
+	{
+		if (SubInventoryData->GetType() != InventoryId)
+		{
+			continue;
+		}
+
+		return SubInventoryData->GetName();
+	}
+
+	return FText();
+}
+
+TArray<UTartarusContextAction*> UTartarusInventoryComponent::GetSubInventoryContextActions(const EInventoryType InventoryId) const
+{
+	TArray<UTartarusContextAction*> ContextActions;
+
+	for (const auto& SubInventoryData : ToCreateSubInventories)
+	{
+		if (SubInventoryData->GetType() != InventoryId)
+		{
+			continue;
+		}
+
+		ContextActions = SubInventoryData->GetContextActions();
+	}
+
+	return ContextActions;
 }

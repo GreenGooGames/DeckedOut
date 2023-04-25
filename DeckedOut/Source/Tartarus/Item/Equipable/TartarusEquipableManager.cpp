@@ -71,17 +71,13 @@ bool UTartarusEquipableManager::Unequip(const FInventoryStackId& InventoryStackI
 			return true;
 		}
 
-		// The item still exist as an instance, detach it.
-		const FDetachmentTransformRules DetachmentRules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, true);	
-		ToUnequip->DetachFromActor(DetachmentRules);
-
-		ToUnequip->SetActorLocation(ToUnequip->GetActorLocation() + GetOwner<AActor>()->GetActorForwardVector() * UnequipDistance);
-
-		ITartarusEquipableInterface* const EquipableInterface = Cast<ITartarusEquipableInterface>(ToUnequip);
-		if (EquipableInterface)
+		if (!ItemSpawnParameters.IsManaged())
 		{
-			EquipableInterface->OnUnequipped();
+			UE_LOG(LogTartarus, Error, TEXT("%s: Failed to unequip item, Expecting the equipable manager to manage the item but its not set to!"), *FString(__FUNCTION__));
+			return false;
 		}
+
+		ToUnequip->Destroy();
 
 		return true;
 	}
@@ -452,7 +448,6 @@ void UTartarusEquipableManager::HandleInventoryItemRetrieved(const FInventorySta
 		if (IsValid(Slot.Value.GetItem()))
 		{
 			Unequip(Slot.Value.GetInventoryStackId());
-			Slot.Value.GetItem()->Destroy();
 		}
 
 		Slot.Value.Reset();
