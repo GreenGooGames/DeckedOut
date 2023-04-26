@@ -30,4 +30,10 @@ protected:
 		TObjectPtr<UCommonTextBlock> StackSizeText = nullptr;
 
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
+
+	void Refresh(const UObject* const ListItemObject);
+	void CleanAndListenToUpdateEvent(UObject* const PreviousListItemObject, UObject* const ListItemObject);
+
+private:
+	FDelegateHandle OnListItemDataChangedHandle = FDelegateHandle();
 };

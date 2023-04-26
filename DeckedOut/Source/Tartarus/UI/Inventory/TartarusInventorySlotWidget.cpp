@@ -9,8 +9,15 @@
 
 void UTartarusInventorySlotWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
+	CleanAndListenToUpdateEvent(GetListItem(), ListItemObject);
+
 	IUserObjectListEntry::NativeOnListItemObjectSet(ListItemObject);
 
+	Refresh(ListItemObject);
+}
+
+void UTartarusInventorySlotWidget::Refresh(const UObject* const ListItemObject)
+{
 	const UTartarusInventorySlotWidgetData* const ListItem = Cast<UTartarusInventorySlotWidgetData>(ListItemObject);
 	if (!IsValid(ListItem))
 	{
@@ -38,6 +45,23 @@ void UTartarusInventorySlotWidget::NativeOnListItemObjectSet(UObject* ListItemOb
 		const FText TextToDisplay = FText();
 		StackSizeText->SetText(TextToDisplay);
 	}
+}
 
-	// TODO: Should this subscribe to an OnUpdate event of ListItem so that when the data gets updated, this Entry reflects those changes.
+void UTartarusInventorySlotWidget::CleanAndListenToUpdateEvent(UObject* const PreviousListItemObject, UObject* const ListItemObject)
+{
+	// Ensure that the previous list item does not update this.
+	UTartarusInventorySlotWidgetData* const PreviousListItem = Cast<UTartarusInventorySlotWidgetData>(PreviousListItemObject);
+	if (IsValid(PreviousListItem) && PreviousListItem->GetOnlistItemDataChangedEvent().IsBoundToObject(this))
+	{
+		PreviousListItem->GetOnlistItemDataChangedEvent().Remove(OnListItemDataChangedHandle);
+	}
+
+	// Subscribe to the new List Item update.
+	UTartarusInventorySlotWidgetData* const ListItem = Cast<UTartarusInventorySlotWidgetData>(ListItemObject);
+	if (!IsValid(ListItem))
+	{
+		return;
+	}
+
+	OnListItemDataChangedHandle = ListItem->GetOnlistItemDataChangedEvent().AddUObject(this, &UTartarusInventorySlotWidget::Refresh);
 }

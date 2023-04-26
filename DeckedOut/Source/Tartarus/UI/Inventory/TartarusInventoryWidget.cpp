@@ -40,7 +40,7 @@ void UTartarusInventoryWidget::ConstructInventoryView()
 		return;
 	}
 
-	const UTartarusInventoryComponent* const InventoryComponent = PlayerController->GetInventoryComponent();
+	UTartarusInventoryComponent* const InventoryComponent = PlayerController->GetInventoryComponent();
 	if (!IsValid(InventoryComponent))
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: No inventory found!"), *FString(__FUNCTION__));
@@ -71,7 +71,7 @@ void UTartarusInventoryWidget::ConstructInventoryView()
 			return;
 		}
 
-		SubInventoryView->LinkInventory(InventoryId);
+		SubInventoryView->LinkInventory(InventoryComponent, InventoryId);
 		SubInventoryView->SetLocalizedWidgetName(InventoryComponent->GetSubInventoryName(InventoryId));
 
 		// TODO: Does this also work for Gamepad?
@@ -172,16 +172,16 @@ void UTartarusInventoryWidget::HandleItemClicked(UObject* Item)
 	// A Context Menu is now available, store a reference to the item that it has to represent.
 	ContextMenu->SetContextItem(SlotData);
 
-	// Create all the buttons required to show.
-	if (ContextMenu->ContainsEntries())
-	{
-		return;
-	}
-
 	UTartarusSubInventoryView* const SubInventoryWidget = Cast<UTartarusSubInventoryView>(SubInventoryVisibilitySwitcher->GetActiveWidget());
 	if (!IsValid(SubInventoryWidget))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, SubInventoryWidget is invalid!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	// Create all the buttons required to show.
+	if (ContextMenu->ContainsEntries())
+	{
 		return;
 	}
 

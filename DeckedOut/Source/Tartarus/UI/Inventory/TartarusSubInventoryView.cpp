@@ -23,27 +23,13 @@ FUpdateInventoryUIRequestInfo::FUpdateInventoryUIRequestInfo(const FUpdateInvent
 }
 #pragma endregion
 
-void UTartarusSubInventoryView::LinkInventory(const EInventoryType SubInventoryId)
-{
-	InventoryId = SubInventoryId;
-}
-
 TArray<UTartarusContextAction*> UTartarusSubInventoryView::GetContextActions()
 {
 	TArray<UTartarusContextAction*> ContextActions;
 
-	// Get the contents of the subinventory this View belongs to.
-	const ATartarusPlayerController* const PlayerController = GetOwningPlayer<ATartarusPlayerController>();
-	if (!IsValid(PlayerController))
+	if (!IsValid(InventoryComponent.Get()))
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Construct Inventory Tiles failed: No player controller!"), *FString(__FUNCTION__));
-		return ContextActions;
-	}
-
-	const UTartarusInventoryComponent* const InventoryComponent = PlayerController->GetInventoryComponent();
-	if (!IsValid(InventoryComponent))
-	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Construct Inventory Tiles failed: No inventory found!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to retrieve context actions: Inventory is invalid!"), *FString(__FUNCTION__));
 		return ContextActions;
 	}
 
@@ -84,9 +70,7 @@ void UTartarusSubInventoryView::InitializeData()
 			continue;
 		}
 
-		SlotData->SetItemId(Stack.GetEntryId());
-		SlotData->SetStackSize(Stack.StackSize);
-		SlotData->SetInventoryStackId(Stack.GetStackId());
+		SlotData->UpdateData(&Stack);
 
 		// Create an async request link the appropriate texture.
 		FUpdateInventoryUIRequestCompletedEvent OnRequestCompleted;
@@ -95,28 +79,6 @@ void UTartarusSubInventoryView::InitializeData()
 		// Add the data to the Tileview to display.
 		TileView->AddItem(SlotData);
 	}
-}
-
-const TArray<FInventoryStack>* UTartarusSubInventoryView::GetInventoryEntries() const
-{
-	// Get the contents of the subinventory this View belongs to.
-	const ATartarusPlayerController* const PlayerController = GetOwningPlayer<ATartarusPlayerController>();
-	if (!IsValid(PlayerController))
-	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Construct Inventory Tiles failed: No player controller!"), *FString(__FUNCTION__));
-		return nullptr;
-	}
-
-	const UTartarusInventoryComponent* const InventoryComponent = PlayerController->GetInventoryComponent();
-	if (!IsValid(InventoryComponent))
-	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Construct Inventory Tiles failed: No inventory found!"), *FString(__FUNCTION__));
-		return nullptr;
-	}
-
-	const TArray<FInventoryStack>& InventoryEntries = InventoryComponent->GetOverview(InventoryId);
-
-	return &InventoryEntries;
 }
 
 #pragma region ASyncLoading
@@ -194,5 +156,53 @@ void UTartarusSubInventoryView::HandleItemsDataLoaded(FGuid ASyncLoadRequestId, 
 	
 	CurrentRequest->GetSlotWidgetData()->SetTexture(ItemData->DisplayTexture);
 	HandleRequestCompleted(CurrentRequest);
+}
+#pragma endregion
+
+#pragma region Inventory
+void UTartarusSubInventoryView::LinkInventory(UTartarusInventoryComponent* const Inventory, const EInventoryType SubInventoryId)
+{
+	InventoryId = SubInventoryId;
+	InventoryComponent = Inventory;
+
+	InventoryComponent->OnInventoryChanged().AddUObject(this, &UTartarusSubInventoryView::OnInventoryUpdated);
+}
+
+const TArray<FInventoryStack>* UTartarusSubInventoryView::GetInventoryEntries() const
+{
+	if (!IsValid(InventoryComponent.Get()))
+	{
+		UE_LOG(LogTartarus, Log, TEXT("%s: Construct Inventory Tiles failed: No inventory found!"), *FString(__FUNCTION__));
+		return nullptr;
+	}
+
+	const TArray<FInventoryStack>& InventoryEntries = InventoryComponent->GetOverview(InventoryId);
+
+	return &InventoryEntries;
+}
+
+void UTartarusSubInventoryView::OnInventoryUpdated(EInventoryChanged ChangeType, FInventoryStackId StackId, int32 StackSize)
+{
+	// If this Sub-Inventory contains the InventoryEntry that has changed, update the data for the TileView.
+	const TArray<UObject*> ListItems = TileView->GetListItems();
+
+	for (UObject* const Item : ListItems)
+	{
+		UTartarusInventorySlotWidgetData* const ItemData = Cast<UTartarusInventorySlotWidgetData>(Item);
+		if (!IsValid(ItemData))
+		{
+			continue;
+		}
+
+		if (ItemData->GetInventoryStackId() != StackId)
+		{
+			continue;
+		}
+
+		const FInventoryStack* const InventoryEntry = InventoryComponent->GetOverviewSingle(StackId);
+		ItemData->UpdateData(InventoryEntry);
+
+		return;
+	}
 }
 #pragma endregion

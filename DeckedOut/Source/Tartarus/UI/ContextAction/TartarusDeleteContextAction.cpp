@@ -15,14 +15,14 @@ void UTartarusDeleteContextAction::ExecuteAction()
 	const ATartarusPlayerController* const PlayerController = ParentMenu->GetOwningPlayer<ATartarusPlayerController>();
 	if (!IsValid(PlayerController))
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: No player controller!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to perform Delete action: No player controller!"), *FString(__FUNCTION__));
 		return;
 	}
 
 	UTartarusInventoryComponent* const InventoryComponent = PlayerController->GetInventoryComponent();
 	if (!IsValid(InventoryComponent))
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: No inventory found!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to perform Delete action: No inventory found!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -39,8 +39,8 @@ void UTartarusDeleteContextAction::ExecuteAction()
 		return;
 	}
 
-	const FInventoryStack* const InventoryStack = InventoryComponent->GetOverviewSingle(InventoryStackId);
-	if (InventoryStack == nullptr)
+	// If the ID has turned invalid, then no more items are left in the inventory. Close the context menu.
+	if (!InventoryStackId.IsValid())
 	{
 		ParentMenu->DeactivateWidget();
 	}

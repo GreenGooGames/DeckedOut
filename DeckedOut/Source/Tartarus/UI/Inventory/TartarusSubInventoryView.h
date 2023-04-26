@@ -11,6 +11,7 @@
 
 class UCommonTileView;
 class UTartarusContextAction;
+class UTartarusInventoryComponent;
 class UTartarusInventorySlotWidgetData;
 class UTartarusItem;
 
@@ -45,7 +46,6 @@ class TARTARUS_API UTartarusSubInventoryView : public UTartarusActivatableWidget
 	GENERATED_BODY()
 	
 public:
-	void LinkInventory(const EInventoryType SubInventoryId);
 	TArray<UTartarusContextAction*> GetContextActions();
 
 	UCommonTileView* GetTileView() const;
@@ -65,15 +65,6 @@ protected:
 	*/
 	void InitializeData();
 
-	/*
-	* Retries all entries that are represented in this View.
-	* Return: EnventoryStack entries of the representing Sub-Inventory.
-	*/
-	const TArray<FInventoryStack>* GetInventoryEntries() const;
-
-private:
-	EInventoryType InventoryId = EInventoryType::MAX;
-
 #pragma region ASyncLoading
 protected:
 	/*
@@ -90,5 +81,23 @@ protected:
 
 private:
 	TArray<FUpdateInventoryUIRequestInfo> UpdateUIRequests;
+#pragma endregion
+
+#pragma region Inventory
+public:
+	void LinkInventory(UTartarusInventoryComponent* const Inventory, const EInventoryType SubInventoryId);
+
+protected:
+	/*
+	* Retries all entries that are represented in this View.
+	* Return: EnventoryStack entries of the representing Sub-Inventory.
+	*/
+	const TArray<FInventoryStack>* GetInventoryEntries() const;
+
+	void OnInventoryUpdated(EInventoryChanged ChangeType, FInventoryStackId StackId, int32 StackSize);
+
+private:
+	TWeakObjectPtr<UTartarusInventoryComponent> InventoryComponent = nullptr;
+	EInventoryType InventoryId = EInventoryType::MAX;
 #pragma endregion
 };
