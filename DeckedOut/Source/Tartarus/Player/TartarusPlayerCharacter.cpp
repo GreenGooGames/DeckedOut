@@ -50,7 +50,7 @@ void ATartarusPlayerCharacter::ConstructVisuals()
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
 	Mesh1P->SetOnlyOwnerSee(true);
-	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
+	Mesh1P->SetupAttachment(RootComponent);
 	Mesh1P->bCastDynamicShadow = false;
 	Mesh1P->CastShadow = false;
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
@@ -141,7 +141,8 @@ void ATartarusPlayerCharacter::SetupMovement()
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
+	GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
