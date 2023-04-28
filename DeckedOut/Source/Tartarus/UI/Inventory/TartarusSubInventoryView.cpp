@@ -166,6 +166,7 @@ void UTartarusSubInventoryView::LinkInventory(UTartarusInventoryComponent* const
 	InventoryComponent = Inventory;
 
 	InventoryComponent->OnInventoryChanged().AddUObject(this, &UTartarusSubInventoryView::OnInventoryUpdated);
+	InventoryComponent->OnInventoryUpdate().AddUObject(this, &UTartarusSubInventoryView::OnInventoryRefreshed);
 }
 
 const TArray<FInventoryStack>* UTartarusSubInventoryView::GetInventoryEntries() const
@@ -203,6 +204,32 @@ void UTartarusSubInventoryView::OnInventoryUpdated(EInventoryChanged ChangeType,
 		ItemData->UpdateData(InventoryEntry);
 
 		return;
+	}
+}
+
+void UTartarusSubInventoryView::OnInventoryRefreshed()
+{
+	const TArray<UObject*> ListItems = TileView->GetListItems();
+	const TArray<FInventoryStack>& InventoryEntries = *GetInventoryEntries();
+
+	if (ListItems.Num() != InventoryEntries.Num())
+	{
+		return;
+	}
+
+	for (int i = 0; i < InventoryEntries.Num(); i++)
+	{
+		const FInventoryStack& InventoryStack = InventoryEntries[i];
+		UTartarusInventorySlotWidgetData* const ListItem = Cast< UTartarusInventorySlotWidgetData>(ListItems[i]);
+
+		ListItem->UpdateData(&InventoryStack);
+
+		// Create an async request link the appropriate texture.
+		FUpdateInventoryUIRequestCompletedEvent OnRequestCompleted;
+		AsyncRequestSetDisplayTexture(ListItem, OnRequestCompleted);
+
+		// Add the data to the Tileview to display.
+		TileView->AddItem(ListItem);
 	}
 }
 #pragma endregion

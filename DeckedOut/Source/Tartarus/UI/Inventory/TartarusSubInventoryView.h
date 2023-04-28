@@ -86,7 +86,7 @@ private:
 #pragma region Inventory
 public:
 	void LinkInventory(UTartarusInventoryComponent* const Inventory, const EInventoryType SubInventoryId);
-
+	EInventoryType GetInventoryId() const { return InventoryId; }
 protected:
 	/*
 	* Retries all entries that are represented in this View.
@@ -95,6 +95,7 @@ protected:
 	const TArray<FInventoryStack>* GetInventoryEntries() const;
 
 	void OnInventoryUpdated(EInventoryChanged ChangeType, FInventoryStackId StackId, int32 StackSize);
+	void OnInventoryRefreshed();
 
 private:
 	TWeakObjectPtr<UTartarusInventoryComponent> InventoryComponent = nullptr;

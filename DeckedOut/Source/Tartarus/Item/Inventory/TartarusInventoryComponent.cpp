@@ -8,6 +8,10 @@
 #include "Logging/TartarusLogChannels.h"
 #include "UI/ContextAction/TartarusContextAction.h"
 
+#include "Engine/World.h"
+#include "Item/System/TartarusItemSubsystem.h"
+#include "Item/TartarusItem.h"
+
 // Called when the game starts
 void UTartarusInventoryComponent::BeginPlay()
 {
@@ -224,4 +228,65 @@ TArray<UTartarusContextAction*> UTartarusInventoryComponent::GetSubInventoryCont
 	}
 
 	return ContextActions;
+}
+
+void UTartarusInventoryComponent::SortInventory(const EInventoryType InventoryId)
+{
+	if (!SubInventories.Contains(InventoryId))
+	{
+		return;
+	}
+
+	// Get all entries.
+	FSubInventory& SubInventory = SubInventories[InventoryId];
+	const TArray<FInventoryStack>& Content = SubInventory.GetContents();
+
+	// Load the names for each entry.
+	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
+	if (!IsValid(ItemSubsystem))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to treasure: Item subsystem is invalid!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	TArray<FPrimaryAssetId> ItemIds;
+	for (const FInventoryStack& Stack : Content)
+	{
+		ItemIds.Add(Stack.GetEntryId());
+	}
+
+	FGetItemDataRequestCompletedEvent OnCompletedEvent;
+	OnCompletedEvent.AddUObject(this, &UTartarusInventoryComponent::OnItemDataRecieved);
+
+	FGuid AsyncRequestId = ItemSubsystem->AsyncRequestGetItemsData(ItemIds, OnCompletedEvent);
+
+	FGetSortItemDataRequestInfo Request = FGetSortItemDataRequestInfo(ItemIds, InventoryId);
+	Request.SetASyncLoadRequestId(AsyncRequestId);
+
+	DataRequests.Add(Request);
+}
+
+void UTartarusInventoryComponent::OnItemDataRecieved(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData)
+{
+	// Get the request that is being handled.
+	FGetSortItemDataRequestInfo* const CurrentRequest = DataRequests.FindByPredicate([&ASyncLoadRequestId](const FGetSortItemDataRequestInfo& Request)
+		{
+			return Request.GetASyncLoadRequestId() == ASyncLoadRequestId;
+		});
+
+	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Sort Ivnentory failed: Could not find the request!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	SubInventories[CurrentRequest->InventoryId].Sort(ItemsData);
+	OnInventoryUpdate().Broadcast();
+}
+
+FGetSortItemDataRequestInfo::FGetSortItemDataRequestInfo(const TArray<FPrimaryAssetId>& ItemIdsToLoad, EInventoryType SubInventoryId)
+{
+	RequestId = FGuid::NewGuid();
+	ItemIds = ItemIdsToLoad;
+	InventoryId = SubInventoryId;
 }

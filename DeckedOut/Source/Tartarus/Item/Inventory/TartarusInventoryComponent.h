@@ -7,13 +7,30 @@
 #include "Item/Inventory/TartarusInventoryData.h"
 #include "System/TartarusHelpers.h"
 
+#include "System/TartarusAsyncLoadData.h"
+
 #include "TartarusInventoryComponent.generated.h"
 
-DECLARE_EVENT_ThreeParams(UTartarusInventoryComponent, FInventoryChanged, EInventoryChanged /*ChangeType*/, FInventoryStackId /*StackId*/, int32 /*StackSize*/);
+DECLARE_EVENT_ThreeParams(UTartarusInventoryComponent, FInventoryContentUpdate, EInventoryChanged /*ChangeType*/, FInventoryStackId /*StackId*/, int32 /*StackSize*/);
+DECLARE_EVENT(UTartarusInventoryComponent, FInventoryUpdate);
 
 class UTartarusContextAction;
 class UTartarusItem;
 class UTartarusSubInventoryData;
+
+USTRUCT()
+struct FGetSortItemDataRequestInfo : public FASyncLoadRequest
+{
+	GENERATED_BODY()
+
+public:
+	FGetSortItemDataRequestInfo() {}
+	FGetSortItemDataRequestInfo(const TArray<FPrimaryAssetId>& ItemIdsToLoad, EInventoryType SubInventoryId);
+
+public:
+	TArray<FPrimaryAssetId> ItemIds;
+	EInventoryType InventoryId;
+};
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TARTARUS_API UTartarusInventoryComponent : public UActorComponent
@@ -83,7 +100,8 @@ public:
 	* Event fired when the inventory contents are changed.
 	* Return: The event fired when a change takes place.
 	*/
-	FInventoryChanged& OnInventoryChanged() { return InventoryChangedEvent; }
+	FInventoryContentUpdate& OnInventoryChanged() { return InventoryChangedEvent; }
+	FInventoryUpdate& OnInventoryUpdate() { return InventoryUpdateEvent; }
 
 	/*
 	* Retreives the ID's of all sub inventories owned by this Inventory.
@@ -99,11 +117,21 @@ public:
 
 	TArray<UTartarusContextAction*> GetSubInventoryContextActions(const EInventoryType InventoryId) const;
 
+	/*
+	* Sorts the ivnentory alphabetically.
+	*/
+	void SortInventory(const EInventoryType InventoryId);
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
 		TArray<TObjectPtr<UTartarusSubInventoryData>> ToCreateSubInventories;
 
+	void OnItemDataRecieved(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData);
+
 private:
 	TMap<EInventoryType, FSubInventory> SubInventories;
-	FInventoryChanged InventoryChangedEvent;
+	FInventoryContentUpdate InventoryChangedEvent;
+	FInventoryUpdate InventoryUpdateEvent;
+
+	TArray<FGetSortItemDataRequestInfo> DataRequests;
 };

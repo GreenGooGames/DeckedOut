@@ -6,6 +6,8 @@
 
 #include "TartarusInventoryData.generated.h"
 
+class UTartarusItem;
+
 UENUM()
 enum class EInventoryChanged : uint8
 {
@@ -98,6 +100,7 @@ public:
 	const FInventoryStackId* const FindStackId(const FPrimaryAssetId EntryId) const;
 	const TArray<FInventoryStack>& GetContents() const { return Content; }
 	const FInventoryStack* FindStack(const FInventoryStackId& StackId) const;
+	void Sort(TArray<UTartarusItem*> ItemsData);
 
 protected:
 	FInventoryStack* FindEditableStack(const FInventoryStackId& StackId);

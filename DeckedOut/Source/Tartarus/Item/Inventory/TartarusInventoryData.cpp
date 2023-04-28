@@ -6,6 +6,8 @@
 #include "Logging/TartarusLogChannels.h"
 #include "System/TartarusHelpers.h"
 
+#include "Item/TartarusItem.h"
+
 #pragma region FInventoryItemStack
 FInventoryStack::FInventoryStack(const EInventoryType InventoryId, const FPrimaryAssetId NewEntryId, const int32 NewStackSize)
 {
@@ -108,6 +110,32 @@ const FInventoryStack* FSubInventory::FindStack(const FInventoryStackId& StackId
 	}
 
 	return nullptr;
+}
+
+void FSubInventory::Sort(TArray<UTartarusItem*> ItemsData)
+{
+	Content.Sort([&ItemsData](const FInventoryStack& ItemA, const FInventoryStack& ItemB)
+		{
+			UTartarusItem** ItemADataPtr = ItemsData.FindByPredicate([&ItemA](const UTartarusItem* Item) {return Item->GetPrimaryAssetId() == ItemA.GetEntryId(); });
+			UTartarusItem** ItemBDataPtr = ItemsData.FindByPredicate([&ItemB](const UTartarusItem* Item) {return Item->GetPrimaryAssetId() == ItemB.GetEntryId(); });
+
+			if (ItemADataPtr == nullptr)
+			{
+				return false;
+			}
+
+			if (ItemBDataPtr == nullptr)
+			{
+				return true;
+			}
+
+			UTartarusItem* FirstItemPtr = *ItemADataPtr;
+			UTartarusItem* SecondItemPtr = *ItemBDataPtr;
+
+			const bool bSwitchEntries = FirstItemPtr->Name.ToString() < SecondItemPtr->Name.ToString();
+
+			return bSwitchEntries;
+		});
 }
 
 FInventoryStack* FSubInventory::FindEditableStack(const FInventoryStackId& StackId)
