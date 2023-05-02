@@ -14,6 +14,7 @@ class UTartarusInventoryInfoWidget;
 class UTartarusInventorySlotWidgetData;
 class UTartarusSubInventoryView;
 class UTartarusSwitcherWidget;
+class ASceneCapture2D;
 
 /**
  * 
@@ -25,6 +26,8 @@ class TARTARUS_API UTartarusInventoryWidget : public UTartarusActivatableWidget
 
 protected:
 	virtual void NativeOnInitialized() override;
+	virtual void NativeOnActivated() override;
+	virtual void NativeOnDeactivated() override;
 
 #pragma region Sub-Inventory
 protected:
@@ -98,5 +101,29 @@ protected:
 private:
 	UPROPERTY(meta = (BindWidget))
 		TObjectPtr<UCommonActivatableWidgetStack> ContextStack = nullptr;
+#pragma endregion
+
+#pragma region PlayerPreview
+protected:
+	UPROPERTY(EditDefaultsOnly)
+		TSoftClassPtr<ASceneCapture2D> SceneCapture2DTemplate;
+
+	/*
+	* Perform the setup to capture the player character to a rendertarget.
+	*/
+	void CreateSceneCapture();
+
+	/*
+	* Associates the data to be shown in the rendertarget with the scenecapture.
+	*/
+	void AssociateSceneCapture();
+
+	/*
+	* dissociates the data that was shown in the rendertarget with the scenecapture.
+	*/
+	void DissociateSceneCapture();
+
+private:
+	TObjectPtr<ASceneCapture2D> SceneCapture2DInstance = nullptr;
 #pragma endregion
 };
