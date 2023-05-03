@@ -21,7 +21,6 @@ void ATartarusGameMode::PostLogin(APlayerController* NewPlayer)
 	Super::PostLogin(NewPlayer);
 
 	ATartarusPlayerController* const PlayerController = Cast<ATartarusPlayerController>(NewPlayer);
-
 	if (IsValid(PlayerController))
 	{
 		PlayerController->ShowPrimaryGameLayoutASync();

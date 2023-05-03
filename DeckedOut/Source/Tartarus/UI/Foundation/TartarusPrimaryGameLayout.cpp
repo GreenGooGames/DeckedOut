@@ -13,7 +13,6 @@ void UTartarusPrimaryGameLayout::PopWidgetFromMainStack(UCommonActivatableWidget
 	if (MainStack)
 	{
 		MainStack->RemoveWidget(WidgetInstance);
-
 		OnWidgetPoppedFromMainStack();
 	}
 }
