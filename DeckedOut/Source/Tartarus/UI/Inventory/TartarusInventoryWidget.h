@@ -9,10 +9,10 @@
 
 class UCommonActivatableWidgetStack;
 class UCommonVisibilitySwitcher;
-class UTartarusContextMenu;
+class UTartarusContextMenuWidget;
 class UTartarusInventoryInfoWidget;
 class UTartarusInventorySlotWidgetData;
-class UTartarusSubInventoryView;
+class UTartarusSubInventoryViewWidget;
 class UTartarusSwitcherWidget;
 
 /**
@@ -32,7 +32,7 @@ protected:
 	* Reference to the class used to create the sub-inventory views.
 	*/
 	UPROPERTY(EditDefaultsOnly)
-		TSoftClassPtr<UTartarusSubInventoryView> SubInventoryViewClass = nullptr;
+		TSoftClassPtr<UTartarusSubInventoryViewWidget> SubInventoryViewClass = nullptr;
 
 	/*
 	* Creates a Sub-Inventory view widget for each Sub-Inventory owned by the owner inventory component.
@@ -91,7 +91,7 @@ protected:
 #pragma region Context
 protected:
 	UPROPERTY(EditDefaultsOnly)
-		TSoftClassPtr<UTartarusContextMenu> ContextMenuTemplate;
+		TSoftClassPtr<UTartarusContextMenuWidget> ContextMenuTemplate;
 
 	void HandleItemClicked(UObject* Item);
 

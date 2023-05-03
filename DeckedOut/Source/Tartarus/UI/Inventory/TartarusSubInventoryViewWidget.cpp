@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/Inventory/TartarusSubInventoryView.h"
+#include "UI/Inventory/TartarusSubInventoryViewWidget.h"
 
 #include "CommonTileView.h"
 #include "Engine/Texture2D.h"
@@ -23,7 +23,7 @@ FUpdateInventoryUIRequestInfo::FUpdateInventoryUIRequestInfo(const FUpdateInvent
 }
 #pragma endregion
 
-TArray<UTartarusContextAction*> UTartarusSubInventoryView::GetContextActions()
+TArray<UTartarusContextAction*> UTartarusSubInventoryViewWidget::GetContextActions()
 {
 	TArray<UTartarusContextAction*> ContextActions;
 
@@ -38,12 +38,12 @@ TArray<UTartarusContextAction*> UTartarusSubInventoryView::GetContextActions()
 	return ContextActions;
 }
 
-UCommonTileView* UTartarusSubInventoryView::GetTileView() const
+UCommonTileView* UTartarusSubInventoryViewWidget::GetTileView() const
 {
 	return TileView;
 }
 
-void UTartarusSubInventoryView::NativeOnActivated()
+void UTartarusSubInventoryViewWidget::NativeOnActivated()
 {
 	Super::NativeOnActivated();
 
@@ -54,7 +54,7 @@ void UTartarusSubInventoryView::NativeOnActivated()
 	InitializeData();
 }
 
-void UTartarusSubInventoryView::InitializeData()
+void UTartarusSubInventoryViewWidget::InitializeData()
 {
 	const TArray<FInventoryStack>& InventoryEntries = *GetInventoryEntries();
 
@@ -82,7 +82,7 @@ void UTartarusSubInventoryView::InitializeData()
 }
 
 #pragma region ASyncLoading
-FGuid UTartarusSubInventoryView::AsyncRequestSetDisplayTexture(UTartarusInventorySlotWidgetData* const SlotData, FUpdateInventoryUIRequestCompletedEvent& OnRequestCompletedEvent)
+FGuid UTartarusSubInventoryViewWidget::AsyncRequestSetDisplayTexture(UTartarusInventorySlotWidgetData* const SlotData, FUpdateInventoryUIRequestCompletedEvent& OnRequestCompletedEvent)
 {
 	// Get the ItemSubsystem.
 	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
@@ -97,7 +97,7 @@ FGuid UTartarusSubInventoryView::AsyncRequestSetDisplayTexture(UTartarusInventor
 	
 	// Prepare a callback for when the itemsubsystem has loaded the items their data.
 	FGetItemDataRequestCompletedEvent OnRequestCompleted;
-	OnRequestCompleted.AddUObject(this, &UTartarusSubInventoryView::HandleItemsDataLoaded);
+	OnRequestCompleted.AddUObject(this, &UTartarusSubInventoryViewWidget::HandleItemsDataLoaded);
 	
 	// Create a request to load the data.
 	TArray<FPrimaryAssetId> ItemIds;
@@ -116,7 +116,7 @@ FGuid UTartarusSubInventoryView::AsyncRequestSetDisplayTexture(UTartarusInventor
 	return UpdateRequest.GetRequestId();
 }
 
-void UTartarusSubInventoryView::HandleRequestCompleted(const FUpdateInventoryUIRequestInfo* const CompletedRequest)
+void UTartarusSubInventoryViewWidget::HandleRequestCompleted(const FUpdateInventoryUIRequestInfo* const CompletedRequest)
 {
 	if (!CompletedRequest)
 	{
@@ -127,7 +127,7 @@ void UTartarusSubInventoryView::HandleRequestCompleted(const FUpdateInventoryUIR
 	UpdateUIRequests.RemoveSingleSwap(*CompletedRequest);
 }
 
-void UTartarusSubInventoryView::HandleItemsDataLoaded(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData)
+void UTartarusSubInventoryViewWidget::HandleItemsDataLoaded(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData)
 {
 	// Get the request that is being handled.
 	FUpdateInventoryUIRequestInfo* const CurrentRequest = UpdateUIRequests.FindByPredicate([&ASyncLoadRequestId](const FUpdateInventoryUIRequestInfo& Request)
@@ -160,16 +160,16 @@ void UTartarusSubInventoryView::HandleItemsDataLoaded(FGuid ASyncLoadRequestId, 
 #pragma endregion
 
 #pragma region Inventory
-void UTartarusSubInventoryView::LinkInventory(UTartarusInventoryComponent* const Inventory, const EInventoryType SubInventoryId)
+void UTartarusSubInventoryViewWidget::LinkInventory(UTartarusInventoryComponent* const Inventory, const EInventoryType SubInventoryId)
 {
 	InventoryId = SubInventoryId;
 	InventoryComponent = Inventory;
 
-	InventoryComponent->OnInventoryChanged().AddUObject(this, &UTartarusSubInventoryView::OnInventoryUpdated);
-	InventoryComponent->OnInventoryUpdate().AddUObject(this, &UTartarusSubInventoryView::OnInventoryRefreshed);
+	InventoryComponent->OnInventoryChanged().AddUObject(this, &UTartarusSubInventoryViewWidget::OnInventoryUpdated);
+	InventoryComponent->OnInventoryUpdate().AddUObject(this, &UTartarusSubInventoryViewWidget::OnInventoryRefreshed);
 }
 
-const TArray<FInventoryStack>* UTartarusSubInventoryView::GetInventoryEntries() const
+const TArray<FInventoryStack>* UTartarusSubInventoryViewWidget::GetInventoryEntries() const
 {
 	if (!IsValid(InventoryComponent.Get()))
 	{
@@ -182,7 +182,7 @@ const TArray<FInventoryStack>* UTartarusSubInventoryView::GetInventoryEntries() 
 	return &InventoryEntries;
 }
 
-void UTartarusSubInventoryView::OnInventoryUpdated(EInventoryChanged ChangeType, FInventoryStackId StackId, int32 StackSize)
+void UTartarusSubInventoryViewWidget::OnInventoryUpdated(EInventoryChanged ChangeType, FInventoryStackId StackId, int32 StackSize)
 {
 	// If this Sub-Inventory contains the InventoryEntry that has changed, update the data for the TileView.
 	const TArray<UObject*> ListItems = TileView->GetListItems();
@@ -207,7 +207,7 @@ void UTartarusSubInventoryView::OnInventoryUpdated(EInventoryChanged ChangeType,
 	}
 }
 
-void UTartarusSubInventoryView::OnInventoryRefreshed()
+void UTartarusSubInventoryViewWidget::OnInventoryRefreshed()
 {
 	const TArray<UObject*> ListItems = TileView->GetListItems();
 	const TArray<FInventoryStack>& InventoryEntries = *GetInventoryEntries();

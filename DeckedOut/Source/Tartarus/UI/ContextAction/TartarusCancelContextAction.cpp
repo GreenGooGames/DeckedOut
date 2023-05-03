@@ -3,7 +3,7 @@
 
 #include "UI/ContextAction/TartarusCancelContextAction.h"
 
-#include "UI/Foundation/TartarusContextMenu.h"
+#include "UI/ContextAction/TartarusContextMenuWidget.h"
 
 void UTartarusCancelContextAction::ExecuteAction()
 {

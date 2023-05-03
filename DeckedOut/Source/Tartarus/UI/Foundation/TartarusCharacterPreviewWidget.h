@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "CommonActivatableWidget.h"
 
-#include "TartarusCharacterPreview.generated.h"
+#include "TartarusCharacterPreviewWidget.generated.h"
 
 class ASceneCapture2D;
 class UCommonLazyImage;
@@ -14,7 +14,7 @@ class UCommonLazyImage;
  * 
  */
 UCLASS()
-class TARTARUS_API UTartarusCharacterPreview : public UCommonActivatableWidget
+class TARTARUS_API UTartarusCharacterPreviewWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
 	

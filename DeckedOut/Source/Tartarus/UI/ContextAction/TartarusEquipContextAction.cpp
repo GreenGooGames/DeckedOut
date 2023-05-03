@@ -5,7 +5,7 @@
 
 #include "Item/Equipable/TartarusEquipableManager.h"
 #include "Logging/TartarusLogChannels.h"
-#include "UI/Foundation/TartarusContextMenu.h"
+#include "UI/ContextAction/TartarusContextMenuWidget.h"
 #include "UI/Inventory/TartarusInventorySlotWidgetData.h"
 
 void UTartarusEquipContextAction::ExecuteAction()

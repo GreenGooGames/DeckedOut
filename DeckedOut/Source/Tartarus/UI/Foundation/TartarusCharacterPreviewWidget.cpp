@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/Foundation/TartarusCharacterPreview.h"
+#include "UI/Foundation/TartarusCharacterPreviewWidget.h"
 
 #include "CommonLazyImage.h"
 #include "Components/SceneCaptureComponent2D.h"
@@ -12,29 +12,28 @@
 #include "Player/TartarusPlayerCharacter.h"
 #include "Player/TartarusPlayerController.h"
 
-void UTartarusCharacterPreview::NativeOnInitialized()
+void UTartarusCharacterPreviewWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
 	CreateSceneCapture();
 }
 
-void UTartarusCharacterPreview::NativeOnActivated()
+void UTartarusCharacterPreviewWidget::NativeOnActivated()
 {
 	Super::NativeOnActivated();
 
 	AssociateSceneCapture();
 }
 
-void UTartarusCharacterPreview::NativeOnDeactivated()
+void UTartarusCharacterPreviewWidget::NativeOnDeactivated()
 {
 	Super::NativeOnDeactivated();
 
 	DissociateSceneCapture();
 }
 
-#pragma optimize("", off)
-void UTartarusCharacterPreview::CreateSceneCapture()
+void UTartarusCharacterPreviewWidget::CreateSceneCapture()
 {
 	// Get the player
 	const ATartarusPlayerController* const PlayerController = GetOwningPlayer<ATartarusPlayerController>();
@@ -65,9 +64,8 @@ void UTartarusCharacterPreview::CreateSceneCapture()
 	// Set the Capture Component to only render certain components.
 	SceneCapture2DInstance->GetCaptureComponent2D()->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList;
 }
-#pragma optimize("", on)
 
-void UTartarusCharacterPreview::AssociateSceneCapture()
+void UTartarusCharacterPreviewWidget::AssociateSceneCapture()
 {
 	// Get the player
 	const ATartarusPlayerController* const PlayerController = GetOwningPlayer<ATartarusPlayerController>();
@@ -107,7 +105,7 @@ void UTartarusCharacterPreview::AssociateSceneCapture()
 	}
 }
 
-void UTartarusCharacterPreview::DissociateSceneCapture()
+void UTartarusCharacterPreviewWidget::DissociateSceneCapture()
 {
 	// Get the player
 	const ATartarusPlayerController* const PlayerController = GetOwningPlayer<ATartarusPlayerController>();

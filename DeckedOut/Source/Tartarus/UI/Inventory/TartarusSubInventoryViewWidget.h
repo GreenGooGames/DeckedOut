@@ -7,7 +7,7 @@
 #include "System/TartarusASyncLoadData.h"
 #include "UI/Foundation/TartarusActivatableWidget.h"
 
-#include "TartarusSubInventoryView.generated.h"
+#include "TartarusSubInventoryViewWidget.generated.h"
 
 class UCommonTileView;
 class UTartarusContextAction;
@@ -41,7 +41,7 @@ private:
  * 
  */
 UCLASS()
-class TARTARUS_API UTartarusSubInventoryView : public UTartarusActivatableWidget
+class TARTARUS_API UTartarusSubInventoryViewWidget : public UTartarusActivatableWidget
 {
 	GENERATED_BODY()
 	

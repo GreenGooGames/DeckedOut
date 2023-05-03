@@ -13,11 +13,11 @@
 #include "Player/TartarusPlayerCharacter.h"
 #include "Player/TartarusPlayerController.h"
 #include "UI/ContextAction/TartarusContextAction.h"
-#include "UI/Foundation/TartarusContextMenu.h"
+#include "UI/ContextAction/TartarusContextMenuWidget.h"
 #include "UI/Foundation/TartarusSwitcherWidget.h"
 #include "UI/Inventory/TartarusInventoryInfoWidget.h"
 #include "UI/Inventory/TartarusInventorySlotWidgetData.h"
-#include "UI/Inventory/TartarusSubInventoryView.h"
+#include "UI/Inventory/TartarusSubInventoryViewWidget.h"
 #include "Widgets/CommonActivatableWidgetContainer.h"
 
 void UTartarusInventoryWidget::NativeOnInitialized()
@@ -57,7 +57,7 @@ void UTartarusInventoryWidget::ConstructInventoryView()
 
 		// TODO: Async load the SubInventoryClass.
 		// Instantiate a template subinventory.
-		UTartarusSubInventoryView* const SubInventoryView = CreateWidget<UTartarusSubInventoryView>(GetWorld(), SubInventoryViewClass.LoadSynchronous(), *WidgetName);
+		UTartarusSubInventoryViewWidget* const SubInventoryView = CreateWidget<UTartarusSubInventoryViewWidget>(GetWorld(), SubInventoryViewClass.LoadSynchronous(), *WidgetName);
 		if (!IsValid(SubInventoryView))
 		{
 			UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: Could not instaniate a subinventory view!"), *FString(__FUNCTION__));
@@ -123,7 +123,7 @@ void UTartarusInventoryWidget::HandleSortAction()
 		return;
 	}
 
-	UTartarusSubInventoryView* const SubInventoryWidget = Cast<UTartarusSubInventoryView>(SubInventoryVisibilitySwitcher->GetActiveWidget());
+	UTartarusSubInventoryViewWidget* const SubInventoryWidget = Cast<UTartarusSubInventoryViewWidget>(SubInventoryVisibilitySwitcher->GetActiveWidget());
 	if (!IsValid(SubInventoryWidget))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, SubInventoryWidget is invalid!"), *FString(__FUNCTION__));
@@ -186,7 +186,7 @@ void UTartarusInventoryWidget::HandleItemClicked(UObject* Item)
 		return;
 	}
 
-	UTartarusContextMenu* const ContextMenu = ContextStack->AddWidget<UTartarusContextMenu>(ContextMenuTemplate.LoadSynchronous());
+	UTartarusContextMenuWidget* const ContextMenu = ContextStack->AddWidget<UTartarusContextMenuWidget>(ContextMenuTemplate.LoadSynchronous());
 	if (!IsValid(ContextMenu))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, Could not create a contextmenu widget!"), *FString(__FUNCTION__));
@@ -196,7 +196,7 @@ void UTartarusInventoryWidget::HandleItemClicked(UObject* Item)
 	// A Context Menu is now available, store a reference to the item that it has to represent.
 	ContextMenu->SetContextItem(SlotData);
 
-	UTartarusSubInventoryView* const SubInventoryWidget = Cast<UTartarusSubInventoryView>(SubInventoryVisibilitySwitcher->GetActiveWidget());
+	UTartarusSubInventoryViewWidget* const SubInventoryWidget = Cast<UTartarusSubInventoryViewWidget>(SubInventoryVisibilitySwitcher->GetActiveWidget());
 	if (!IsValid(SubInventoryWidget))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, SubInventoryWidget is invalid!"), *FString(__FUNCTION__));

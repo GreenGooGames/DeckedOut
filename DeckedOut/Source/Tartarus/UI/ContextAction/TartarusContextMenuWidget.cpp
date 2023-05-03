@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/Foundation/TartarusContextMenu.h"
+#include "UI/ContextAction/TartarusContextMenuWidget.h"
 
 #include "Components/VerticalBox.h"
 #include "UI/ContextAction/TartarusContextAction.h"
@@ -9,12 +9,12 @@
 #include "UI/Inventory/TartarusInventorySlotWidgetData.h"
 #include "UI/Inventory/TartarusInventorySlotWidgetData.h"
 
-void UTartarusContextMenu::SetContextItem(UTartarusInventorySlotWidgetData* const Item)
+void UTartarusContextMenuWidget::SetContextItem(UTartarusInventorySlotWidgetData* const Item)
 {
 	ContextItem = Item;
 }
 
-bool UTartarusContextMenu::AddEntry(UTartarusContextAction* const ContextAction)
+bool UTartarusContextMenuWidget::AddEntry(UTartarusContextAction* const ContextAction)
 {
 	// TODO: Async load the EntryTemplate
 	UTartarusTextButton* const Entry = CreateWidget<UTartarusTextButton>(this, EntryTemplate.LoadSynchronous());
@@ -36,7 +36,7 @@ bool UTartarusContextMenu::AddEntry(UTartarusContextAction* const ContextAction)
 	return true;
 }
 
-bool UTartarusContextMenu::ContainsEntries() const
+bool UTartarusContextMenuWidget::ContainsEntries() const
 {
 	return EntryBox->HasAnyChildren();
 }

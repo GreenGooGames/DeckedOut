@@ -5,7 +5,7 @@
 #include "CommonActivatableWidget.h"
 #include "CoreMinimal.h"
 
-#include "TartarusContextMenu.generated.h"
+#include "TartarusContextMenuWidget.generated.h"
 
 class UTartarusContextAction;
 class UTartarusInventorySlotWidgetData;
@@ -16,7 +16,7 @@ class UVerticalBox;
  * 
  */
 UCLASS()
-class TARTARUS_API UTartarusContextMenu : public UCommonActivatableWidget
+class TARTARUS_API UTartarusContextMenuWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
 	

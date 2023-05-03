@@ -6,8 +6,7 @@
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Logging/TartarusLogChannels.h"
 #include "Player/TartarusPlayerController.h"
-#include "UI/Foundation/TartarusContextMenu.h"
-#include "UI/Foundation/TartarusContextMenu.h"
+#include "UI/ContextAction/TartarusContextMenuWidget.h"
 #include "UI/Inventory/TartarusInventorySlotWidgetData.h"
 
 void UTartarusDeleteContextAction::ExecuteAction()

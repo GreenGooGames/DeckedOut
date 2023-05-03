@@ -7,7 +7,7 @@
 
 #include "TartarusContextAction.generated.h"
 
-class UTartarusContextMenu;
+class UTartarusContextMenuWidget;
 
 /**
  * 
@@ -18,7 +18,7 @@ class TARTARUS_API UTartarusContextAction : public UPrimaryDataAsset
 	GENERATED_BODY()
 	
 public:
-	virtual void SetParentMenu(UTartarusContextMenu* const Menu);
+	virtual void SetParentMenu(UTartarusContextMenuWidget* const Menu);
 	virtual void ExecuteAction() { return; };
 	const FText& GetName() const { return Name; }
 
@@ -26,5 +26,5 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 		FText Name = FText();
 
-	TWeakObjectPtr<UTartarusContextMenu> ParentMenu = nullptr;
+	TWeakObjectPtr<UTartarusContextMenuWidget> ParentMenu = nullptr;
 };
