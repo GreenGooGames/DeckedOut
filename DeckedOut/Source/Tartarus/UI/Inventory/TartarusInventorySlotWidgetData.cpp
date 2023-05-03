@@ -8,14 +8,17 @@
 void UTartarusInventorySlotWidgetData::SetTexture(TSoftObjectPtr<UTexture2D> DisplayTexture)
 {
 	Texture = DisplayTexture;
+
+	OnListItemDataChangedEvent.Broadcast(this);
 }
 
 void UTartarusInventorySlotWidgetData::UpdateData(const FInventoryStack* const InventoryStack)
 {
+	Texture = InventoryStack ? (InventoryStack->GetEntryId() == ItemId ? Texture : nullptr) : nullptr;
+
 	ItemId = InventoryStack ? InventoryStack->GetEntryId() : FTartarusHelpers::InvalidItemId;
 	InventoryStackId = InventoryStack ? InventoryStack->GetStackId() : FInventoryStackId();
 	StackSize = InventoryStack ? InventoryStack->StackSize : 0;
-	Texture = InventoryStack ? Texture : nullptr;
 
 	OnListItemDataChangedEvent.Broadcast(this);
 }
