@@ -185,12 +185,17 @@ void UTartarusInventoryWidget::HandleItemClicked(UObject* Item)
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, ContextStack is invalid!"), *FString(__FUNCTION__));
 		return;
 	}
-
-	UTartarusContextMenuWidget* const ContextMenu = ContextStack->AddWidget<UTartarusContextMenuWidget>(ContextMenuTemplate.LoadSynchronous());
+	
+	UTartarusContextMenuWidget* ContextMenu = Cast<UTartarusContextMenuWidget>(ContextStack->GetActiveWidget());
 	if (!IsValid(ContextMenu))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, Could not create a contextmenu widget!"), *FString(__FUNCTION__));
-		return;
+		// TODO: ASync Load
+		ContextMenu = ContextStack->AddWidget<UTartarusContextMenuWidget>(ContextMenuTemplate.LoadSynchronous());
+		if (!IsValid(ContextMenu))
+		{
+			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, Could not create a contextmenu widget!"), *FString(__FUNCTION__));
+			return;
+		}
 	}
 
 	// A Context Menu is now available, store a reference to the item that it has to represent.
