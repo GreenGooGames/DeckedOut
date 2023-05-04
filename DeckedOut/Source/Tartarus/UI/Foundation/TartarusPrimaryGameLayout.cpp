@@ -3,147 +3,142 @@
 
 #include "UI/Foundation/TartarusPrimaryGameLayout.h"
 
-#include "CommonActivatableWidget.h"
 #include "Logging/TartarusLogChannels.h"
 #include "System/TartarusAssetManager.h"
 #include "Widgets/CommonActivatableWidgetContainer.h"
+#include "CommonActivatableWidget.h"
 
-void UTartarusPrimaryGameLayout::PopWidgetFromMainStack(UCommonActivatableWidget& WidgetInstance)
+void UTartarusPrimaryGameLayout::PushWidgetToLayerAsync(const FGameplayTag& LayerName, TSoftClassPtr<UCommonActivatableWidget> WidgetClass)
 {
-	if (MainStack)
+	// Validate Input.
+	if (!LayerName.IsValid())
 	{
-		MainStack->RemoveWidget(WidgetInstance);
-		OnWidgetPoppedFromMainStack();
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To push Widget to Layer: LayerName is invalid!"), *FString(__FUNCTION__));
+		return;
 	}
-}
 
-void UTartarusPrimaryGameLayout::OnWidgetPushedToMainStack(const UCommonActivatableWidget* const Widget)
-{
-	APlayerController* const PlayerController = GetOwningPlayer();
-
-	if (Widget && PlayerController)
+	if (!RegisteredLayers.Contains(LayerName))
 	{
-		FInputModeUIOnly InputModeUIOnlyParameters = FInputModeUIOnly();
-		UWidget* const DesiredFocusTarget = Widget->GetDesiredFocusTarget();
-
-		if (DesiredFocusTarget)
-		{
-			InputModeUIOnlyParameters.SetWidgetToFocus(DesiredFocusTarget->TakeWidget());
-		}
-
-		PlayerController->SetInputMode(InputModeUIOnlyParameters);
-		PlayerController->SetShowMouseCursor(true);
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To push Widget to Layer: No Layer registered for given GameplayTag!"), *FString(__FUNCTION__));
+		return;
 	}
-}
 
-void UTartarusPrimaryGameLayout::OnWidgetPoppedFromMainStack()
-{
-	// If the Mainstack doesn't contain any other widgets (other than the gameplayHUD, reveal the Base UI again.
-	if (MainStack->GetNumWidgets() <= 1)
-	{
-		APlayerController* const PlayerController = GetOwningPlayer();
-
-		if (PlayerController)
-		{
-			FInputModeGameOnly InputModeGameOnlyParameters = FInputModeGameOnly();
-			PlayerController->SetInputMode(InputModeGameOnlyParameters);
-			PlayerController->SetShowMouseCursor(false);
-		}
-	}
-}
-
-#pragma region AsyncLoading
-FGuid UTartarusPrimaryGameLayout::AsyncRequestPushToStack(const TSoftClassPtr<UCommonActivatableWidget> WidgetClass, FPushedToStackEvent& OnRequestCompletedEvent)
-{
-	// Get the AsyncLoader.
+	// Retrieve the AssetManager that handles async loading.
 	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
-
 	if (!AssetManager.IsValid())
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), *FString(__FUNCTION__));
-		return FGuid();
-	}
-
-	// Prepare the callback for when the request completes.
-	FAsyncLoadAssetRequestCompletedEvent OnRequestCompleted;
-	OnRequestCompleted.AddUObject(this, &UTartarusPrimaryGameLayout::HandleWidgetClassLoaded);
-
-	FGuid AsyncLoadRequestId = AssetManager.AsyncRequestLoadAsset(WidgetClass.ToSoftObjectPath(), OnRequestCompleted);
-
-	if (!AsyncLoadRequestId.IsValid())
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create request: Could not start async load!"), *FString(__FUNCTION__));
-		return FGuid();
-	}
-
-	// Setup the request for this spawn.
-	FPushToStackRequestInfo PushToStackRequest = FPushToStackRequestInfo(OnRequestCompletedEvent);
-	PushToStackRequest.SetASyncLoadRequestId(AsyncLoadRequestId);
-
-	PushToStackRequests.Add(PushToStackRequest);
-
-	return PushToStackRequest.GetRequestId();
-}
-
-void UTartarusPrimaryGameLayout::HandleRequestSuccess(const FPushToStackRequestInfo* const SuccessRequest, TWeakObjectPtr<UCommonActivatableWidget> PushedWidget)
-{
-	if (!SuccessRequest)
-	{
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To push Widget to Layer: Could not retrieve the AssetManager!"), *FString(__FUNCTION__));
 		return;
 	}
 
-	OnWidgetPushedToMainStack(PushedWidget.Get());
-	SuccessRequest->OnPushedToStackRequestCompleted().Broadcast(SuccessRequest->GetRequestId(), PushedWidget);
-	PushToStackRequests.RemoveSingleSwap(*SuccessRequest);
-}
+	// Prepare a callback for when the loading finishes.
+	FAsyncLoadAssetRequestCompletedEvent OnLoadCompleted = FAsyncLoadAssetRequestCompletedEvent();
+	OnLoadCompleted.AddUObject(this, &UTartarusPrimaryGameLayout::HandleASyncLoadWidgetClassCompleted);
 
-void UTartarusPrimaryGameLayout::HandleRequestFailed(const FPushToStackRequestInfo* const FailedRequest)
-{
-	if (!FailedRequest)
+	// Start the AsyncLoad of the Widget Class.
+	const FGuid AsyncLoadId = AssetManager.AsyncRequestLoadAsset(WidgetClass.ToSoftObjectPath(), OnLoadCompleted);
+	if (!AsyncLoadId.IsValid())
 	{
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To push Widget to Layer: Could not retrieve the AssetManager!"), *FString(__FUNCTION__));
 		return;
 	}
 
-	FailedRequest->OnPushedToStackRequestCompleted().Broadcast(FailedRequest->GetRequestId(), nullptr);
-	PushToStackRequests.RemoveSingleSwap(*FailedRequest);
+	FASyncLoadWidgetClassRequest ASyncLoadRequest = FASyncLoadWidgetClassRequest();
+	ASyncLoadRequest.SetASyncLoadRequestId(AsyncLoadId);
+	ASyncLoadRequest.LayerName = LayerName;
+
+	AsyncLoadWidgetClassRequests.Add(ASyncLoadRequest);
 }
 
-void UTartarusPrimaryGameLayout::HandleWidgetClassLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle)
+void UTartarusPrimaryGameLayout::PopWidgetFromLayer(const FGameplayTag& LayerName, UCommonActivatableWidget* const Widget)
+{
+	// Validate Input.
+	if (!LayerName.IsValid())
+	{
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To pop Widget from layer: LayerName is invalid!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	if (!RegisteredLayers.Contains(LayerName))
+	{
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To pop Widget from Layer: No Layer registered for given GameplayTag!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	if (!IsValid(Widget))
+	{
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To pop Widget from Layer: Widget is not valid!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	RegisteredLayers[LayerName]->RemoveWidget(*Widget);
+}
+
+void UTartarusPrimaryGameLayout::RegisterLayer(const FGameplayTag& LayerName, UCommonActivatableWidgetContainerBase* const LayerWidget)
+{
+	if (!LayerName.IsValid())
+	{
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To register Layer: LayerName is invalid!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	if (!IsValid(LayerWidget))
+	{
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To register Layer: WidgetStack is invalid!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	if (RegisteredLayers.Contains(LayerName))
+	{
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To register Layer: Entry already exists!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	RegisteredLayers.Add(LayerName, LayerWidget);
+}
+
+#pragma region AsyncLoad
+void UTartarusPrimaryGameLayout::HandleASyncLoadWidgetClassCompleted(FGuid RequestId, TSharedPtr<FStreamableHandle> StreamableHandle)
 {
 	// Get the request that is being handled.
-	FPushToStackRequestInfo* const CurrentRequest = PushToStackRequests.FindByPredicate([&ASyncLoadRequestId](const FPushToStackRequestInfo& Request)
+	FASyncLoadWidgetClassRequest* const CurrentRequest = AsyncLoadWidgetClassRequests.FindByPredicate([&RequestId](const FASyncLoadWidgetClassRequest& Request)
 		{
-			return Request.GetASyncLoadRequestId() == ASyncLoadRequestId;
+			return Request.GetASyncLoadRequestId() == RequestId;
 		});
 
-	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
+	if (CurrentRequest == nullptr)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Push to stack failed: Could not find the request!"), *FString(__FUNCTION__));
-		return;
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To push Widget to Stack: Request not found after loading the Widget Class!"), *FString(__FUNCTION__));
+		return OnAsyncLoadWidgetClassCompleted(CurrentRequest);
 	}
 
-	TSubclassOf<UCommonActivatableWidget> WidgetClass = Cast<UClass>(AssetHandle.Get()->GetLoadedAsset());
+	// Validate the loaded Asset.
+	if (!StreamableHandle.IsValid())
+	{
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To push Widget to Stack: The streamable handle is invalid!"), *FString(__FUNCTION__));
+		return OnAsyncLoadWidgetClassCompleted(CurrentRequest);
+	}
 
+	TSubclassOf<UCommonActivatableWidget> WidgetClass = Cast<UClass>(StreamableHandle.Get()->GetLoadedAsset());
 	if (!IsValid(WidgetClass))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Push to stack failed: Class failed to load!"), *FString(__FUNCTION__));
-		HandleRequestFailed(CurrentRequest);
-
-		return;
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To push Widget to Stack: The loaded asset was invalid!"), *FString(__FUNCTION__));
+		return OnAsyncLoadWidgetClassCompleted(CurrentRequest);
 	}
 
-	UCommonActivatableWidget* const NewWidget = MainStack->AddWidget(WidgetClass);
+	// Push a new Widget of the loaded class to the requested layer.
+	RegisteredLayers[CurrentRequest->LayerName]->AddWidget(WidgetClass);
+	
+	OnAsyncLoadWidgetClassCompleted(CurrentRequest);
+}
 
-	if (!IsValid(NewWidget))
+void UTartarusPrimaryGameLayout::OnAsyncLoadWidgetClassCompleted(const FASyncLoadWidgetClassRequest* const Request)
+{
+	if (Request == nullptr)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Push to stack failed: Could not create the widget!"), *FString(__FUNCTION__));
-		HandleRequestFailed(CurrentRequest);
-
 		return;
 	}
 
-	NewWidget->ActivateWidget();
-
-	HandleRequestSuccess(CurrentRequest, NewWidget);
+	AsyncLoadWidgetClassRequests.RemoveSingleSwap(*Request);
 }
 #pragma endregion

@@ -4,35 +4,14 @@
 
 #include "CommonUserWidget.h"
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Engine/StreamableManager.h"
 #include "System/TartarusASyncLoadData.h"
 
 #include "TartarusPrimaryGameLayout.generated.h"
 
 class UCommonActivatableWidget;
-class UCommonActivatableWidgetStack;
-
-DECLARE_EVENT_TwoParams(UTartarusPrimaryGameLayout, FPushedToStackEvent, FGuid /*RequestId*/, TWeakObjectPtr<UCommonActivatableWidget>/*PushedWidget*/);
-
-USTRUCT()
-struct FPushToStackRequestInfo : public FASyncLoadRequest
-{
-	GENERATED_BODY()
-
-public:
-	FPushToStackRequestInfo() {}
-	FPushToStackRequestInfo(const FPushedToStackEvent& OnCompletedEvent)
-	{
-		RequestId = FGuid::NewGuid();
-
-		OnRequestCompletedEvent = OnCompletedEvent;
-	}
-
-	const FPushedToStackEvent& OnPushedToStackRequestCompleted() const { return OnRequestCompletedEvent; }
-
-private:
-	FPushedToStackEvent OnRequestCompletedEvent = FPushedToStackEvent();
-};
+class UCommonActivatableWidgetContainerBase;
 
 /**
  * 
@@ -43,36 +22,27 @@ class TARTARUS_API UTartarusPrimaryGameLayout : public UCommonUserWidget
 	GENERATED_BODY()
 
 public:
-	// Removes a widget from the mainstack and deactivate it.
-	void PopWidgetFromMainStack(UCommonActivatableWidget& WidgetInstance);
-
-private:
-	// The mainstack that widgets will be added to.
-	UPROPERTY(meta = (BindWidget))
-		TObjectPtr<UCommonActivatableWidgetStack> MainStack = nullptr;
-
-	void OnWidgetPushedToMainStack(const UCommonActivatableWidget* const Widget);
-	void OnWidgetPoppedFromMainStack();
-
-#pragma region AsyncLoading
-public:
-	/*
-	* Constructs, pushes and activates a new widget to the mainstack.
-	* Return: The Guid of the async load request.
-	*/
-	FGuid AsyncRequestPushToStack(const TSoftClassPtr<UCommonActivatableWidget> WidgetClass, FPushedToStackEvent& OnRequestCompletedEvent);
+	void PushWidgetToLayerAsync(const FGameplayTag& LayerName, TSoftClassPtr<UCommonActivatableWidget> WidgetClass);
+	void PopWidgetFromLayer(const FGameplayTag& LayerName, UCommonActivatableWidget* const Widget);
 
 protected:
-	// Notfies the requester that the request has succeeded and removes the request from the queue.
-	void HandleRequestSuccess(const FPushToStackRequestInfo* const SuccessRequest, TWeakObjectPtr<UCommonActivatableWidget> PushedWidget);
-
-	// Notifies the requester that the request failed and removes the request from the queue.
-	void HandleRequestFailed(const FPushToStackRequestInfo* const FailedRequest);
-
-	// Called when the Widget class is loaded.
-	void HandleWidgetClassLoaded(FGuid ASyncLoadRequestId, TSharedPtr<FStreamableHandle> AssetHandle);
+	UFUNCTION(BlueprintCallable)
+		void RegisterLayer(const FGameplayTag& LayerName, UCommonActivatableWidgetContainerBase* const LayerWidget);
 
 private:
-	TArray<FPushToStackRequestInfo> PushToStackRequests;
+	TMap<FGameplayTag, TObjectPtr<UCommonActivatableWidgetContainerBase>> RegisteredLayers;
+
+#pragma region AsyncLoad
+private:
+	struct FASyncLoadWidgetClassRequest : public FASyncLoadRequest
+	{
+		public:
+			FGameplayTag LayerName;
+	};
+
+	TArray<FASyncLoadWidgetClassRequest> AsyncLoadWidgetClassRequests;
+
+	void HandleASyncLoadWidgetClassCompleted(FGuid RequestId, TSharedPtr<FStreamableHandle> StreamableHandle);
+	void OnAsyncLoadWidgetClassCompleted(const FASyncLoadWidgetClassRequest* const Request);
 #pragma endregion
 };

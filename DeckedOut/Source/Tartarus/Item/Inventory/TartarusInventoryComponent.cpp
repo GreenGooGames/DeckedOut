@@ -6,7 +6,7 @@
 #include "Item/Inventory/TartarusSubInventoryData.h"
 #include "Item/TartarusItem.h"
 #include "Logging/TartarusLogChannels.h"
-#include "UI/ContextAction/TartarusContextAction.h"
+#include "UI/Foundation/ContextAction/TartarusContextAction.h"
 
 #include "Engine/World.h"
 #include "Item/System/TartarusItemSubsystem.h"
