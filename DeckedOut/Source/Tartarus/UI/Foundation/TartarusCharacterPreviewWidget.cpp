@@ -90,7 +90,7 @@ void UTartarusCharacterPreviewWidget::AssociateSceneCapture()
 	}
 
 	// Transform the actor to be looking at the player.
-	SceneCapture2DInstance->SetActorTransform(PlayerCharacter->GetActorTransform());
+	SceneCapture2DInstance->AttachToActor(PlayerCharacter, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
 	// Add the player TP character mesh to the list of components to render.
 	SceneCapture2DInstance->GetCaptureComponent2D()->ShowOnlyComponent(PlayerCharacter->GetMesh());

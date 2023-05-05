@@ -23,6 +23,7 @@ public class Tartarus : ModuleRules
                 "InputCore", 
 				"HeadMountedDisplay",
 				"GameplayTags",
-				"SlateCore"});
+				"SlateCore",
+				"CommonInput"});
 	}
 }

@@ -9,6 +9,7 @@
 #include "CommonActivatableWidget.h"
 
 #include "UI/Foundation/TartarusLayoutWidget.h"
+#include "CommonInputSubsystem.h"
 
 void UTartarusPrimaryGameLayout::PushWidgetToLayerAsync(const FGameplayTag& LayerName, TSoftClassPtr<UCommonActivatableWidget> WidgetClass)
 {
@@ -116,6 +117,8 @@ void UTartarusPrimaryGameLayout::RegisterLayer(const FGameplayTag& LayerName, UC
 		return;
 	}
 
+	LayerWidget->OnTransitioningChanged.AddUObject(this, &ThisClass::OnWidgetStackTransitioning);
+
 	RegisteredLayers.Add(LayerName, LayerWidget);
 }
 
@@ -155,5 +158,51 @@ void UTartarusPrimaryGameLayout::OnAsyncLoadWidgetClassCompleted(const FASyncLoa
 	}
 
 	AsyncLoadWidgetClassRequests.RemoveSingleSwap(*Request);
+}
+#pragma endregion
+
+#pragma region Input
+void UTartarusPrimaryGameLayout::SuspendInput()
+{
+	UCommonInputSubsystem* const CommonInputSubsystem = UCommonInputSubsystem::Get(GetOwningLocalPlayer());
+	if (!IsValid(CommonInputSubsystem))
+	{
+		return;
+	}
+
+	FName SuspendToken = "UITransition";
+
+	CommonInputSubsystem->SetInputTypeFilter(ECommonInputType::MouseAndKeyboard, SuspendToken, true);
+	CommonInputSubsystem->SetInputTypeFilter(ECommonInputType::Gamepad, SuspendToken, true);
+	CommonInputSubsystem->SetInputTypeFilter(ECommonInputType::Touch, SuspendToken, true);
+
+	GetOwningPlayer()->FlushPressedKeys();
+}
+
+void UTartarusPrimaryGameLayout::ResumeInput()
+{
+	UCommonInputSubsystem* const CommonInputSubsystem = UCommonInputSubsystem::Get(GetOwningLocalPlayer());
+	if (!IsValid(CommonInputSubsystem))
+	{
+		return;
+	}
+	
+	FName SuspendToken = "UITransition";
+
+	CommonInputSubsystem->SetInputTypeFilter(ECommonInputType::MouseAndKeyboard, SuspendToken, false);
+	CommonInputSubsystem->SetInputTypeFilter(ECommonInputType::Gamepad, SuspendToken, false);
+	CommonInputSubsystem->SetInputTypeFilter(ECommonInputType::Touch, SuspendToken, false);
+}
+
+void UTartarusPrimaryGameLayout::OnWidgetStackTransitioning(UCommonActivatableWidgetContainerBase* Widget, bool bIsTransitioning)
+{
+	if (bIsTransitioning)
+	{
+		SuspendInput();
+	}
+	else
+	{
+		ResumeInput();
+	}
 }
 #pragma endregion

@@ -47,4 +47,11 @@ private:
 	void HandleASyncLoadWidgetClassCompleted(FGuid RequestId, TSharedPtr<FStreamableHandle> StreamableHandle);
 	void OnAsyncLoadWidgetClassCompleted(const FASyncLoadWidgetClassRequest* const Request);
 #pragma endregion
+
+#pragma region Input
+	void SuspendInput();
+	void ResumeInput();
+
+	void OnWidgetStackTransitioning(UCommonActivatableWidgetContainerBase* Widget, bool bIsTransitioning);
+#pragma endregion
 };
