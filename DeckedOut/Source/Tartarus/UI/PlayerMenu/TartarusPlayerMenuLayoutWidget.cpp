@@ -44,17 +44,13 @@ void UTartarusPlayerMenuLayoutWidget::RegisterBoundInputActions()
 
 void UTartarusPlayerMenuLayoutWidget::HandleExitAction()
 {
-#if WITH_EDITOR
-	GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Green, FString(*FString(__FUNCTION__)));
-#endif
-
 	ATartarusPlayerController* const PlayerController = GetOwningPlayer<ATartarusPlayerController>();
 	if (IsValid(PlayerController))
 	{
 		UTartarusPrimaryGameLayout* const PrimaryGameLayoutInstance = PlayerController->GetPrimaryGameLayout();
 		if (PrimaryGameLayoutInstance)
 		{
-			PrimaryGameLayoutInstance->PopWidgetFromLayer(LayerName, this);
+			PrimaryGameLayoutInstance->PopWidgetFromLayer(GetOwningLayerName(), this);
 		}
 	}
 }

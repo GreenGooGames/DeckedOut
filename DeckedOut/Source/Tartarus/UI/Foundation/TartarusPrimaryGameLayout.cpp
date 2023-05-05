@@ -8,6 +8,8 @@
 #include "Widgets/CommonActivatableWidgetContainer.h"
 #include "CommonActivatableWidget.h"
 
+#include "UI/Foundation/TartarusLayoutWidget.h"
+
 void UTartarusPrimaryGameLayout::PushWidgetToLayerAsync(const FGameplayTag& LayerName, TSoftClassPtr<UCommonActivatableWidget> WidgetClass)
 {
 	// Validate Input.
@@ -48,6 +50,26 @@ void UTartarusPrimaryGameLayout::PushWidgetToLayerAsync(const FGameplayTag& Laye
 	ASyncLoadRequest.LayerName = LayerName;
 
 	AsyncLoadWidgetClassRequests.Add(ASyncLoadRequest);
+}
+
+bool UTartarusPrimaryGameLayout::PushWidgetToLayer(const FGameplayTag& LayerName, TSubclassOf<UCommonActivatableWidget> WidgetClass)
+{
+	if (!IsValid(WidgetClass))
+	{
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To push Widget to Layer: The class was invalid!"), *FString(__FUNCTION__));
+		return false;
+	}
+
+	UTartarusLayoutWidget* const NewWidget = RegisteredLayers[LayerName]->AddWidget<UTartarusLayoutWidget>(WidgetClass);
+	if (!IsValid(NewWidget))
+	{
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To push Widget to Layer: Failed to Add the Widget!"), *FString(__FUNCTION__));
+		return false;
+	}
+
+	NewWidget->SetOwningLayerName(LayerName);
+
+	return true;
 }
 
 void UTartarusPrimaryGameLayout::PopWidgetFromLayer(const FGameplayTag& LayerName, UCommonActivatableWidget* const Widget)
@@ -108,27 +130,20 @@ void UTartarusPrimaryGameLayout::HandleASyncLoadWidgetClassCompleted(FGuid Reque
 
 	if (CurrentRequest == nullptr)
 	{
-		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To push Widget to Stack: Request not found after loading the Widget Class!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To push Widget to Layer: Request not found after loading the Widget Class!"), *FString(__FUNCTION__));
 		return OnAsyncLoadWidgetClassCompleted(CurrentRequest);
 	}
 
 	// Validate the loaded Asset.
 	if (!StreamableHandle.IsValid())
 	{
-		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To push Widget to Stack: The streamable handle is invalid!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To push Widget to Layer: The streamable handle is invalid!"), *FString(__FUNCTION__));
 		return OnAsyncLoadWidgetClassCompleted(CurrentRequest);
 	}
 
 	TSubclassOf<UCommonActivatableWidget> WidgetClass = Cast<UClass>(StreamableHandle.Get()->GetLoadedAsset());
-	if (!IsValid(WidgetClass))
-	{
-		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To push Widget to Stack: The loaded asset was invalid!"), *FString(__FUNCTION__));
-		return OnAsyncLoadWidgetClassCompleted(CurrentRequest);
-	}
+	PushWidgetToLayer(CurrentRequest->LayerName, WidgetClass);
 
-	// Push a new Widget of the loaded class to the requested layer.
-	RegisteredLayers[CurrentRequest->LayerName]->AddWidget(WidgetClass);
-	
 	OnAsyncLoadWidgetClassCompleted(CurrentRequest);
 }
 

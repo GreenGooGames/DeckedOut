@@ -26,6 +26,8 @@ public:
 	void PopWidgetFromLayer(const FGameplayTag& LayerName, UCommonActivatableWidget* const Widget);
 
 protected:
+	bool PushWidgetToLayer(const FGameplayTag& LayerName, TSubclassOf<UCommonActivatableWidget> WidgetClass);
+
 	UFUNCTION(BlueprintCallable)
 		void RegisterLayer(const FGameplayTag& LayerName, UCommonActivatableWidgetContainerBase* const LayerWidget);
 

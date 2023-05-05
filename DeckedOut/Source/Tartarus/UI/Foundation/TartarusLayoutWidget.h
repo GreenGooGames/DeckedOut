@@ -16,8 +16,11 @@ class TARTARUS_API UTartarusLayoutWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
 	
+public:
+	FORCEINLINE void SetOwningLayerName(const FGameplayTag& LayerName);
+	FORCEINLINE FGameplayTag& GetOwningLayerName();
+
 protected:
 	/* Name of the layer to add this widget to when pushed to the primary game layout */
-	UPROPERTY(EditDefaultsOnly)
-		FGameplayTag LayerName = FGameplayTag();
+	FGameplayTag OwningLayerName = FGameplayTag();
 };

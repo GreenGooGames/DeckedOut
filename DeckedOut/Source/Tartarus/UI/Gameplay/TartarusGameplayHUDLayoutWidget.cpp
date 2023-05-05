@@ -47,6 +47,6 @@ void UTartarusGameplayHUDLayoutWidget::HandleOpenPlayerMenuAction() const
 		return;
 	}
 
-	PrimaryGameLayoutInstance->PushWidgetToLayerAsync(LayerName, PlayerMenuClass);
+	PrimaryGameLayoutInstance->PushWidgetToLayerAsync(PlayerMenuLayer, PlayerMenuClass);
 }
 #pragma endregion

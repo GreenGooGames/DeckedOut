@@ -20,6 +20,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 		TSoftClassPtr<UCommonActivatableWidget> PlayerMenuClass = nullptr;
 
+	// Layer name of where to add the PlayerMenuClass.
+	UPROPERTY(EditDefaultsOnly)
+		FGameplayTag PlayerMenuLayer = FGameplayTag();
+
 	virtual void NativeOnInitialized() override;
 
 #pragma region UCommonActivatableWidget

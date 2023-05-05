@@ -3,3 +3,12 @@
 
 #include "UI/Foundation/TartarusLayoutWidget.h"
 
+void UTartarusLayoutWidget::SetOwningLayerName(const FGameplayTag& LayerName)
+{
+    OwningLayerName = LayerName;
+}
+
+FGameplayTag& UTartarusLayoutWidget::GetOwningLayerName()
+{
+    return OwningLayerName;
+}
