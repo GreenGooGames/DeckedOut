@@ -28,6 +28,11 @@ protected:
 	virtual void NativeOnInitialized() override;
 	void SetupMenuSwitcher();
 
+#pragma region UCommonActivatableWidget
+public:
+	virtual TOptional<FUIInputConfig> GetDesiredInputConfig() const override;
+#pragma endregion
+
 #pragma region BoundActions
 protected:
 	// Input action to close the GameMenu.

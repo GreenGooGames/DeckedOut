@@ -22,6 +22,11 @@ protected:
 
 	virtual void NativeOnInitialized() override;
 
+#pragma region UCommonActivatableWidget
+public:
+	virtual TOptional<FUIInputConfig> GetDesiredInputConfig() const override;
+#pragma endregion
+
 #pragma region BoundActions
 protected:
 	// Input action to open the PlayerMenu.

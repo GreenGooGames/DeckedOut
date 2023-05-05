@@ -26,6 +26,13 @@ void UTartarusPlayerMenuLayoutWidget::SetupMenuSwitcher()
 	}
 }
 
+#pragma region UCommonActivatableWidget
+TOptional<FUIInputConfig> UTartarusPlayerMenuLayoutWidget::GetDesiredInputConfig() const
+{
+	return FUIInputConfig(ECommonInputMode::Menu, EMouseCaptureMode::NoCapture);
+}
+#pragma endregion
+
 #pragma region BoundActions
 void UTartarusPlayerMenuLayoutWidget::RegisterBoundInputActions()
 {

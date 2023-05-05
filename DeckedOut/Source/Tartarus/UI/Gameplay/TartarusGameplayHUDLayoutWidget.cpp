@@ -15,6 +15,13 @@ void UTartarusGameplayHUDLayoutWidget::NativeOnInitialized()
 	RegisterBoundInputActions();
 }
 
+#pragma region UCommonActivatableWidget
+TOptional<FUIInputConfig> UTartarusGameplayHUDLayoutWidget::GetDesiredInputConfig() const
+{
+	return FUIInputConfig(ECommonInputMode::All, EMouseCaptureMode::CapturePermanently);
+}
+#pragma endregion
+
 #pragma region BoundActions
 void UTartarusGameplayHUDLayoutWidget::RegisterBoundInputActions()
 {
