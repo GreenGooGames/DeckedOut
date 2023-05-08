@@ -46,6 +46,7 @@ public:
 	UCommonTileView* GetTileView() const;
 
 protected:
+	virtual void NativeOnInitialized() override;
 	virtual void NativeOnActivated() override;
 
 protected:

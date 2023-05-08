@@ -50,6 +50,13 @@ void UTartarusSubInventoryViewWidget::NativeOnActivated()
 	RefreshData();
 }
 
+void UTartarusSubInventoryViewWidget::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
+	
+	TileView->OnEntryWidgetGenerated().AddUObject(this, &UTartarusSubInventoryViewWidget::OnWidgetGenerated);
+}
+
 void UTartarusSubInventoryViewWidget::RefreshData()
 {
 	TArray<UTartarusInventorySlotWidgetData*> SlotsData;
