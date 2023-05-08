@@ -18,7 +18,7 @@ class TARTARUS_API UTartarusGameplayHUDLayoutWidget : public UTartarusLayoutWidg
 protected:
 	// Class of widget to show when the PlayerMenu needs to be shwon.
 	UPROPERTY(EditDefaultsOnly)
-		TSoftClassPtr<UCommonActivatableWidget> PlayerMenuClass = nullptr;
+		TSoftClassPtr<UTartarusLayoutWidget> PlayerMenuClass = nullptr;
 
 	// Layer name of where to add the PlayerMenuClass.
 	UPROPERTY(EditDefaultsOnly)

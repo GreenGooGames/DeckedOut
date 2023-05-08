@@ -10,7 +10,7 @@
 
 #include "TartarusPrimaryGameLayout.generated.h"
 
-class UCommonActivatableWidget;
+class UTartarusLayoutWidget;
 class UCommonActivatableWidgetContainerBase;
 
 /**
@@ -22,11 +22,11 @@ class TARTARUS_API UTartarusPrimaryGameLayout : public UCommonUserWidget
 	GENERATED_BODY()
 
 public:
-	void PushWidgetToLayerAsync(const FGameplayTag& LayerName, TSoftClassPtr<UCommonActivatableWidget> WidgetClass);
-	void PopWidgetFromLayer(const FGameplayTag& LayerName, UCommonActivatableWidget* const Widget);
+	void PushWidgetToLayerAsync(const FGameplayTag& LayerName, TSoftClassPtr<UTartarusLayoutWidget> WidgetClass);
+	void PopWidgetFromLayer(const FGameplayTag& LayerName, UTartarusLayoutWidget* const Widget);
 
 protected:
-	bool PushWidgetToLayer(const FGameplayTag& LayerName, TSubclassOf<UCommonActivatableWidget> WidgetClass);
+	bool PushWidgetToLayer(const FGameplayTag& LayerName, TSubclassOf<UTartarusLayoutWidget> WidgetClass);
 
 	UFUNCTION(BlueprintCallable)
 		void RegisterLayer(const FGameplayTag& LayerName, UCommonActivatableWidgetContainerBase* const LayerWidget);

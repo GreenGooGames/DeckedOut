@@ -11,7 +11,7 @@
 #include "UI/Foundation/TartarusLayoutWidget.h"
 #include "CommonInputSubsystem.h"
 
-void UTartarusPrimaryGameLayout::PushWidgetToLayerAsync(const FGameplayTag& LayerName, TSoftClassPtr<UCommonActivatableWidget> WidgetClass)
+void UTartarusPrimaryGameLayout::PushWidgetToLayerAsync(const FGameplayTag& LayerName, TSoftClassPtr<UTartarusLayoutWidget> WidgetClass)
 {
 	// Validate Input.
 	if (!LayerName.IsValid())
@@ -53,7 +53,7 @@ void UTartarusPrimaryGameLayout::PushWidgetToLayerAsync(const FGameplayTag& Laye
 	AsyncLoadWidgetClassRequests.Add(ASyncLoadRequest);
 }
 
-bool UTartarusPrimaryGameLayout::PushWidgetToLayer(const FGameplayTag& LayerName, TSubclassOf<UCommonActivatableWidget> WidgetClass)
+bool UTartarusPrimaryGameLayout::PushWidgetToLayer(const FGameplayTag& LayerName, TSubclassOf<UTartarusLayoutWidget> WidgetClass)
 {
 	if (!IsValid(WidgetClass))
 	{
@@ -73,7 +73,7 @@ bool UTartarusPrimaryGameLayout::PushWidgetToLayer(const FGameplayTag& LayerName
 	return true;
 }
 
-void UTartarusPrimaryGameLayout::PopWidgetFromLayer(const FGameplayTag& LayerName, UCommonActivatableWidget* const Widget)
+void UTartarusPrimaryGameLayout::PopWidgetFromLayer(const FGameplayTag& LayerName, UTartarusLayoutWidget* const Widget)
 {
 	// Validate Input.
 	if (!LayerName.IsValid())
@@ -144,7 +144,7 @@ void UTartarusPrimaryGameLayout::HandleASyncLoadWidgetClassCompleted(FGuid Reque
 		return OnAsyncLoadWidgetClassCompleted(CurrentRequest);
 	}
 
-	TSubclassOf<UCommonActivatableWidget> WidgetClass = Cast<UClass>(StreamableHandle.Get()->GetLoadedAsset());
+	TSubclassOf<UTartarusLayoutWidget> WidgetClass = Cast<UClass>(StreamableHandle.Get()->GetLoadedAsset());
 	PushWidgetToLayer(CurrentRequest->LayerName, WidgetClass);
 
 	OnAsyncLoadWidgetClassCompleted(CurrentRequest);
