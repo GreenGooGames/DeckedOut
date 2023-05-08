@@ -31,6 +31,15 @@ void UTartarusInventoryWidget::NativeOnInitialized()
 	SelectedItemInfo->DeactivateWidget();
 }
 
+UWidget* UTartarusInventoryWidget::NativeGetDesiredFocusTarget() const
+{
+	if (IsValid(SubInventoryVisibilitySwitcher))
+	{
+		return SubInventoryVisibilitySwitcher->GetActiveWidget();
+	}
+	return nullptr;
+}
+
 #pragma region Sub-Inventory
 void UTartarusInventoryWidget::ConstructInventoryView()
 {

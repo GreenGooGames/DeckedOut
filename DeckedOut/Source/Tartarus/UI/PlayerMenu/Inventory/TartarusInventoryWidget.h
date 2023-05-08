@@ -25,6 +25,7 @@ class TARTARUS_API UTartarusInventoryWidget : public UTartarusActivatableWidget
 
 protected:
 	virtual void NativeOnInitialized() override;
+	virtual UWidget* NativeGetDesiredFocusTarget() const override;
 
 #pragma region Sub-Inventory
 protected:

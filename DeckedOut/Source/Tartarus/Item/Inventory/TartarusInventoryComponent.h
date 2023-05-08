@@ -11,8 +11,8 @@
 
 #include "TartarusInventoryComponent.generated.h"
 
-DECLARE_EVENT_ThreeParams(UTartarusInventoryComponent, FInventoryContentUpdate, EInventoryChanged /*ChangeType*/, FInventoryStackId /*StackId*/, int32 /*StackSize*/);
-DECLARE_EVENT(UTartarusInventoryComponent, FInventoryUpdate);
+DECLARE_EVENT_ThreeParams(UTartarusInventoryComponent, FInventoryEntryUpdate, EInventoryChanged /*ChangeType*/, FInventoryStackId /*StackId*/, int32 /*StackSize*/);
+DECLARE_EVENT(UTartarusInventoryComponent, FInventoryContentUpdate);
 
 class UTartarusContextAction;
 class UTartarusItem;
@@ -97,11 +97,16 @@ public:
 	bool Contains(const FInventoryStackId& StackId) const;
 
 	/*
-	* Event fired when the inventory contents are changed.
+	* Event fired when an entry in the inventory is updated.
 	* Return: The event fired when a change takes place.
 	*/
-	FInventoryContentUpdate& OnInventoryChanged() { return InventoryChangedEvent; }
-	FInventoryUpdate& OnInventoryUpdate() { return InventoryUpdateEvent; }
+	FInventoryEntryUpdate& OnInventoryEntryUpdated() { return InventoryEntryUpdateEvent; }
+
+	/*
+	* Event fired when multiple entries in the inventory have changed.
+	* Return: The event fired when the change takes place.
+	*/
+	FInventoryContentUpdate& OnInventoryContentUpdated() { return InventoryContentUpdateEvent; }
 
 	/*
 	* Retreives the ID's of all sub inventories owned by this Inventory.
@@ -130,8 +135,8 @@ protected:
 
 private:
 	TMap<EInventoryType, FSubInventory> SubInventories;
-	FInventoryContentUpdate InventoryChangedEvent;
-	FInventoryUpdate InventoryUpdateEvent;
+	FInventoryEntryUpdate InventoryEntryUpdateEvent;
+	FInventoryContentUpdate InventoryContentUpdateEvent;
 
 	TArray<FGetSortItemDataRequestInfo> DataRequests;
 };

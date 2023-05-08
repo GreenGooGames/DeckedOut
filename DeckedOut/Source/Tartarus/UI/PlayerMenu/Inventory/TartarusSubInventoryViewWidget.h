@@ -16,8 +16,6 @@ class UTartarusInventorySlotWidgetData;
 class UTartarusItem;
 
 #pragma region ASyncLoading
-DECLARE_EVENT_OneParam(UTartarusInventoryWidget, FUpdateInventoryUIRequestCompletedEvent, FGuid /*RequestId*/)
-
 USTRUCT()
 struct FUpdateInventoryUIRequestInfo : public FASyncLoadRequest
 {
@@ -25,15 +23,12 @@ struct FUpdateInventoryUIRequestInfo : public FASyncLoadRequest
 
 public:
 	FUpdateInventoryUIRequestInfo() {}
-	FUpdateInventoryUIRequestInfo(const FUpdateInventoryUIRequestCompletedEvent& OnCompleted, UTartarusInventorySlotWidgetData* const SlotData);
+	FUpdateInventoryUIRequestInfo(TArray<UTartarusInventorySlotWidgetData*> SlotsData);
 
-	const FUpdateInventoryUIRequestCompletedEvent& OnUpdateUIRequestCompleted() const { return OnRequestCompleteEvent; }
-	UTartarusInventorySlotWidgetData* GetSlotWidgetData() const { return SlotWidgetData; }
+	const TArray<UTartarusInventorySlotWidgetData*>& GetSlotWidgetsData() const { return SlotWidgetsData; }
 
 private:
-	FUpdateInventoryUIRequestCompletedEvent OnRequestCompleteEvent = FUpdateInventoryUIRequestCompletedEvent();
-
-	UTartarusInventorySlotWidgetData* SlotWidgetData = nullptr;
+	TArray<UTartarusInventorySlotWidgetData*> SlotWidgetsData;
 };
 #pragma endregion
 
@@ -61,9 +56,14 @@ protected:
 		TObjectPtr<UCommonTileView> TileView = nullptr;
 
 	/*
-	* Add data to be displayed in the TileView.
+	* Refreshes the existing data and adds/removes data if necesary.
 	*/
-	void InitializeData();
+	void RefreshData();
+
+	/*
+	* Creates a new ListItem entry for the TileView.
+	*/
+	UTartarusInventorySlotWidgetData* CreateListItemData();
 
 #pragma region ASyncLoading
 protected:
@@ -71,7 +71,7 @@ protected:
 	* Creates a request to update the texture of a slot for a given item.
 	* Return: The Guid of the async load request.
 	*/
-	FGuid AsyncRequestSetDisplayTexture(UTartarusInventorySlotWidgetData* const SlotData, FUpdateInventoryUIRequestCompletedEvent& OnRequestCompletedEvent);
+	FGuid AsyncRequestSetDisplayTexture(TArray<UTartarusInventorySlotWidgetData*> SlotsData);
 
 	// Notfies the requester that the request has succeeded and removes the request from the queue.
 	void HandleRequestCompleted(const FUpdateInventoryUIRequestInfo* const CompletedRequest);
@@ -94,11 +94,16 @@ protected:
 	*/
 	const TArray<FInventoryStack>* GetInventoryEntries() const;
 
-	void OnInventoryUpdated(EInventoryChanged ChangeType, FInventoryStackId StackId, int32 StackSize);
-	void OnInventoryRefreshed();
+	void OnInventoryEntryUpdated(EInventoryChanged ChangeType, FInventoryStackId StackId, int32 StackSize);
 
 private:
 	TWeakObjectPtr<UTartarusInventoryComponent> InventoryComponent = nullptr;
 	EInventoryType InventoryId = EInventoryType::MAX;
+#pragma endregion
+
+#pragma region Focus
+protected:
+	virtual UWidget* NativeGetDesiredFocusTarget() const override;
+	void OnWidgetGenerated(UUserWidget& GeneratedWidget);
 #pragma endregion
 };

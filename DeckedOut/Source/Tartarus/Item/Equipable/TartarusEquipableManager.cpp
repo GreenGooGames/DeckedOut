@@ -48,7 +48,7 @@ void UTartarusEquipableManager::BeginPlay()
 	UTartarusInventoryComponent* const Inventory = GetOwnerInventory();
 	if (IsValid(Inventory))
 	{
-		Inventory->OnInventoryChanged().AddUObject(this, &UTartarusEquipableManager::HandleInventoryUpdated);
+		Inventory->OnInventoryEntryUpdated().AddUObject(this, &UTartarusEquipableManager::HandleInventoryUpdated);
 	}
 }
 

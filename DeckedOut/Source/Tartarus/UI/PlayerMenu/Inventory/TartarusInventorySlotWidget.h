@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Blueprint/IUserObjectListEntry.h"
-#include "CommonActivatableWidget.h"
+#include "CommonButtonBase.h"
 #include "CoreMinimal.h"
 
 #include "TartarusInventorySlotWidget.generated.h"
@@ -15,7 +15,7 @@ class UCommonTextBlock;
  * 
  */
 UCLASS()
-class TARTARUS_API UTartarusInventorySlotWidget : public UCommonActivatableWidget, public IUserObjectListEntry
+class TARTARUS_API UTartarusInventorySlotWidget : public UCommonButtonBase, public IUserObjectListEntry
 {
 	GENERATED_BODY()
 

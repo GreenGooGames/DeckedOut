@@ -80,7 +80,7 @@ FInventoryStackId UTartarusInventoryComponent::StoreEntry(const UTartarusItem* c
 		return FInventoryStackId();
 	}
 	
-	OnInventoryChanged().Broadcast(EInventoryChanged::Stored, StackId, SubInventories[Entry->InventoryType].FindStack(StackId)->StackSize);
+	OnInventoryEntryUpdated().Broadcast(EInventoryChanged::Stored, StackId, SubInventories[Entry->InventoryType].FindStack(StackId)->StackSize);
 
 	return StackId;
 }
@@ -123,7 +123,7 @@ bool UTartarusInventoryComponent::RetrieveEntry(const FInventoryStackId& StackId
 	const FInventoryStack* const EntryStack = SubInventories.Contains(StackId.GetInventoryId()) ? SubInventories[StackId.GetInventoryId()].FindStack(StackId) : nullptr;
 	const int32 RemainingStackSize = EntryStack != nullptr ? EntryStack->StackSize : 0;
 
-	OnInventoryChanged().Broadcast(EInventoryChanged::Retrieved, StackId, RemainingStackSize);
+	OnInventoryEntryUpdated().Broadcast(EInventoryChanged::Retrieved, StackId, RemainingStackSize);
 
 	return true;
 }
@@ -281,7 +281,7 @@ void UTartarusInventoryComponent::OnItemDataRecieved(FGuid ASyncLoadRequestId, T
 	}
 
 	SubInventories[CurrentRequest->InventoryId].Sort(ItemsData);
-	OnInventoryUpdate().Broadcast();
+	OnInventoryContentUpdated().Broadcast();
 }
 
 FGetSortItemDataRequestInfo::FGetSortItemDataRequestInfo(const TArray<FPrimaryAssetId>& ItemIdsToLoad, EInventoryType SubInventoryId)
