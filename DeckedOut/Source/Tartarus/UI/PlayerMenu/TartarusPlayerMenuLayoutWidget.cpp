@@ -31,6 +31,17 @@ TOptional<FUIInputConfig> UTartarusPlayerMenuLayoutWidget::GetDesiredInputConfig
 {
 	return FUIInputConfig(ECommonInputMode::Menu, EMouseCaptureMode::NoCapture);
 }
+
+UWidget* UTartarusPlayerMenuLayoutWidget::NativeGetDesiredFocusTarget() const
+{
+	if (!IsValid(VisibilitySwitcher))
+	{
+		return nullptr;
+	}
+
+	UWidget* const WidgetToFocus = VisibilitySwitcher->GetActiveWidget();
+	return WidgetToFocus;
+}
 #pragma endregion
 
 #pragma region BoundActions

@@ -42,21 +42,6 @@ UCommonTileView* UTartarusSubInventoryViewWidget::GetTileView() const
 	return TileView;
 }
 
-void UTartarusSubInventoryViewWidget::NativeOnActivated()
-{
-	Super::NativeOnActivated();
-	
-	// Create entries for each item in the inventory or refresh the existing ones.
-	RefreshData();
-}
-
-void UTartarusSubInventoryViewWidget::NativeOnInitialized()
-{
-	Super::NativeOnInitialized();
-	
-	TileView->OnEntryWidgetGenerated().AddUObject(this, &UTartarusSubInventoryViewWidget::OnWidgetGenerated);
-}
-
 void UTartarusSubInventoryViewWidget::RefreshData()
 {
 	TArray<UTartarusInventorySlotWidgetData*> SlotsData;
@@ -97,6 +82,26 @@ UTartarusInventorySlotWidgetData* UTartarusSubInventoryViewWidget::CreateListIte
 
 	return SlotData;
 }
+
+#pragma region UCommonActivatableWidget
+void UTartarusSubInventoryViewWidget::NativeOnActivated()
+{
+	Super::NativeOnActivated();
+
+	// Create entries for each item in the inventory or refresh the existing ones.
+	RefreshData();
+}
+
+UWidget* UTartarusSubInventoryViewWidget::NativeGetDesiredFocusTarget() const
+{
+	if (!IsValid(TileView))
+	{
+		return nullptr;
+	}
+
+	return TileView;
+}
+#pragma endregion
 
 #pragma region ASyncLoading
 FGuid UTartarusSubInventoryViewWidget::AsyncRequestSetDisplayTexture(TArray<UTartarusInventorySlotWidgetData*> SlotsData)
@@ -253,30 +258,5 @@ void UTartarusSubInventoryViewWidget::OnInventoryEntryUpdated(EInventoryChanged 
 		// Update The data stored to reflect the inventory entry.
 		ItemData->UpdateData(InventoryEntry);
 	}
-}
-#pragma endregion
-
-#pragma region Focus
-UWidget* UTartarusSubInventoryViewWidget::NativeGetDesiredFocusTarget() const
-{
-	if (!IsValid(TileView))
-	{
-		return nullptr;
-	}
-
-	if (TileView->GetDisplayedEntryWidgets().Num() <= 0)
-	{
-		return nullptr;
-	}
-
-	// Set the focus on the 1st entry being displayed.
-	return TileView->GetDisplayedEntryWidgets()[0];
-}
-
-void UTartarusSubInventoryViewWidget::OnWidgetGenerated(UUserWidget& GeneratedWidget)
-{
-	//GeneratedWidget.SetFocus();
-	//
-	//TileView->OnEntryWidgetGenerated().RemoveAll(this);
 }
 #pragma endregion

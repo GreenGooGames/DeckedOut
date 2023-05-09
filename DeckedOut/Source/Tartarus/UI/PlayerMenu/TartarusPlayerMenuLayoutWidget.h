@@ -31,6 +31,9 @@ protected:
 #pragma region UCommonActivatableWidget
 public:
 	virtual TOptional<FUIInputConfig> GetDesiredInputConfig() const override;
+
+protected:
+	virtual UWidget* NativeGetDesiredFocusTarget() const override;
 #pragma endregion
 
 #pragma region BoundActions

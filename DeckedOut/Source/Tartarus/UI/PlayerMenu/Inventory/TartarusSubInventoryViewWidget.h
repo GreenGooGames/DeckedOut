@@ -46,10 +46,6 @@ public:
 	UCommonTileView* GetTileView() const;
 
 protected:
-	virtual void NativeOnInitialized() override;
-	virtual void NativeOnActivated() override;
-
-protected:
 	/*
 	* TileView holding all display entries that represent the Entry stored in the inventory.
 	*/
@@ -65,6 +61,12 @@ protected:
 	* Creates a new ListItem entry for the TileView.
 	*/
 	UTartarusInventorySlotWidgetData* CreateListItemData();
+
+#pragma region UCommonActivatableWidget
+protected:
+	virtual void NativeOnActivated() override;
+	virtual UWidget* NativeGetDesiredFocusTarget() const override;
+#pragma endregion
 
 #pragma region ASyncLoading
 protected:
@@ -100,11 +102,5 @@ protected:
 private:
 	TWeakObjectPtr<UTartarusInventoryComponent> InventoryComponent = nullptr;
 	EInventoryType InventoryId = EInventoryType::MAX;
-#pragma endregion
-
-#pragma region Focus
-protected:
-	virtual UWidget* NativeGetDesiredFocusTarget() const override;
-	void OnWidgetGenerated(UUserWidget& GeneratedWidget);
 #pragma endregion
 };
