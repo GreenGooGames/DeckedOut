@@ -82,8 +82,7 @@ protected:
 
 #pragma region ItemInfo
 protected:
-	UFUNCTION()
-		void HandleItemFocusChanged(UObject* Item, bool bIsHovered);
+	void HandleItemSelectionChanged(UObject* Item);
 
 	UPROPERTY(meta = (BindWidget))
 		TObjectPtr<UTartarusInventoryInfoWidget> SelectedItemInfo = nullptr;

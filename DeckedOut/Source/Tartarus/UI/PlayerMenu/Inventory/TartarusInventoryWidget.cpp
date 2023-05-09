@@ -84,8 +84,7 @@ void UTartarusInventoryWidget::ConstructInventoryView()
 		SubInventoryView->LinkInventory(InventoryComponent, InventoryId);
 		SubInventoryView->SetLocalizedWidgetName(InventoryComponent->GetSubInventoryName(InventoryId));
 
-		// TODO: Does this also work for Gamepad?
-		SubInventoryView->GetTileView()->OnItemIsHoveredChanged().AddUObject(this, &UTartarusInventoryWidget::HandleItemFocusChanged);
+		SubInventoryView->GetTileView()->OnItemSelectionChanged().AddUObject(this, &UTartarusInventoryWidget::HandleItemSelectionChanged);
 		SubInventoryView->GetTileView()->OnItemClicked().AddUObject(this, &UTartarusInventoryWidget::HandleItemClicked);
 	}
 }
@@ -154,15 +153,10 @@ void UTartarusInventoryWidget::SetupMenuSwitcher()
 #pragma endregion
 
 #pragma region ItemInfo
-void UTartarusInventoryWidget::HandleItemFocusChanged(UObject* Item, bool bIsHovered)
+void UTartarusInventoryWidget::HandleItemSelectionChanged(UObject* Item)
 {
 	UTartarusInventorySlotWidgetData* const WidgetData = Cast<UTartarusInventorySlotWidgetData>(Item);
 	if (!IsValid(WidgetData))
-	{
-		return;
-	}
-
-	if (!bIsHovered)
 	{
 		return;
 	}
