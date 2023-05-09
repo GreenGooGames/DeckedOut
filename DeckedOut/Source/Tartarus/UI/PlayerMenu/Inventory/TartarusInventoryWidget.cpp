@@ -113,28 +113,24 @@ void UTartarusInventoryWidget::HandleSelectAction()
 
 void UTartarusInventoryWidget::HandleSortAction()
 {
-#if WITH_EDITOR
-	GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Green, FString(*FString(__FUNCTION__)));
-#endif
-
 	const ATartarusPlayerController* const PlayerController = GetOwningPlayer<ATartarusPlayerController>();
 	if (!IsValid(PlayerController))
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: No player controller!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to sort the inventory: No player controller!"), *FString(__FUNCTION__));
 		return;
 	}
 
 	UTartarusInventoryComponent* const InventoryComponent = PlayerController->GetInventoryComponent();
 	if (!IsValid(InventoryComponent))
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: No inventory found!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to sort the inventory: No inventory found!"), *FString(__FUNCTION__));
 		return;
 	}
 
 	UTartarusSubInventoryViewWidget* const SubInventoryWidget = Cast<UTartarusSubInventoryViewWidget>(SubInventoryVisibilitySwitcher->GetActiveWidget());
 	if (!IsValid(SubInventoryWidget))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, SubInventoryWidget is invalid!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to sort the inventory: SubInventoryWidget is invalid!"), *FString(__FUNCTION__));
 		return;
 	}
 
