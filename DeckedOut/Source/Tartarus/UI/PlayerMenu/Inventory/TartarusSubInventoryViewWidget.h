@@ -41,8 +41,6 @@ class TARTARUS_API UTartarusSubInventoryViewWidget : public UTartarusActivatable
 	GENERATED_BODY()
 	
 public:
-	TArray<UTartarusContextAction*> GetContextActions();
-
 	UCommonTileView* GetTileView() const;
 
 protected:

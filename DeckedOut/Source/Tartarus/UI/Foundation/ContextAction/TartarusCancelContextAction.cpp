@@ -4,8 +4,9 @@
 #include "UI/Foundation/ContextAction/TartarusCancelContextAction.h"
 
 #include "UI/Foundation/ContextAction/TartarusContextMenuWidget.h"
+#include "UI/Foundation/ContextAction/TartarusContextActionListData.h"
 
-void UTartarusCancelContextAction::ExecuteAction()
+void UTartarusCancelContextAction::ExecuteAction(UTartarusContextActionListData* const ContextData)
 {
-	ParentMenu->DeactivateWidget();
+	ContextData->GetContextMenu()->DeactivateWidget();
 }

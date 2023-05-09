@@ -164,60 +164,29 @@ void UTartarusInventoryWidget::HandleItemSelectionChanged(UObject* Item)
 #pragma region Context
 void UTartarusInventoryWidget::HandleItemClicked(UObject* Item)
 {
-	// Get the data of the item that is being represented by the clicked slot.
-	UTartarusInventorySlotWidgetData* SlotData = Cast<UTartarusInventorySlotWidgetData>(Item);
-	if (!IsValid(SlotData))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, Slot is not of class UTartarusInventorySlotData!"), *FString(__FUNCTION__));
-		return;
-	}
-
-	if (SlotData->GetItemId() == FTartarusHelpers::InvalidItemId)
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, Slot does not contain a valid item!"), *FString(__FUNCTION__));
-		return;
-	}
-
-	// Create a new Widget or re-use one in the pool to represent the context menu.
+	// Validate that we can create a Context Widget.
 	if (!IsValid(ContextStack))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, ContextStack is invalid!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show Context Menu: ContextStack is invalid!"), *FString(__FUNCTION__));
 		return;
 	}
-	
-	UTartarusContextMenuWidget* ContextMenu = Cast<UTartarusContextMenuWidget>(ContextStack->GetActiveWidget());
+
+	const UTartarusInventorySlotWidgetData* const SlotData = Cast<UTartarusInventorySlotWidgetData>(Item);
+	if (!IsValid(SlotData))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show Context Menu: The Item clicked is not of an allowed class!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	// Create a context menu instance and pass trough our object.
+	// TODO: ASync loading
+	UTartarusContextMenuWidget* const ContextMenu = ContextStack->AddWidget<UTartarusContextMenuWidget>(ContextMenuTemplate.LoadSynchronous());
 	if (!IsValid(ContextMenu))
 	{
-		// TODO: ASync Load
-		ContextMenu = ContextStack->AddWidget<UTartarusContextMenuWidget>(ContextMenuTemplate.LoadSynchronous());
-		if (!IsValid(ContextMenu))
-		{
-			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, Could not create a contextmenu widget!"), *FString(__FUNCTION__));
-			return;
-		}
-	}
-
-	// A Context Menu is now available, store a reference to the item that it has to represent.
-	ContextMenu->SetContextItem(SlotData);
-
-	UTartarusSubInventoryViewWidget* const SubInventoryWidget = Cast<UTartarusSubInventoryViewWidget>(SubInventoryVisibilitySwitcher->GetActiveWidget());
-	if (!IsValid(SubInventoryWidget))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to create show Context Menu, SubInventoryWidget is invalid!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show Context Menu: Could not create a contextmenu widget!"), *FString(__FUNCTION__));
 		return;
 	}
 
-	// Create all the buttons required to show.
-	if (ContextMenu->ContainsEntries())
-	{
-		return;
-	}
-
-	const TArray<UTartarusContextAction*>& ContextActions = SubInventoryWidget->GetContextActions();
-	for (UTartarusContextAction* const ContextAction : ContextActions)
-	{
-		ContextAction->SetParentMenu(ContextMenu);
-		ContextMenu->AddEntry(ContextAction);
-	}
+	ContextMenu->SetContext(SlotData);
 }
 #pragma endregion

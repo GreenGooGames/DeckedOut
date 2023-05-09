@@ -10,7 +10,7 @@
 class UTartarusContextAction;
 class UTartarusInventorySlotWidgetData;
 class UTartarusTextButton;
-class UVerticalBox;
+class UCommonListView;
 
 /**
  * 
@@ -21,22 +21,16 @@ class TARTARUS_API UTartarusContextMenuWidget : public UCommonActivatableWidget
 	GENERATED_BODY()
 	
 public:
-	void SetContextItem(UTartarusInventorySlotWidgetData* const Item);
-	TWeakObjectPtr<UTartarusInventorySlotWidgetData> GetContextItem() const { return ContextItem; }
-
-	// Add an entry with behavior.
-	bool AddEntry(UTartarusContextAction* const ContextAction);
-
-	bool ContainsEntries() const;
+	void SetContext(const UTartarusInventorySlotWidgetData* const SlotWidgetData);
 
 protected:
-	UPROPERTY(EditDefaultsOnly)
-		TSoftClassPtr<UTartarusTextButton> EntryTemplate;
-
 	UPROPERTY(meta = (BindWidget))
-		TObjectPtr<UVerticalBox> EntryBox = nullptr;
+		TObjectPtr<UCommonListView> ListView = nullptr;
 
-private:
-	// The item that this widget is the context for.
-	TWeakObjectPtr<UTartarusInventorySlotWidgetData> ContextItem = nullptr;
+	bool CreateEntry(UTartarusContextAction* const ContextAction, const UTartarusInventorySlotWidgetData* const Item);
+
+#pragma region UCommonActivatableWidget
+protected:
+	virtual UWidget* NativeGetDesiredFocusTarget() const override;
+#pragma endregion
 };

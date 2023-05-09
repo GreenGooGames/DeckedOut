@@ -22,21 +22,6 @@ FUpdateInventoryUIRequestInfo::FUpdateInventoryUIRequestInfo(TArray<UTartarusInv
 }
 #pragma endregion
 
-TArray<UTartarusContextAction*> UTartarusSubInventoryViewWidget::GetContextActions()
-{
-	TArray<UTartarusContextAction*> ContextActions;
-
-	if (!IsValid(InventoryComponent.Get()))
-	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to retrieve context actions: Inventory is invalid!"), *FString(__FUNCTION__));
-		return ContextActions;
-	}
-
-	ContextActions = InventoryComponent->GetSubInventoryContextActions(InventoryId);
-
-	return ContextActions;
-}
-
 UCommonTileView* UTartarusSubInventoryViewWidget::GetTileView() const
 {
 	return TileView;

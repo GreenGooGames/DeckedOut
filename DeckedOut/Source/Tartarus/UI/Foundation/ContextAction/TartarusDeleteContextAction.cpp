@@ -8,10 +8,11 @@
 #include "Player/TartarusPlayerController.h"
 #include "UI/Foundation/ContextAction/TartarusContextMenuWidget.h"
 #include "UI/PlayerMenu/Inventory/TartarusInventorySlotWidgetData.h"
+#include "UI/Foundation/ContextAction/TartarusContextActionListData.h"
 
-void UTartarusDeleteContextAction::ExecuteAction()
+void UTartarusDeleteContextAction::ExecuteAction(UTartarusContextActionListData* const ContextData)
 {
-	const ATartarusPlayerController* const PlayerController = ParentMenu->GetOwningPlayer<ATartarusPlayerController>();
+	const ATartarusPlayerController* const PlayerController = ContextData->GetContextMenu()->GetOwningPlayer<ATartarusPlayerController>();
 	if (!IsValid(PlayerController))
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to perform Delete action: No player controller!"), *FString(__FUNCTION__));
@@ -25,12 +26,12 @@ void UTartarusDeleteContextAction::ExecuteAction()
 		return;
 	}
 
-	if (!IsValid(ParentMenu->GetContextItem().Get()))
+	if (!IsValid(ContextData->GetContextItemData().Get()))
 	{
 		return;
 	}
 
-	const FInventoryStackId& InventoryStackId = ParentMenu->GetContextItem()->GetInventoryStackId();
+	const FInventoryStackId& InventoryStackId = ContextData->GetContextItemData()->GetInventoryStackId();
 	bool bIsRetrieved = InventoryComponent->RetrieveEntry(InventoryStackId, 1);
 
 	if (!bIsRetrieved)
@@ -41,6 +42,6 @@ void UTartarusDeleteContextAction::ExecuteAction()
 	// If the ID has turned invalid, then no more items are left in the inventory. Close the context menu.
 	if (!InventoryStackId.IsValid())
 	{
-		ParentMenu->DeactivateWidget();
+		ContextData->GetContextMenu()->DeactivateWidget();
 	}
 }

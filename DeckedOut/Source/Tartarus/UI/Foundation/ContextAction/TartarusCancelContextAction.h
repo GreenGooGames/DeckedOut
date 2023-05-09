@@ -17,5 +17,5 @@ class TARTARUS_API UTartarusCancelContextAction : public UTartarusContextAction
 	
 public:
 	// Close the ContextMenu this action belongs to.
-	virtual void ExecuteAction() override;
+	virtual void ExecuteAction(UTartarusContextActionListData* const ContextData) override;
 };

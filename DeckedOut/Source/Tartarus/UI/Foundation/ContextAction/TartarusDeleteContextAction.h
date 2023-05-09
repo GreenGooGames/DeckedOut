@@ -16,5 +16,5 @@ class TARTARUS_API UTartarusDeleteContextAction : public UTartarusContextAction
 	GENERATED_BODY()
 	
 public:
-	virtual void ExecuteAction() override;
+	virtual void ExecuteAction(UTartarusContextActionListData* const ContextData) override;
 };

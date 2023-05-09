@@ -3,9 +3,4 @@
 
 #include "UI/Foundation/ContextAction/TartarusContextAction.h"
 
-#include "UI/Foundation/ContextAction/TartarusContextMenuWidget.h"
-
-void UTartarusContextAction::SetParentMenu(UTartarusContextMenuWidget* const Menu)
-{
-	ParentMenu = Menu;
-}
+#include "UI/Foundation/ContextAction/TartarusContextActionListData.h"
