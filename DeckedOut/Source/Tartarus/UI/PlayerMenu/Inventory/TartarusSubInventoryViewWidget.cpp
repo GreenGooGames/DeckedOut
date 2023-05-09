@@ -205,6 +205,9 @@ void UTartarusSubInventoryViewWidget::LinkInventory(UTartarusInventoryComponent*
 
 	InventoryComponent->OnInventoryEntryUpdated().AddUObject(this, &UTartarusSubInventoryViewWidget::OnInventoryEntryUpdated);
 	InventoryComponent->OnInventoryContentUpdated().AddUObject(this, &UTartarusSubInventoryViewWidget::RefreshData);
+
+	// Create entries for each item in the inventory or refresh the existing ones.
+	RefreshData();
 }
 
 const TArray<FInventoryStack>* UTartarusSubInventoryViewWidget::GetInventoryEntries() const
@@ -272,8 +275,8 @@ UWidget* UTartarusSubInventoryViewWidget::NativeGetDesiredFocusTarget() const
 
 void UTartarusSubInventoryViewWidget::OnWidgetGenerated(UUserWidget& GeneratedWidget)
 {
-	GeneratedWidget.SetFocus();
-
-	TileView->OnEntryWidgetGenerated().RemoveAll(this);
+	//GeneratedWidget.SetFocus();
+	//
+	//TileView->OnEntryWidgetGenerated().RemoveAll(this);
 }
 #pragma endregion
