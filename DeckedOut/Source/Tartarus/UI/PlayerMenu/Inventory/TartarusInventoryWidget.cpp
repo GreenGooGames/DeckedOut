@@ -93,22 +93,10 @@ void UTartarusInventoryWidget::ConstructInventoryView()
 #pragma region BoundActions
 void UTartarusInventoryWidget::RegisterBoundInputActions()
 {
-	FBindUIActionArgs SelectBoundActionArguments = FBindUIActionArgs(SelectInputActionData, true, FSimpleDelegate::CreateUObject(this, &ThisClass::HandleSelectAction));
-	SelectBoundActionArguments.bDisplayInActionBar = true;
-
-	SelectActionHandle = RegisterUIActionBinding(SelectBoundActionArguments);
-
 	FBindUIActionArgs SortBoundActionArguments = FBindUIActionArgs(SortInputActionData, true, FSimpleDelegate::CreateUObject(this, &ThisClass::HandleSortAction));
 	SortBoundActionArguments.bDisplayInActionBar = true;
 
 	SortActionHandle = RegisterUIActionBinding(SortBoundActionArguments);
-}
-
-void UTartarusInventoryWidget::HandleSelectAction()
-{
-#if WITH_EDITOR
-	GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Green, FString(*FString(__FUNCTION__)));
-#endif
 }
 
 void UTartarusInventoryWidget::HandleSortAction()
@@ -164,7 +152,7 @@ void UTartarusInventoryWidget::HandleItemSelectionChanged(UObject* Item)
 #pragma region Context
 void UTartarusInventoryWidget::HandleItemClicked(UObject* Item)
 {
-	// Validate that we can create a Context Widget.
+	// Validate that we can create a Modal Context Widget.
 	if (!IsValid(ContextStack))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show Context Menu: ContextStack is invalid!"), *FString(__FUNCTION__));
@@ -178,6 +166,12 @@ void UTartarusInventoryWidget::HandleItemClicked(UObject* Item)
 		return;
 	}
 
+	if (SlotData->GetItemId() == FTartarusHelpers::InvalidItemId)
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show Context Menu: The Item Id is invalid!"), *FString(__FUNCTION__));
+		return;
+	}
+
 	// Create a context menu instance and pass trough our object.
 	// TODO: ASync loading
 	UTartarusContextMenuWidget* const ContextMenu = ContextStack->AddWidget<UTartarusContextMenuWidget>(ContextMenuTemplate.LoadSynchronous());
@@ -186,6 +180,8 @@ void UTartarusInventoryWidget::HandleItemClicked(UObject* Item)
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show Context Menu: Could not create a contextmenu widget!"), *FString(__FUNCTION__));
 		return;
 	}
+
+	ensureMsgf(ContextMenu->IsModal(), TEXT("%s: Showing a Context Widget that is not Modal. This widget should be modal to prevent action/input touring to other widgets."), *FString(__FUNCTION__));
 
 	ContextMenu->SetContext(SlotData);
 }

@@ -16,12 +16,6 @@ void UTartarusContextMenuWidget::SetContext(const UTartarusInventorySlotWidgetDa
 {
 	ListView->ClearListItems();
 
-	if (Item->GetItemId() == FTartarusHelpers::InvalidItemId)
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show Context Menu: The Item Id is invalid!"), *FString(__FUNCTION__));
-		return;
-	}
-
 	// TODO: UI Actions should not be stored inside of the UI agnostic InventoryComponent.
 	UTartarusInventoryComponent* const PlayerInventoryComponent = GetOwningPlayer()->FindComponentByClass<UTartarusInventoryComponent>();
 	if (!IsValid(PlayerInventoryComponent))
