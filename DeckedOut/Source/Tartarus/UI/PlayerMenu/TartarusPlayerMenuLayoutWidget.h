@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "UI/Foundation/TartarusLayoutWidget.h"
-#include "Engine/DataTable.h"
 
 #include "TartarusPlayerMenuLayoutWidget.generated.h"
 
@@ -27,27 +26,11 @@ protected:
 		TObjectPtr<UCommonVisibilitySwitcher> VisibilitySwitcher = nullptr;
 
 	virtual void NativeOnInitialized() override;
+
 	void SetupMenuSwitcher();
 
 #pragma region UCommonActivatableWidget
-public:
-	virtual TOptional<FUIInputConfig> GetDesiredInputConfig() const override;
-
 protected:
 	virtual UWidget* NativeGetDesiredFocusTarget() const override;
-#pragma endregion
-
-#pragma region BoundActions
-protected:
-	// Input action to close the GameMenu.
-	UPROPERTY(EditDefaultsOnly, Category = Input, meta = (RowType = CommonInputActionDataBase))
-		FDataTableRowHandle ExitInputActionData;
-
-private:
-	FUIActionBindingHandle ExitActionHandle;
-
-	void RegisterBoundInputActions();
-	void HandleExitAction();
-
 #pragma endregion
 };

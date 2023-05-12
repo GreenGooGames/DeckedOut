@@ -4,10 +4,6 @@
 #include "UI/PlayerMenu/TartarusPlayerMenuLayoutWidget.h"
 
 #include "CommonVisibilitySwitcher.h"
-#include "Engine/Engine.h"
-#include "Input/CommonUIInputTypes.h"
-#include "Player/TartarusPlayerController.h"
-#include "UI/Foundation/TartarusPrimaryGameLayout.h"
 #include "UI/Foundation/TartarusSwitcherWidget.h"
 
 void UTartarusPlayerMenuLayoutWidget::NativeOnInitialized()
@@ -15,7 +11,6 @@ void UTartarusPlayerMenuLayoutWidget::NativeOnInitialized()
 	Super::NativeOnInitialized();
 
 	SetupMenuSwitcher();
-	RegisterBoundInputActions();
 }
 
 void UTartarusPlayerMenuLayoutWidget::SetupMenuSwitcher()
@@ -27,11 +22,6 @@ void UTartarusPlayerMenuLayoutWidget::SetupMenuSwitcher()
 }
 
 #pragma region UCommonActivatableWidget
-TOptional<FUIInputConfig> UTartarusPlayerMenuLayoutWidget::GetDesiredInputConfig() const
-{
-	return FUIInputConfig(ECommonInputMode::Menu, EMouseCaptureMode::NoCapture);
-}
-
 UWidget* UTartarusPlayerMenuLayoutWidget::NativeGetDesiredFocusTarget() const
 {
 	if (!IsValid(VisibilitySwitcher))
@@ -41,28 +31,5 @@ UWidget* UTartarusPlayerMenuLayoutWidget::NativeGetDesiredFocusTarget() const
 
 	UWidget* const WidgetToFocus = VisibilitySwitcher->GetActiveWidget();
 	return WidgetToFocus;
-}
-#pragma endregion
-
-#pragma region BoundActions
-void UTartarusPlayerMenuLayoutWidget::RegisterBoundInputActions()
-{
-	FBindUIActionArgs ExitBoundActionArguments = FBindUIActionArgs(ExitInputActionData, true, FSimpleDelegate::CreateUObject(this, &UTartarusPlayerMenuLayoutWidget::HandleExitAction));
-	ExitBoundActionArguments.bDisplayInActionBar = true;
-
-	ExitActionHandle = RegisterUIActionBinding(ExitBoundActionArguments);
-}
-
-void UTartarusPlayerMenuLayoutWidget::HandleExitAction()
-{
-	ATartarusPlayerController* const PlayerController = GetOwningPlayer<ATartarusPlayerController>();
-	if (IsValid(PlayerController))
-	{
-		UTartarusPrimaryGameLayout* const PrimaryGameLayoutInstance = PlayerController->GetPrimaryGameLayout();
-		if (PrimaryGameLayoutInstance)
-		{
-			PrimaryGameLayoutInstance->PopWidgetFromLayer(GetOwningLayerName(), this);
-		}
-	}
 }
 #pragma endregion

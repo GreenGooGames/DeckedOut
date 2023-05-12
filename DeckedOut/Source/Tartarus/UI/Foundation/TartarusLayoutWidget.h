@@ -17,6 +17,9 @@ class TARTARUS_API UTartarusLayoutWidget : public UCommonActivatableWidget
 	GENERATED_BODY()
 	
 public:
+	bool NativeOnHandleBackAction() override;
+	virtual TOptional<FUIInputConfig> GetDesiredInputConfig() const override;
+
 	FORCEINLINE void SetOwningLayerName(const FGameplayTag& LayerName);
 	FORCEINLINE FGameplayTag& GetOwningLayerName();
 
