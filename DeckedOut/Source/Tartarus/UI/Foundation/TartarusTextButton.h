@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CommonButtonBase.h"
+#include "UI/Foundation/TartarusButtonBase.h"
 #include "CoreMinimal.h"
 
 #include "TartarusTextButton.generated.h"
@@ -13,7 +13,7 @@ class UCommonTextBlock;
  * 
  */
 UCLASS()
-class TARTARUS_API UTartarusTextButton : public UCommonButtonBase
+class TARTARUS_API UTartarusTextButton : public UTartarusButtonBase
 {
 	GENERATED_BODY()
 

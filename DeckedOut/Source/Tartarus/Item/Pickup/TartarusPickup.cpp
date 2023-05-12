@@ -9,6 +9,8 @@
 #include "Item/System/TartarusItemSubsystem.h"
 #include "Item/TartarusItem.h"
 #include "Logging/TartarusLogChannels.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/World.h"
 
 #pragma region FPickupRequestInfo
 FPickupRequestInfo::FPickupRequestInfo(UTartarusInventoryComponent* const InstigatorInventory)

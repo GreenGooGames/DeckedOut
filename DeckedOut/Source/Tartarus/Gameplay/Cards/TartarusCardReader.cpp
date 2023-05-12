@@ -10,6 +10,8 @@
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/System/TartarusItemSubsystem.h"
 #include "Logging/TartarusLogChannels.h"
+#include "Engine/World.h"
+#include "Engine/Engine.h"
 
 #pragma region ASyncLoading
 FGetCardDataRequestInfo::FGetCardDataRequestInfo(ATartarusTreasureHuntGameState* const TargetGameState, TMap<FPrimaryAssetId, int32>& CardsToLoad)

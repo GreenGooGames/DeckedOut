@@ -8,6 +8,7 @@
 #include "UI/Foundation/ContextAction/TartarusContextMenuWidget.h"
 #include "UI/PlayerMenu/Inventory/TartarusInventorySlotWidgetData.h"
 #include "UI/Foundation/ContextAction/TartarusContextActionListData.h"
+#include "GameFramework/Pawn.h"
 
 void UTartarusEquipContextAction::ExecuteAction(UTartarusContextActionListData* const ContextData)
 {

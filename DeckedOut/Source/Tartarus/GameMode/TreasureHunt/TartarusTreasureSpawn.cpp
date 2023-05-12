@@ -5,6 +5,7 @@
 
 #include "GameMode/TreasureHunt/TartarusTreasureSubsystem.h"
 #include "Logging/TartarusLogChannels.h"
+#include "Engine/World.h"
 
 #if WITH_EDITORONLY_DATA
 #include "UObject/ConstructorHelpers.h"

@@ -7,6 +7,7 @@
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameMode.h"
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
 #include "Logging/TartarusLogChannels.h"
+#include "Engine/World.h"
 
 void ATartarusTreasureHuntEntrance::PostInitializeComponents()
 {

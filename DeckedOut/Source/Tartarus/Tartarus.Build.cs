@@ -7,8 +7,9 @@ public class Tartarus : ModuleRules
 	public Tartarus(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		bEnforceIWYU = true;
 
-		PublicIncludePaths.AddRange(
+        PublicIncludePaths.AddRange(
 			new string[] {
 				"Tartarus"
 			}

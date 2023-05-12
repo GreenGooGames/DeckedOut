@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UI/Foundation/TartarusLayoutWidget.h"
+#include "Engine/DataTable.h"
 
 #include "TartarusGameplayHUDLayoutWidget.generated.h"
 

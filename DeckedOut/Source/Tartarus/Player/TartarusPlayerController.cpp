@@ -11,6 +11,7 @@
 #include "Logging/TartarusLogChannels.h"
 #include "System/TartarusAssetManager.h"
 #include "UI/Foundation/TartarusPrimaryGameLayout.h"
+#include "GameFramework/Pawn.h"
 
 ATartarusPlayerController::ATartarusPlayerController()
 {

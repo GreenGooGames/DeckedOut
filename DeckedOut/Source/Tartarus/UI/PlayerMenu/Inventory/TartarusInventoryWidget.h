@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UI/Foundation/TartarusActivatableWidget.h"
+#include "Engine/DataTable.h"
 
 #include "TartarusInventoryWidget.generated.h"
 

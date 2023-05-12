@@ -7,6 +7,7 @@
 #include "Item/Equipable/TartarusEquipableManager.h"
 #include "Logging/TartarusLogChannels.h"
 #include "Player/TartarusPlayerCharacter.h"
+#include "Engine/World.h"
 
 #if WITH_EDITOR
 #include "Components/ArrowComponent.h"

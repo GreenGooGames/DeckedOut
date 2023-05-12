@@ -11,6 +11,7 @@
 #include "Item/TartarusItem.h"
 #include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
+#include "Engine/World.h"
 
 #pragma region ASyncEquip
 FEquipRequestInfo::FEquipRequestInfo(const FInventoryStackId& StackId, const EEquipmentSlot Slots)
