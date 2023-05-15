@@ -93,7 +93,7 @@ void UTartarusInventoryWidget::ConstructInventoryView()
 #pragma region BoundActions
 void UTartarusInventoryWidget::RegisterBoundInputActions()
 {
-	FBindUIActionArgs SortBoundActionArguments = FBindUIActionArgs(SortInputActionData, true, FSimpleDelegate::CreateUObject(this, &ThisClass::HandleSortAction));
+	FBindUIActionArgs SortBoundActionArguments = FBindUIActionArgs(SortInventoryEnhancedInputAction, true, FSimpleDelegate::CreateUObject(this, &UTartarusInventoryWidget::HandleSortAction));
 	SortBoundActionArguments.bDisplayInActionBar = true;
 
 	SortActionHandle = RegisterUIActionBinding(SortBoundActionArguments);

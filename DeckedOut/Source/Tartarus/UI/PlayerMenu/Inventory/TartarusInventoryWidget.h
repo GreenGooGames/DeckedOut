@@ -4,12 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "UI/Foundation/TartarusActivatableWidget.h"
-#include "Engine/DataTable.h"
 
 #include "TartarusInventoryWidget.generated.h"
 
 class UCommonActivatableWidgetStack;
 class UCommonVisibilitySwitcher;
+class UInputAction;
 class UTartarusContextMenuWidget;
 class UTartarusInventoryInfoWidget;
 class UTartarusInventorySlotWidgetData;
@@ -45,8 +45,9 @@ protected:
 #pragma region BoundActions
 protected:
 	// Input action to sort the Inventory.
-	UPROPERTY(EditDefaultsOnly, Category = Input, meta = (RowType = CommonInputActionDataBase))
-		FDataTableRowHandle SortInputActionData;
+	UPROPERTY(EditDefaultsOnly, Category = Input, meta = (EditCondition = "CommonInput.CommonInputSettings.IsEnhancedInputSupportEnabled", EditConditionHides))
+		TObjectPtr<UInputAction> SortInventoryEnhancedInputAction;
+
 
 private:
 	FUIActionBindingHandle SortActionHandle;

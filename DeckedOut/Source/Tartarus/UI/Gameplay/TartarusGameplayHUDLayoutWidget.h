@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "UI/Foundation/TartarusLayoutWidget.h"
-#include "Engine/DataTable.h"
 
 #include "TartarusGameplayHUDLayoutWidget.generated.h"
+
+class UInputAction;
 
 /**
  * 
@@ -35,8 +36,8 @@ public:
 #pragma region BoundActions
 protected:
 	// Input action to open the PlayerMenu.
-	UPROPERTY(EditDefaultsOnly, Category = Input, meta = (RowType = CommonInputActionDataBase))
-		FDataTableRowHandle OpenPlayerMenuInputActionData;
+	UPROPERTY(EditDefaultsOnly, Category = Input, meta = (EditCondition = "CommonInput.CommonInputSettings.IsEnhancedInputSupportEnabled", EditConditionHides))
+		TObjectPtr<UInputAction> OpenPlayerMenuEnhancedInputAction;
 
 private:
 	FUIActionBindingHandle OpenPlayerMenuActionHandle;

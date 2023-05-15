@@ -25,7 +25,7 @@ TOptional<FUIInputConfig> UTartarusGameplayHUDLayoutWidget::GetDesiredInputConfi
 #pragma region BoundActions
 void UTartarusGameplayHUDLayoutWidget::RegisterBoundInputActions()
 {
-	FBindUIActionArgs OpenPlayerMenuBoundActionArguments = FBindUIActionArgs(OpenPlayerMenuInputActionData, true, FSimpleDelegate::CreateUObject(this, &UTartarusGameplayHUDLayoutWidget::HandleOpenPlayerMenuAction));
+	FBindUIActionArgs OpenPlayerMenuBoundActionArguments = FBindUIActionArgs(OpenPlayerMenuEnhancedInputAction, true, FSimpleDelegate::CreateUObject(this, &UTartarusGameplayHUDLayoutWidget::HandleOpenPlayerMenuAction));
 	OpenPlayerMenuBoundActionArguments.bDisplayInActionBar = true;
 
 	OpenPlayerMenuActionHandle = RegisterUIActionBinding(OpenPlayerMenuBoundActionArguments);
