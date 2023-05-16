@@ -29,6 +29,12 @@ void UTartarusInventoryWidget::NativeOnInitialized()
 	SetupMenuSwitcher();
 
 	SelectedItemInfo->DeactivateWidget();
+
+	SubInventoryMenuSwitcher->BindVisibilityToActivation(ContextMenu);
+	SubInventoryMenuSwitcher->SetBindVisibilities(ESlateVisibility::HitTestInvisible, ESlateVisibility::Visible, false);
+	ContextMenu->OnActivated().AddLambda([&]() {SubInventoryVisibilitySwitcher->SetVisibility(ESlateVisibility::HitTestInvisible); });
+	ContextMenu->OnDeactivated().AddLambda([&]() {SubInventoryVisibilitySwitcher->SetVisibility(ESlateVisibility::Visible); });
+
 	ContextMenu->DeactivateWidget();
 }
 
@@ -175,6 +181,7 @@ void UTartarusInventoryWidget::HandleItemClicked(UObject* Item)
 
 	ensureMsgf(ContextMenu->IsModal(), TEXT("%s: Showing a Context Widget that is not Modal. This widget should be modal to prevent action/input touring to other widgets."), *FString(__FUNCTION__));
 
+	// Show the Context Menu if needed and set the correct data.
 	if (!ContextMenu->IsActivated())
 	{
 		ContextMenu->ActivateWidget();
