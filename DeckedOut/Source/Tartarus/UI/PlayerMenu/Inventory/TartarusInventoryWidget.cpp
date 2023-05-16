@@ -29,6 +29,7 @@ void UTartarusInventoryWidget::NativeOnInitialized()
 	SetupMenuSwitcher();
 
 	SelectedItemInfo->DeactivateWidget();
+	ContextMenu->DeactivateWidget();
 }
 
 UWidget* UTartarusInventoryWidget::NativeGetDesiredFocusTarget() const
@@ -153,9 +154,9 @@ void UTartarusInventoryWidget::HandleItemSelectionChanged(UObject* Item)
 void UTartarusInventoryWidget::HandleItemClicked(UObject* Item)
 {
 	// Validate that we can create a Modal Context Widget.
-	if (!IsValid(ContextStack))
+	if (!IsValid(ContextMenu))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show Context Menu: ContextStack is invalid!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show Context Menu: ContextMenu is invalid!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -172,16 +173,12 @@ void UTartarusInventoryWidget::HandleItemClicked(UObject* Item)
 		return;
 	}
 
-	// Create a context menu instance and pass trough our object.
-	// TODO: ASync loading
-	UTartarusContextMenuWidget* const ContextMenu = ContextStack->AddWidget<UTartarusContextMenuWidget>(ContextMenuTemplate.LoadSynchronous());
-	if (!IsValid(ContextMenu))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to show Context Menu: Could not create a contextmenu widget!"), *FString(__FUNCTION__));
-		return;
-	}
-
 	ensureMsgf(ContextMenu->IsModal(), TEXT("%s: Showing a Context Widget that is not Modal. This widget should be modal to prevent action/input touring to other widgets."), *FString(__FUNCTION__));
+
+	if (!ContextMenu->IsActivated())
+	{
+		ContextMenu->ActivateWidget();
+	}
 
 	ContextMenu->SetContext(SlotData);
 }

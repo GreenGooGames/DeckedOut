@@ -86,13 +86,9 @@ protected:
 
 #pragma region Context
 protected:
-	UPROPERTY(EditDefaultsOnly)
-		TSoftClassPtr<UTartarusContextMenuWidget> ContextMenuTemplate;
+	UPROPERTY(meta = (BindWidget))
+		TObjectPtr<UTartarusContextMenuWidget> ContextMenu;
 
 	void HandleItemClicked(UObject* Item);
-
-private:
-	UPROPERTY(meta = (BindWidget))
-		TObjectPtr<UCommonActivatableWidgetStack> ContextStack = nullptr;
 #pragma endregion
 };
