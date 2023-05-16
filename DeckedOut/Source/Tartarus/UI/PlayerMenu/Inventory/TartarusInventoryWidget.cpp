@@ -19,6 +19,7 @@
 #include "UI/PlayerMenu/Inventory/TartarusInventorySlotWidgetData.h"
 #include "UI/PlayerMenu/Inventory/TartarusSubInventoryViewWidget.h"
 #include "Widgets/CommonActivatableWidgetContainer.h"
+#include "UI/PlayerMenu/TartarusPlayerMenuLayoutWidget.h"
 
 void UTartarusInventoryWidget::NativeOnInitialized()
 {
@@ -32,8 +33,26 @@ void UTartarusInventoryWidget::NativeOnInitialized()
 
 	SubInventoryMenuSwitcher->BindVisibilityToActivation(ContextMenu);
 	SubInventoryMenuSwitcher->SetBindVisibilities(ESlateVisibility::HitTestInvisible, ESlateVisibility::Visible, false);
+
 	ContextMenu->OnActivated().AddLambda([&]() {SubInventoryVisibilitySwitcher->SetVisibility(ESlateVisibility::HitTestInvisible); });
 	ContextMenu->OnDeactivated().AddLambda([&]() {SubInventoryVisibilitySwitcher->SetVisibility(ESlateVisibility::Visible); });
+
+	ContextMenu->OnActivated().AddLambda([&]() 
+		{
+			UTartarusPlayerMenuLayoutWidget* PlayerLayoutWidget = FindParentOfType<UTartarusPlayerMenuLayoutWidget>();
+			if (IsValid(PlayerLayoutWidget))
+			{
+				PlayerLayoutWidget->GetMenuSwitcher()->SetVisibility(ESlateVisibility::HitTestInvisible);
+			}
+		});
+	ContextMenu->OnDeactivated().AddLambda([&]() 
+		{
+			UTartarusPlayerMenuLayoutWidget* PlayerLayoutWidget = FindParentOfType<UTartarusPlayerMenuLayoutWidget>();
+			if (IsValid(PlayerLayoutWidget))
+			{
+				PlayerLayoutWidget->GetMenuSwitcher()->SetVisibility(ESlateVisibility::Visible);
+			}
+		});
 
 	ContextMenu->DeactivateWidget();
 }
@@ -188,5 +207,32 @@ void UTartarusInventoryWidget::HandleItemClicked(UObject* Item)
 	}
 
 	ContextMenu->SetContext(SlotData);
+}
+
+template<typename T>
+T* UTartarusInventoryWidget::FindParentOfType()
+{
+	// https://dev.epicgames.com/community/snippets/BXj/unreal-engine-get-parent-widget-of-class
+	if (UObject* Top = GetParent())
+	{
+		for (;;)
+		{
+			UObject* CurrentOuter = Top->GetOuter();
+			if (CurrentOuter->IsA(T::StaticClass()))
+			{
+				return Cast<T>(CurrentOuter);
+			}
+			else if (CurrentOuter->IsA<UWidgetTree>() || CurrentOuter->IsA<UWidget>())
+			{
+				Top = CurrentOuter;
+			}
+			else
+			{
+				return nullptr;
+			}
+		}
+	}
+
+	return nullptr;
 }
 #pragma endregion

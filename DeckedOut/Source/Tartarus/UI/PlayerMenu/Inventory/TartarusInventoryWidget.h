@@ -90,5 +90,8 @@ protected:
 		TObjectPtr<UTartarusContextMenuWidget> ContextMenu;
 
 	void HandleItemClicked(UObject* Item);
+
+	template<typename T>
+	T* FindParentOfType();
 #pragma endregion
 };

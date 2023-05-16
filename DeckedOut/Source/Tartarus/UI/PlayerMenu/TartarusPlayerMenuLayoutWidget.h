@@ -19,6 +19,9 @@ class TARTARUS_API UTartarusPlayerMenuLayoutWidget : public UTartarusLayoutWidge
 {
 	GENERATED_BODY()
 	
+public:
+	UTartarusSwitcherWidget* GetMenuSwitcher() const { return MenuSwitcher; }
+
 protected:
 	UPROPERTY(meta = (BindWidget))
 		TObjectPtr<UTartarusSwitcherWidget> MenuSwitcher = nullptr;
