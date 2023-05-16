@@ -9,6 +9,7 @@
 
 class UTartarusSwitcherWidget;
 class UCommonVisibilitySwitcher;
+class UTartarusActionBarWidget;
 
 /**
  * 
@@ -24,6 +25,9 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 		TObjectPtr<UCommonVisibilitySwitcher> VisibilitySwitcher = nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+		TObjectPtr<UTartarusActionBarWidget> BoundActionBarWidget = nullptr;
 
 	virtual void NativeOnInitialized() override;
 
