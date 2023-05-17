@@ -41,4 +41,9 @@ public:
 	* Disables future possible interactions.
 	*/
 	virtual void DisableInteraction() = 0;
+
+	/*
+	* Toggles visibility of the UI Interaction Prompt for this object.
+	*/
+	virtual bool ToggleInteractionPrompt(const bool bShowPrompt) = 0;
 };

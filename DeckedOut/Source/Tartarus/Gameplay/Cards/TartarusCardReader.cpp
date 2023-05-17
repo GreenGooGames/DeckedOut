@@ -12,6 +12,9 @@
 #include "Logging/TartarusLogChannels.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
+#include "TartarusCardReader.h"
+#include "UI/Gameplay/TartarusInteractionWidget.h"
+#include "UI/Foundation/TartarusWidgetComponent.h"
 
 #pragma region ASyncLoading
 FGetCardDataRequestInfo::FGetCardDataRequestInfo(ATartarusTreasureHuntGameState* const TargetGameState, TMap<FPrimaryAssetId, int32>& CardsToLoad)
@@ -53,6 +56,9 @@ ATartarusCardReader::ATartarusCardReader()
 	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	Mesh->SetupAttachment(Collider);
+
+	// Interaction
+	CreateInteractionWidgetComponent();
 }
 
 #pragma region ITartarusInteractableTargetInterface
@@ -112,6 +118,47 @@ void ATartarusCardReader::DisableInteraction()
 {
 	check(false);
 	UE_LOG(LogTartarus, Warning, TEXT("%s: Not Implemented!"), *FString(__FUNCTION__));
+}
+
+bool ATartarusCardReader::ToggleInteractionPrompt(const bool bShowPrompt)
+{
+	if (!IsValid(InteractionWidgetComponent))
+	{
+		return false;
+	}
+
+	InteractionWidgetComponent->SetHiddenInGame(!bShowPrompt);
+
+	return true;
+}
+
+void ATartarusCardReader::CreateInteractionWidgetComponent()
+{
+	// Create and setup the Widget Component to display the interaction prompt.
+	InteractionWidgetComponent = CreateDefaultSubobject<UTartarusWidgetComponent>(TEXT("InteractionWidget"));
+	if (!IsValid(InteractionWidgetComponent))
+	{
+		return;
+	}
+
+	InteractionWidgetComponent->SetupAttachment(RootComponent);
+	InteractionWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	InteractionWidgetComponent->SetSimulatePhysics(false);
+	InteractionWidgetComponent->SetHiddenInGame(true);
+
+	// Setup the Widget to display with the correct data.
+	InteractionWidgetComponent->OnWidgetCreatedEvent().AddLambda([&](UTartarusWidgetComponent* WidgetComponent)
+		{
+			// Setup the Widget to display with the correct data.
+			UTartarusInteractionWidget* const InteractionWidget = Cast<UTartarusInteractionWidget>(WidgetComponent->GetWidget());
+			if (!IsValid(InteractionWidget))
+			{
+				return;
+			}
+
+			InteractionWidget->SetText(InteractionText);
+			InteractionWidget->UpdateInputActionWidget();
+		});
 }
 #pragma endregion
 

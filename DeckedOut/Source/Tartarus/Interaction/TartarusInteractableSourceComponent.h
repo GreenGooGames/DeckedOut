@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "UObject/WeakInterfacePtr.h"
+#include "Interaction/TartarusInteractableTargetInterface.h"
 
 #include "TartarusInteractableSourceComponent.generated.h"
-
-class ITartarusInteractableTargetInterface;
 
 UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TARTARUS_API UTartarusInteractableSourceComponent : public UActorComponent
@@ -15,6 +15,9 @@ class TARTARUS_API UTartarusInteractableSourceComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
+	UTartarusInteractableSourceComponent();
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	/*
 	* Starts interaction with the best target that satisfies certain conditions.
 	* Return: True, started interaction. False, failed to start interaction.
@@ -29,6 +32,8 @@ protected:
 	// The maximum angle between source and target for interaction to be possible.
 	UPROPERTY(EditDefaultsOnly)
 		float InteractableAngle = 180.0f;
+
+	TWeakInterfacePtr<ITartarusInteractableTargetInterface> CurrentTarget = nullptr;
 
 	/*
 	* Performs a sphere trace to find all interactable targets.

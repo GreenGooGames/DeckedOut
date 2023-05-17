@@ -14,6 +14,9 @@
 #include "Item/TartarusItemData.h"
 #include "Item/TartarusItemInstance.h"
 #include "Logging/TartarusLogChannels.h"
+#include "TartarusDisplayCase.h"
+#include "UI/Gameplay/TartarusInteractionWidget.h"
+#include "UI/Foundation/TartarusWidgetComponent.h"
 
 #pragma region FDisplayCaseSlot
 FDisplayCaseSlot::FDisplayCaseSlot(const FVector& SlotLocation)
@@ -48,6 +51,9 @@ ATartarusDisplayCase::ATartarusDisplayCase()
 	PrimaryActorTick.bCanEverTick = false;
 
 	InventoryComponent = CreateDefaultSubobject<UTartarusInventoryComponent>("Inventory component", false);
+
+	// Interaction
+	CreateInteractionWidgetComponent();
 }
 
 bool ATartarusDisplayCase::AddToDisplay(const UTartarusItem* const Item)
@@ -410,5 +416,46 @@ void ATartarusDisplayCase::DisableInteraction()
 {
 	check(false);
 	UE_LOG(LogTartarus, Warning, TEXT("%s: Not Implemented!"), *FString(__FUNCTION__));
+}
+
+bool ATartarusDisplayCase::ToggleInteractionPrompt(const bool bShowPrompt)
+{
+	if (!IsValid(InteractionWidgetComponent))
+	{
+		return false;
+	}
+
+	InteractionWidgetComponent->SetHiddenInGame(!bShowPrompt);
+
+	return true;
+}
+
+void ATartarusDisplayCase::CreateInteractionWidgetComponent()
+{
+	// Create and setup the Widget Component to display the interaction prompt.
+	InteractionWidgetComponent = CreateDefaultSubobject<UTartarusWidgetComponent>(TEXT("InteractionWidget"));
+	if (!IsValid(InteractionWidgetComponent))
+	{
+		return;
+	}
+
+	InteractionWidgetComponent->SetupAttachment(RootComponent);
+	InteractionWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	InteractionWidgetComponent->SetSimulatePhysics(false);
+	InteractionWidgetComponent->SetHiddenInGame(true);
+
+	// Setup the Widget to display with the correct data.
+	InteractionWidgetComponent->OnWidgetCreatedEvent().AddLambda([&](UTartarusWidgetComponent* WidgetComponent)
+		{
+			// Setup the Widget to display with the correct data.
+			UTartarusInteractionWidget* const InteractionWidget = Cast<UTartarusInteractionWidget>(WidgetComponent->GetWidget());
+			if (!IsValid(InteractionWidget))
+			{
+				return;
+			}
+
+			InteractionWidget->SetText(InteractionText);
+			InteractionWidget->UpdateInputActionWidget();
+		});
 }
 #pragma endregion

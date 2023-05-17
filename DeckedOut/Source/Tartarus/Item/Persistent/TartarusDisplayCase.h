@@ -14,6 +14,7 @@
 class UTartarusInventoryComponent;
 class UTartarusItem;
 class ATartarusItemInstance;
+class UTartarusWidgetComponent;
 
 struct FItemTableRow;
 
@@ -112,5 +113,15 @@ public:
 	virtual bool IsInteractable() const override;
 	virtual bool StartInteraction(const TObjectPtr<AController> InstigatorController) override;
 	virtual void DisableInteraction() override;
+	virtual bool ToggleInteractionPrompt(const bool bShowPrompt);
+
+protected:
+	UPROPERTY(EditDefaultsOnly)
+		TObjectPtr<UTartarusWidgetComponent> InteractionWidgetComponent = nullptr;
+
+	UPROPERTY(EditDefaultsOnly)
+		FText InteractionText = FText();
+
+	void CreateInteractionWidgetComponent();
 #pragma endregion
 };

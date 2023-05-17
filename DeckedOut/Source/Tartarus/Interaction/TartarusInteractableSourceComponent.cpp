@@ -5,21 +5,62 @@
 
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
-#include "Interaction/TartarusInteractableTargetInterface.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "TartarusInteractableSourceComponent.h"
+#include "Player/TartarusPlayerController.h"
+#include "GameFramework/Pawn.h"
 
-bool UTartarusInteractableSourceComponent::TryInteract(const FTransform& OriginTransform, const FVector& Offset) const
+UTartarusInteractableSourceComponent::UTartarusInteractableSourceComponent()
 {
-	TArray<TObjectPtr<AActor>> InteractableActors;
+	PrimaryComponentTick.bCanEverTick = true;
+}
 
-	if (GatherInteractableActors(OriginTransform.GetLocation() + Offset, InteractableRange, InteractableActors))
+UE_DISABLE_OPTIMIZATION
+void UTartarusInteractableSourceComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	TArray<TObjectPtr<AActor>> InteractableActors;
+	ATartarusPlayerController* Owner = Cast<ATartarusPlayerController>(GetOwner());
+	const FVector Location = Owner->GetPawn()->GetActorLocation();
+
+	if (GatherInteractableActors(Location, InteractableRange, InteractableActors))
 	{
-		ITartarusInteractableTargetInterface* const BestTarget = GetBestInteractableTarget(InteractableActors, OriginTransform);
+		ITartarusInteractableTargetInterface* const BestTarget = GetBestInteractableTarget(InteractableActors, GetOwner()->GetTransform());
+		if (CurrentTarget.Get() == BestTarget)
+		{
+			return;
+		}
+
+		if (CurrentTarget.IsValid())
+		{
+			CurrentTarget->ToggleInteractionPrompt(false);
+		}
 
 		if (BestTarget)
 		{
-			return BestTarget->StartInteraction(Cast<AController>(GetOwner()));
+			BestTarget->ToggleInteractionPrompt(true);
 		}
+
+		CurrentTarget = BestTarget;
+	}
+	else
+	{
+		if (CurrentTarget.IsValid())
+		{
+			CurrentTarget->ToggleInteractionPrompt(false);
+			CurrentTarget = nullptr;
+		}
+	}
+}
+UE_ENABLE_OPTIMIZATION
+
+bool UTartarusInteractableSourceComponent::TryInteract(const FTransform& OriginTransform, const FVector& Offset) const
+{
+	if (CurrentTarget.Get())
+	{
+		const bool bSuccess = CurrentTarget->StartInteraction(Cast<AController>(GetOwner()));
+		return bSuccess;
 	}
 
 	return false;

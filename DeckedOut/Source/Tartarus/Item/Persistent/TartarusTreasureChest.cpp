@@ -11,11 +11,18 @@
 #include "Item/Loot/TartarusLootComponent.h"
 #include "Player/TartarusPlayerCharacter.h"
 #include "logging/TartarusLogChannels.h"
+#include "TartarusTreasureChest.h"
+#include "UI/Gameplay/TartarusInteractionWidget.h"
+#include "UI/Foundation/TartarusWidgetComponent.h"
 
 ATartarusTreasureChest::ATartarusTreasureChest()
 {
-	LootComponent = CreateDefaultSubobject<UTartarusLootComponent>(TEXT("LootComponent"));
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 
+	// Interaction
+	CreateInteractionWidgetComponent();
+
+	LootComponent = CreateDefaultSubobject<UTartarusLootComponent>(TEXT("LootComponent"));
 	NoiseSourceComponent = CreateDefaultSubobject<UTartarusNoiseSourceComponent>(TEXT("Noise Source Component"));
 }
 
@@ -81,5 +88,45 @@ void ATartarusTreasureChest::DisableInteraction()
 {
 	check(false);
 	UE_LOG(LogTartarus, Warning, TEXT("%s: Not Implemented!"), *FString(__FUNCTION__));
+}
+
+bool ATartarusTreasureChest::ToggleInteractionPrompt(const bool bShowPrompt)
+{
+	if (!IsValid(InteractionWidgetComponent))
+	{
+		return false;
+	}
+
+	InteractionWidgetComponent->SetHiddenInGame(!bShowPrompt);
+
+	return true;
+}
+
+void ATartarusTreasureChest::CreateInteractionWidgetComponent()
+{
+	// Create and setup the Widget Component to display the interaction prompt.
+	InteractionWidgetComponent = CreateDefaultSubobject<UTartarusWidgetComponent>(TEXT("InteractionWidget"));
+	if (!IsValid(InteractionWidgetComponent))
+	{
+		return;
+	}
+
+	InteractionWidgetComponent->SetupAttachment(RootComponent);
+	InteractionWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	InteractionWidgetComponent->SetSimulatePhysics(false); 
+	InteractionWidgetComponent->SetHiddenInGame(true);
+
+	InteractionWidgetComponent->OnWidgetCreatedEvent().AddLambda([&](UTartarusWidgetComponent* WidgetComponent)
+		{
+			// Setup the Widget to display with the correct data.
+			UTartarusInteractionWidget* const InteractionWidget = Cast<UTartarusInteractionWidget>(WidgetComponent->GetWidget());
+			if (!IsValid(InteractionWidget))
+			{
+				return;
+			}
+
+			InteractionWidget->SetText(InteractionText);
+			InteractionWidget->UpdateInputActionWidget();
+		});
 }
 #pragma endregion

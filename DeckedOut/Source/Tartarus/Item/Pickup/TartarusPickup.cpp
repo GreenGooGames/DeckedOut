@@ -11,6 +11,9 @@
 #include "Logging/TartarusLogChannels.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
+#include "TartarusPickup.h"
+#include "UI/Gameplay/TartarusInteractionWidget.h"
+#include "UI/Foundation/TartarusWidgetComponent.h"
 
 #pragma region FPickupRequestInfo
 FPickupRequestInfo::FPickupRequestInfo(UTartarusInventoryComponent* const InstigatorInventory)
@@ -33,6 +36,9 @@ ATartarusPickup::ATartarusPickup()
 	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 
 	SetRootComponent(Mesh);
+
+	// Interaction
+	CreateInteractionWidgetComponent();
 }
 
 bool ATartarusPickup::HandlePickedup(const TObjectPtr<AController> InstigatorController)
@@ -94,6 +100,48 @@ bool ATartarusPickup::StartInteraction(const TObjectPtr<AController> InstigatorC
 void ATartarusPickup::DisableInteraction()
 {
 	bIsInteractable = false;
+}
+
+bool ATartarusPickup::ToggleInteractionPrompt(const bool bShowPrompt)
+{
+	if (!IsValid(InteractionWidgetComponent))
+	{
+		return false;
+	}
+
+	InteractionWidgetComponent->SetHiddenInGame(!bShowPrompt);
+
+	return true;
+}
+
+void ATartarusPickup::CreateInteractionWidgetComponent()
+{
+	// Create and setup the Widget Component to display the interaction prompt.
+	InteractionWidgetComponent = CreateDefaultSubobject<UTartarusWidgetComponent>(TEXT("InteractionWidget"));
+	if (!IsValid(InteractionWidgetComponent))
+	{
+		return;
+	}
+
+	InteractionWidgetComponent->SetupAttachment(RootComponent);
+	InteractionWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	InteractionWidgetComponent->SetSimulatePhysics(false);
+	InteractionWidgetComponent->SetHiddenInGame(true);
+
+	// Setup the Widget to display with the correct data.
+	InteractionWidgetComponent->OnWidgetCreatedEvent().AddLambda([&](UTartarusWidgetComponent* WidgetComponent)
+		{
+			// Setup the Widget to display with the correct data.
+			UTartarusInteractionWidget* const InteractionWidget = Cast<UTartarusInteractionWidget>(WidgetComponent->GetWidget());
+			if (!IsValid(InteractionWidget))
+			{
+				return;
+			}
+
+			// TODO: Request the Item data, and get the name of the item, then set the text
+			//InteractionWidget->SetText(InteractionText);
+			InteractionWidget->UpdateInputActionWidget();
+		});
 }
 #pragma endregion
 
