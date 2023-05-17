@@ -73,8 +73,17 @@ void UTartarusSubInventoryViewWidget::NativeOnActivated()
 {
 	Super::NativeOnActivated();
 
+	InventoryComponent->OnInventoryEntryUpdated().AddUObject(this, &UTartarusSubInventoryViewWidget::OnInventoryEntryUpdated);
+	InventoryComponent->OnInventoryContentUpdated().AddUObject(this, &UTartarusSubInventoryViewWidget::RefreshData);
+
 	// Create entries for each item in the inventory or refresh the existing ones.
 	RefreshData();
+}
+
+void UTartarusSubInventoryViewWidget::NativeOnDeactivated()
+{
+	InventoryComponent->OnInventoryEntryUpdated().RemoveAll(this);
+	InventoryComponent->OnInventoryContentUpdated().RemoveAll(this);
 }
 
 UWidget* UTartarusSubInventoryViewWidget::NativeGetDesiredFocusTarget() const
@@ -193,9 +202,6 @@ void UTartarusSubInventoryViewWidget::LinkInventory(UTartarusInventoryComponent*
 	InventoryId = SubInventoryId;
 	InventoryComponent = Inventory;
 
-	InventoryComponent->OnInventoryEntryUpdated().AddUObject(this, &UTartarusSubInventoryViewWidget::OnInventoryEntryUpdated);
-	InventoryComponent->OnInventoryContentUpdated().AddUObject(this, &UTartarusSubInventoryViewWidget::RefreshData);
-
 	// Create entries for each item in the inventory or refresh the existing ones.
 	RefreshData();
 }
@@ -213,6 +219,7 @@ const TArray<FInventoryStack>* UTartarusSubInventoryViewWidget::GetInventoryEntr
 	return &InventoryEntries;
 }
 
+UE_DISABLE_OPTIMIZATION
 void UTartarusSubInventoryViewWidget::OnInventoryEntryUpdated(EInventoryChanged ChangeType, FInventoryStackId StackId, int32 StackSize)
 {
 	// If this Sub-Inventory contains the InventoryEntry that has changed, update the data for the TileView.
@@ -244,4 +251,5 @@ void UTartarusSubInventoryViewWidget::OnInventoryEntryUpdated(EInventoryChanged 
 		ItemData->UpdateData(InventoryEntry);
 	}
 }
+UE_ENABLE_OPTIMIZATION
 #pragma endregion
