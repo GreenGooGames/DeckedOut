@@ -21,8 +21,20 @@ public:
 
 	FOnWidgetCreatedEvent& OnWidgetCreatedEvent() { return OnWidgetCreatedEventHandle; }
 
-	virtual void InitWidget() override;
-
 private:
 	FOnWidgetCreatedEvent OnWidgetCreatedEventHandle = FOnWidgetCreatedEvent();
+
+#pragma region UWidgetComponent
+public:
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void InitWidget() override;
+#pragma endregion
+
+#pragma region Orientation
+protected:
+	UPROPERTY(EditDefaultsOnly)
+		FVector Offset = FVector::ZeroVector;
+
+	void OrientToUp();
+#pragma endregion
 };

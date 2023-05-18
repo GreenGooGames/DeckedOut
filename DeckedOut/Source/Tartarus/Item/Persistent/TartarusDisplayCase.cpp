@@ -50,6 +50,8 @@ ATartarusDisplayCase::ATartarusDisplayCase()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
+	RootComponent = CreateDefaultSubobject<USceneComponent>("RootComponent");
+
 	InventoryComponent = CreateDefaultSubobject<UTartarusInventoryComponent>("Inventory component", false);
 
 	// Interaction
@@ -426,7 +428,7 @@ bool ATartarusDisplayCase::ToggleInteractionPrompt(const bool bShowPrompt)
 	}
 
 	InteractionWidgetComponent->SetHiddenInGame(!bShowPrompt);
-
+	
 	return true;
 }
 
