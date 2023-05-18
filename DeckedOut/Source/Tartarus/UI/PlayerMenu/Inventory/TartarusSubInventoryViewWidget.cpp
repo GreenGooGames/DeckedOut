@@ -73,6 +73,11 @@ void UTartarusSubInventoryViewWidget::NativeOnActivated()
 {
 	Super::NativeOnActivated();
 
+	if (!IsValid(InventoryComponent.Get()))
+	{
+		return;
+	}
+
 	InventoryComponent->OnInventoryEntryUpdated().AddUObject(this, &UTartarusSubInventoryViewWidget::OnInventoryEntryUpdated);
 	InventoryComponent->OnInventoryContentUpdated().AddUObject(this, &UTartarusSubInventoryViewWidget::RefreshData);
 
@@ -82,6 +87,11 @@ void UTartarusSubInventoryViewWidget::NativeOnActivated()
 
 void UTartarusSubInventoryViewWidget::NativeOnDeactivated()
 {
+	if (!IsValid(InventoryComponent.Get()))
+	{
+		return;
+	}
+
 	InventoryComponent->OnInventoryEntryUpdated().RemoveAll(this);
 	InventoryComponent->OnInventoryContentUpdated().RemoveAll(this);
 }
