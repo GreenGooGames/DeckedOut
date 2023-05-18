@@ -17,7 +17,7 @@ public:
 	// Sets default values for this actor's properties
 	ATartarusItemInstance();
 
-	void SetItemId(const FPrimaryAssetId ItemReferenceId) { ItemId = ItemReferenceId; }
+	virtual void Initialize(const FPrimaryAssetId ItemReferenceId);
 	FPrimaryAssetId GetItemId() { return ItemId; }
 
 protected:

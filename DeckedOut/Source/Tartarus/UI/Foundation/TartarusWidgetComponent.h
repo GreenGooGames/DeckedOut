@@ -17,6 +17,8 @@ class TARTARUS_API UTartarusWidgetComponent : public UWidgetComponent
 public:
 	DECLARE_EVENT_OneParam(UTartarusWidgetComponent, FOnWidgetCreatedEvent, UTartarusWidgetComponent*);
 
+	UTartarusWidgetComponent();
+
 	FOnWidgetCreatedEvent& OnWidgetCreatedEvent() { return OnWidgetCreatedEventHandle; }
 
 	virtual void InitWidget() override;

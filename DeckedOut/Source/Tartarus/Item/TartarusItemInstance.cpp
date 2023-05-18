@@ -10,3 +10,8 @@ ATartarusItemInstance::ATartarusItemInstance()
 	PrimaryActorTick.bCanEverTick = false;
 
 }
+
+void ATartarusItemInstance::Initialize(const FPrimaryAssetId ItemReferenceId)
+{
+	ItemId = ItemReferenceId;
+}

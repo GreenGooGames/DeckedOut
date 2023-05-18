@@ -16,11 +16,12 @@
 #include "UI/Foundation/TartarusWidgetComponent.h"
 
 #pragma region FPickupRequestInfo
-FPickupRequestInfo::FPickupRequestInfo(UTartarusInventoryComponent* const InstigatorInventory)
+FPickupRequestInfo::FPickupRequestInfo(UTartarusInventoryComponent* const InstigatorInventory, const bool bIsPickupRequest)
 {
 	RequestId = FGuid::NewGuid();
 	
 	Inventory = InstigatorInventory;
+	bShouldPickup = bIsPickupRequest;
 }
 #pragma endregion
 
@@ -41,7 +42,24 @@ ATartarusPickup::ATartarusPickup()
 	CreateInteractionWidgetComponent();
 }
 
-bool ATartarusPickup::HandlePickedup(const TObjectPtr<AController> InstigatorController)
+void ATartarusPickup::Initialize(const FPrimaryAssetId ItemReferenceId)
+{
+	Super::Initialize(ItemReferenceId);
+
+	// Create an Async request to get the appopriate data for this object.
+	const FGuid RequestId = RequestItemData();
+	if (!RequestId.IsValid())
+	{
+		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Failed to create a request to retrieve the item data!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	FPickupRequestInfo PickupRequest = FPickupRequestInfo(nullptr, false);
+	PickupRequest.SetASyncLoadRequestId(RequestId);
+	PickupRequests.Add(PickupRequest);
+}
+
+bool ATartarusPickup::PickupItemAsync(const TObjectPtr<AController> InstigatorController)
 {
 	if (!PickupRequests.IsEmpty())
 	{
@@ -65,9 +83,44 @@ bool ATartarusPickup::HandlePickedup(const TObjectPtr<AController> InstigatorCon
 		return false;
 	}
 
-	FPickupRequestInfo PickupRequest = FPickupRequestInfo(InstigatorInventory);
+	FPickupRequestInfo PickupRequest = FPickupRequestInfo(InstigatorInventory, true);
 	PickupRequest.SetASyncLoadRequestId(RequestId);
 	PickupRequests.Add(PickupRequest);
+
+	return true;
+}
+
+bool ATartarusPickup::PickupItem(UTartarusInventoryComponent* const Inventory, const UTartarusItem* const Item)
+{
+	// Validate if all data and environment.
+	if (!IsValid(Inventory))
+	{
+		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Inventory no longer exists after interaction!"), *FString(__FUNCTION__));
+		return false;
+	}
+
+	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
+	if (!IsValid(ItemSubsystem))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to despawn pickup: Item subsystem is invalid!"), *FString(__FUNCTION__));
+		return false;
+	}
+
+	// Pickup the item by storing it in the inventory.
+	const bool bIsStored = Inventory->StoreEntry(Item, StackSize).IsValid();
+	if (!bIsStored)
+	{
+		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Could not store the item in the inventory!"), *FString(__FUNCTION__));
+		return false;
+	}
+
+	// Despawn the item if it is managed by the item manager, otherwise it is up to the owner to despawn this.
+	const bool bIsDespawned = ItemSubsystem->DespawnItem(this);
+	if (!bIsDespawned)
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to despawn pickup: despawn failed!"), *FString(__FUNCTION__));
+		return false;
+	}
 
 	return true;
 }
@@ -92,7 +145,7 @@ bool ATartarusPickup::StartInteraction(const TObjectPtr<AController> InstigatorC
 		return false;
 	}
 
-	const bool bSuccess = HandlePickedup(InstigatorController);
+	const bool bSuccess = PickupItemAsync(InstigatorController);
 
 	return bSuccess;
 }
@@ -127,21 +180,34 @@ void ATartarusPickup::CreateInteractionWidgetComponent()
 	InteractionWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	InteractionWidgetComponent->SetSimulatePhysics(false);
 	InteractionWidgetComponent->SetHiddenInGame(true);
+}
 
-	// Setup the Widget to display with the correct data.
-	InteractionWidgetComponent->OnWidgetCreatedEvent().AddLambda([&](UTartarusWidgetComponent* WidgetComponent)
-		{
-			// Setup the Widget to display with the correct data.
-			UTartarusInteractionWidget* const InteractionWidget = Cast<UTartarusInteractionWidget>(WidgetComponent->GetWidget());
-			if (!IsValid(InteractionWidget))
+bool ATartarusPickup::SetupInteractionPrompt(const UTartarusItem* const Item)
+{
+	UTartarusInteractionWidget* const InteractionWidget = Cast<UTartarusInteractionWidget>(InteractionWidgetComponent->GetWidget());
+	if (IsValid(InteractionWidget))
+	{
+		InteractionWidget->SetText(Item->Name);
+		InteractionWidget->UpdateInputActionWidget();
+	}
+	else
+	{
+		// the widget doesn't exist yet, register a callback for when it does.
+		InteractionWidgetComponent->OnWidgetCreatedEvent().AddLambda([&](UTartarusWidgetComponent* WidgetComponent)
 			{
-				return;
-			}
+				// Setup the Widget to display with the correct data.
+				UTartarusInteractionWidget* const InteractionWidget = Cast<UTartarusInteractionWidget>(WidgetComponent->GetWidget());
+				if (!IsValid(InteractionWidget))
+				{
+					return;
+				}
 
-			// TODO: Request the Item data, and get the name of the item, then set the text
-			//InteractionWidget->SetText(InteractionText);
-			InteractionWidget->UpdateInputActionWidget();
-		});
+				InteractionWidget->SetText(Item->Name);
+				InteractionWidget->UpdateInputActionWidget();
+			});
+	}
+
+	return true;
 }
 #pragma endregion
 
@@ -180,33 +246,34 @@ void ATartarusPickup::HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray<UTar
 	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Pickup: Could not find the request!"), *FString(__FUNCTION__));
-		return HandleRequestCompleted(CurrentRequest, nullptr);
+		return HandleRequestCompleted(CurrentRequest);
 	}
 
 	if (ItemsData.IsEmpty())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Pickup: No Item data is loaded!"), *FString(__FUNCTION__));
-		return HandleRequestCompleted(CurrentRequest, nullptr);
+		return HandleRequestCompleted(CurrentRequest);
 	}
 
-	UTartarusInventoryComponent* const InstigatorInventory = CurrentRequest->GetInventory();
-	if (!IsValid(InstigatorInventory))
+	if (CurrentRequest->ShouldPickup())
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Inventory no longer exists after interaction!"), *FString(__FUNCTION__));
-		return HandleRequestCompleted(CurrentRequest, nullptr);
+		if (!PickupItem(CurrentRequest->GetInventory(), ItemsData[0]))
+		{
+			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Pickup: Unable to pickup the item!"), *FString(__FUNCTION__));
+		}
 	}
-
-	const bool bIsStored = InstigatorInventory->StoreEntry(ItemsData[0], StackSize).IsValid();
-	if (!bIsStored)
+	else
 	{
-		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Could not store the item in the inventory!"), *FString(__FUNCTION__));
-		return HandleRequestCompleted(CurrentRequest, nullptr);
+		if (!SetupInteractionPrompt(ItemsData[0]))
+		{
+			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Setup Interaction Prompt!"), *FString(__FUNCTION__));
+		}
 	}
 
-	HandleRequestCompleted(CurrentRequest, ItemsData[0]);
+	HandleRequestCompleted(CurrentRequest);
 }
 
-void ATartarusPickup::HandleRequestCompleted(const FPickupRequestInfo* const CompletedRequest, const UTartarusItem* const ItemData)
+void ATartarusPickup::HandleRequestCompleted(const FPickupRequestInfo* const CompletedRequest)
 {
 	if (!CompletedRequest)
 	{
@@ -214,20 +281,5 @@ void ATartarusPickup::HandleRequestCompleted(const FPickupRequestInfo* const Com
 	}
 
 	PickupRequests.RemoveSingleSwap(*CompletedRequest);
-
-	// Despawn the item if it is managed by the item manager, otherwise it is up to the owner to despawn this.
-	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
-	if (!IsValid(ItemSubsystem))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to despawn pickup: Item subsystem is invalid!"), *FString(__FUNCTION__));
-		return;
-	}
-
-	const bool bIsDespawned = ItemSubsystem->DespawnItem(this);
-	if (!bIsDespawned)
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to despawn pickup: despawn failed!"), *FString(__FUNCTION__));
-		return;
-	}
 }
 #pragma endregion

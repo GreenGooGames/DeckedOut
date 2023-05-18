@@ -72,7 +72,7 @@ TWeakObjectPtr<ATartarusItemInstance> UTartarusItemSubsystem::SpawnItem(const TS
 		return false;
 	}
 
-	ItemInstance->SetItemId(ItemId);
+	ItemInstance->Initialize(ItemId);
 
 	if (!ItemSpawnParameters.IsManaged())
 	{

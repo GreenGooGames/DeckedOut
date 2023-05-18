@@ -21,12 +21,14 @@ struct FPickupRequestInfo : public FASyncLoadRequest
 
 public:
 	FPickupRequestInfo() {}
-	FPickupRequestInfo(UTartarusInventoryComponent* const InstigatorInventory);
+	FPickupRequestInfo(UTartarusInventoryComponent* const InstigatorInventory, const bool bIsPickupRequest);
 
 	UTartarusInventoryComponent* GetInventory() const { return Inventory.Get(); }
+	bool ShouldPickup() { return bShouldPickup; }
 
 private:
 	TWeakObjectPtr<UTartarusInventoryComponent> Inventory = nullptr;
+	bool bShouldPickup = false;
 };
 #pragma endregion
 
@@ -41,6 +43,7 @@ class TARTARUS_API ATartarusPickup : public ATartarusItemInstance, public ITarta
 	
 public:
 	ATartarusPickup();
+	virtual void Initialize(const FPrimaryAssetId ItemReferenceId) override;
 
 protected:
 	// The visual representation of the Item in the world.
@@ -51,7 +54,8 @@ protected:
 	* Defines the behavior to execute when this item is pickedup in the world.
 	* Return: Has the behavior been handles succesfully or not.
 	*/
-	virtual bool HandlePickedup(const TObjectPtr<AController> InstigatorController);
+	virtual bool PickupItemAsync(const TObjectPtr<AController> InstigatorController);
+	bool PickupItem(UTartarusInventoryComponent* const Inventory, const UTartarusItem* const Item);
 
 #pragma region TartarusInteractableTargetInterface
 public:
@@ -65,6 +69,7 @@ protected:
 		TObjectPtr<UTartarusWidgetComponent> InteractionWidgetComponent = nullptr;
 
 	void CreateInteractionWidgetComponent();
+	bool SetupInteractionPrompt(const UTartarusItem* const Item);
 
 private:
 	bool bIsInteractable = true;
@@ -74,7 +79,7 @@ private:
 protected:
 	FGuid RequestItemData();
 	void HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData);
-	void HandleRequestCompleted(const FPickupRequestInfo* const CompletedRequest, const UTartarusItem* const ItemData);
+	void HandleRequestCompleted(const FPickupRequestInfo* const CompletedRequest);
 
 private:
 	TArray<FPickupRequestInfo> PickupRequests;
