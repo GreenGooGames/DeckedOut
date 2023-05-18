@@ -15,7 +15,6 @@ UTartarusInteractableSourceComponent::UTartarusInteractableSourceComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-UE_DISABLE_OPTIMIZATION
 void UTartarusInteractableSourceComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -53,7 +52,6 @@ void UTartarusInteractableSourceComponent::TickComponent(float DeltaTime, ELevel
 		}
 	}
 }
-UE_ENABLE_OPTIMIZATION
 
 bool UTartarusInteractableSourceComponent::TryInteract(const FTransform& OriginTransform, const FVector& Offset) const
 {

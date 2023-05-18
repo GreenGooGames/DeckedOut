@@ -229,7 +229,6 @@ const TArray<FInventoryStack>* UTartarusSubInventoryViewWidget::GetInventoryEntr
 	return &InventoryEntries;
 }
 
-UE_DISABLE_OPTIMIZATION
 void UTartarusSubInventoryViewWidget::OnInventoryEntryUpdated(EInventoryChanged ChangeType, FInventoryStackId StackId, int32 StackSize)
 {
 	// If this Sub-Inventory contains the InventoryEntry that has changed, update the data for the TileView.
@@ -261,5 +260,4 @@ void UTartarusSubInventoryViewWidget::OnInventoryEntryUpdated(EInventoryChanged 
 		ItemData->UpdateData(InventoryEntry);
 	}
 }
-UE_ENABLE_OPTIMIZATION
 #pragma endregion
