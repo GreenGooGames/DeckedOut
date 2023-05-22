@@ -46,9 +46,9 @@ FInventoryStackId UTartarusInventoryComponent::StoreEntry(const UTartarusItem* c
 	}
 
 	// Verify the given parameters.
-	if (Entry->InventoryType == EInventoryType::MAX)
+	if (!Entry->InventoryId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the entry: InventoryType was invalid!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the entry: InventoryId was invalid!"), *FString(__FUNCTION__));
 		return FInventoryStackId();
 	}
 	
@@ -74,18 +74,18 @@ FInventoryStackId UTartarusInventoryComponent::StoreEntry(const UTartarusItem* c
 	}
 
 	// Try to add the entry to the specified sub inventory.
-	const FInventoryStackId StackId = SubInventories[Entry->InventoryType].AddEntry(Entry->GetPrimaryAssetId(), Entry->bIsStackable, StackSize);
+	const FInventoryStackId StackId = SubInventories[Entry->InventoryId].AddEntry(Entry->GetPrimaryAssetId(), Entry->bIsStackable, StackSize);
 	if (!StackId.IsValid())
 	{
 		return FInventoryStackId();
 	}
 	
-	OnInventoryEntryUpdated().Broadcast(EInventoryChanged::Stored, StackId, SubInventories[Entry->InventoryType].FindStack(StackId)->StackSize);
+	OnInventoryEntryUpdated().Broadcast(EInventoryChanged::Stored, StackId, SubInventories[Entry->InventoryId].FindStack(StackId)->StackSize);
 
 	return StackId;
 }
 
-bool UTartarusInventoryComponent::RetrieveEntry(const EInventoryType InventoryId, const FPrimaryAssetId EntryId, const int32 StackSize)
+bool UTartarusInventoryComponent::RetrieveEntry(const FGameplayTag InventoryId, const FPrimaryAssetId EntryId, const int32 StackSize)
 {
 	// Verify the given EntryId.
 	if (!EntryId.IsValid())
@@ -128,7 +128,7 @@ bool UTartarusInventoryComponent::RetrieveEntry(const FInventoryStackId& StackId
 	return true;
 }
 
-const TArray<FInventoryStack>& UTartarusInventoryComponent::GetOverview(const EInventoryType InventoryId) const
+const TArray<FInventoryStack>& UTartarusInventoryComponent::GetOverview(const FGameplayTag InventoryId) const
 { 
 	check(SubInventories.Num() > 0);
 	check(SubInventories.Contains(InventoryId));
@@ -136,7 +136,7 @@ const TArray<FInventoryStack>& UTartarusInventoryComponent::GetOverview(const EI
 	return SubInventories[InventoryId].GetContents();
 }
 
-const TArray<const FInventoryStack*> UTartarusInventoryComponent::GetOverviewMulti(const EInventoryType InventoryId, const FPrimaryAssetId EntryId) const
+const TArray<const FInventoryStack*> UTartarusInventoryComponent::GetOverviewMulti(const FGameplayTag InventoryId, const FPrimaryAssetId EntryId) const
 {
 	TArray<const FInventoryStack*> MatchingItemSlots = TArray<const FInventoryStack*>();
 	
@@ -156,12 +156,12 @@ const FInventoryStack* UTartarusInventoryComponent::GetOverviewSingle(const FInv
 	return SubInventories[StackId.GetInventoryId()].FindStack(StackId);
 }
 
-int32 UTartarusInventoryComponent::GetAvailableSlotCount(const EInventoryType InventoryId) const
+int32 UTartarusInventoryComponent::GetAvailableSlotCount(const FGameplayTag InventoryId) const
 {
 	return GetOverviewMulti(InventoryId, FTartarusHelpers::InvalidItemId).Num();
 }
 
-bool UTartarusInventoryComponent::Contains(const EInventoryType InventoryId, const FPrimaryAssetId EntryId) const
+bool UTartarusInventoryComponent::Contains(const FGameplayTag InventoryId, const FPrimaryAssetId EntryId) const
 {
 	// Get the stack that contains the Entry.
 	const FInventoryStackId* const StackId = SubInventories[InventoryId].FindStackId(EntryId);
@@ -186,9 +186,9 @@ bool UTartarusInventoryComponent::Contains(const FInventoryStackId& StackId) con
 	return false;
 }
 
-TArray<EInventoryType> UTartarusInventoryComponent::GetSubInventoryIds() const
+TArray<FGameplayTag> UTartarusInventoryComponent::GetSubInventoryIds() const
 {
-	TArray<EInventoryType> Ids;
+	TArray<FGameplayTag> Ids;
 
 	for (const auto& SubInventory : SubInventories)
 	{
@@ -198,7 +198,7 @@ TArray<EInventoryType> UTartarusInventoryComponent::GetSubInventoryIds() const
 	return Ids;
 }
 
-FText UTartarusInventoryComponent::GetSubInventoryName(const EInventoryType InventoryId) const
+FText UTartarusInventoryComponent::GetSubInventoryName(const FGameplayTag InventoryId) const
 {
 	for (const auto& SubInventoryData : ToCreateSubInventories)
 	{
@@ -213,7 +213,7 @@ FText UTartarusInventoryComponent::GetSubInventoryName(const EInventoryType Inve
 	return FText();
 }
 
-TArray<UTartarusContextAction*> UTartarusInventoryComponent::GetSubInventoryContextActions(const EInventoryType InventoryId) const
+TArray<UTartarusContextAction*> UTartarusInventoryComponent::GetSubInventoryContextActions(const FGameplayTag InventoryId) const
 {
 	TArray<UTartarusContextAction*> ContextActions;
 
@@ -230,7 +230,7 @@ TArray<UTartarusContextAction*> UTartarusInventoryComponent::GetSubInventoryCont
 	return ContextActions;
 }
 
-void UTartarusInventoryComponent::SortInventory(const EInventoryType InventoryId)
+void UTartarusInventoryComponent::SortInventory(const FGameplayTag InventoryId)
 {
 	if (!SubInventories.Contains(InventoryId))
 	{
@@ -284,7 +284,7 @@ void UTartarusInventoryComponent::OnItemDataRecieved(FGuid ASyncLoadRequestId, T
 	OnInventoryContentUpdated().Broadcast();
 }
 
-FGetSortItemDataRequestInfo::FGetSortItemDataRequestInfo(const TArray<FPrimaryAssetId>& ItemIdsToLoad, EInventoryType SubInventoryId)
+FGetSortItemDataRequestInfo::FGetSortItemDataRequestInfo(const TArray<FPrimaryAssetId>& ItemIdsToLoad, FGameplayTag SubInventoryId)
 {
 	RequestId = FGuid::NewGuid();
 	ItemIds = ItemIdsToLoad;

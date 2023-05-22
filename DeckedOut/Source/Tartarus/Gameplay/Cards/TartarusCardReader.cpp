@@ -77,7 +77,7 @@ bool ATartarusCardReader::StartInteraction(const TObjectPtr<AController> Instiga
 	const UTartarusInventoryComponent* const InstigatorInventory = InstigatorController->FindComponentByClass<UTartarusInventoryComponent>();
 
 	// Get all cards from the player inventory.
-	TArray<FInventoryStack> InventoryCards = InstigatorInventory->GetOverview(EInventoryType::Card);
+	TArray<FInventoryStack> InventoryCards = InstigatorInventory->GetOverview(CardInventoryId);
 
 	// TODO: Show a UI to have the player select cards from their inventory and only activate a few select ones.
 	// Retrieve the effect of each card in the inventory.

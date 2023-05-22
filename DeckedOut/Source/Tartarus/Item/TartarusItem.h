@@ -7,6 +7,7 @@
 #include "Inventory/TartarusInventoryData.h"
 #include "Item/TartarusItemData.h"
 #include "TartarusItemInstance.h"
+#include "GameplayTagContainer.h"
 
 #include "TartarusItem.generated.h"
 
@@ -44,7 +45,7 @@ public:
 #pragma region Inventory_Info
 	// The id of the inventory to store the item in.
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
-		EInventoryType InventoryType = EInventoryType::MAX;
+		FGameplayTag InventoryId = FGameplayTag::EmptyTag;
 
 	// Is the item stackable in the inventory?
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")

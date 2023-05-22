@@ -84,9 +84,9 @@ void UTartarusInventoryWidget::ConstructInventoryView()
 	}
 
 	// Create a template sub inventory for each subinventory owned by the inventory component.
-	const TArray<EInventoryType> SubInventoryIds = InventoryComponent->GetSubInventoryIds();
+	const TArray<FGameplayTag> SubInventoryIds = InventoryComponent->GetSubInventoryIds();
 
-	for (const EInventoryType& InventoryId : SubInventoryIds)
+	for (const FGameplayTag& InventoryId : SubInventoryIds)
 	{
 		const FString WidgetName = FString("Widget_SubInventory_").Append(InventoryComponent->GetSubInventoryName(InventoryId).ToString());
 

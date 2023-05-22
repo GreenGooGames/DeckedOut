@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "Item/Inventory/TartarusInventoryData.h"
+#include "GameplayTagContainer.h"
 
 #include "TartarusSubInventoryData.generated.h"
 
@@ -20,7 +21,7 @@ class TARTARUS_API UTartarusSubInventoryData : public UPrimaryDataAsset
 	
 public:
 	int32 GetNumberOfSlots() const { return NumberOfSlots; }
-	EInventoryType GetType() const { return InventoryType; }
+	FGameplayTag GetType() const { return InventoryId; }
 	const FText& GetName() const { return Name; }
 	TArray<TObjectPtr<UTartarusContextAction>> GetContextActions() const { return ContextActions; }
 
@@ -29,7 +30,7 @@ protected:
 		int32 NumberOfSlots = 20;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Default")
-		EInventoryType InventoryType = EInventoryType::MAX;
+		FGameplayTag InventoryId = FGameplayTag::EmptyTag;
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 		FText Name = FText();

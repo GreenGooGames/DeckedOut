@@ -196,7 +196,7 @@ void UTartarusTreasureSubsystem::HandleTreasureKeysDataReceived(FGuid ASyncLoadR
 	// Loop over each treasure Key, and look if the player has it in their inventory.
 	for (const UTartarusItem* const TreasureKey : TreasureKeysData)
 	{
-		const TArray<const FInventoryStack*> InventoryTreasureKeys = Inventory->GetOverviewMulti(TreasureKey->InventoryType, TreasureKey->GetPrimaryAssetId());
+		const TArray<const FInventoryStack*> InventoryTreasureKeys = Inventory->GetOverviewMulti(TreasureKey->InventoryId, TreasureKey->GetPrimaryAssetId());
 	
 		for (const FInventoryStack* const ItemStack : InventoryTreasureKeys)
 		{

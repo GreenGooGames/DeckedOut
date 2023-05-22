@@ -77,7 +77,7 @@ public:
 	bool RemoveFromDisplay(const FInventoryStackId& InventoryStackId);
 
 protected:
-	// Slots used to dispaly items in the inventory.
+	// Slots used to display items in the inventory.
 	UPROPERTY(EditDefaultsOnly)
 		TArray<FDisplayCaseSlot> DisplaySlots;
 	

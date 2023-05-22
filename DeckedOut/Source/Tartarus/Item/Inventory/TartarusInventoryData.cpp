@@ -9,7 +9,7 @@
 #include "Item/TartarusItem.h"
 
 #pragma region FInventoryItemStack
-FInventoryStack::FInventoryStack(const EInventoryType InventoryId, const FPrimaryAssetId NewEntryId, const int32 NewStackSize)
+FInventoryStack::FInventoryStack(const FGameplayTag InventoryId, const FPrimaryAssetId NewEntryId, const int32 NewStackSize)
 {
 	StackId = FInventoryStackId(InventoryId);
 
@@ -42,7 +42,7 @@ FInventoryStackId FSubInventory::AddEntry(const FPrimaryAssetId EntryId, const b
 		}
 
 		// Add a new entry.
-		const FInventoryStack NewStack = FInventoryStack(InventoryId, EntryId, StackSize);
+		const FInventoryStack NewStack = FInventoryStack(SubInventoryId, EntryId, StackSize);
 
 		FInventoryStack* const Stack = FindEditableStack(*StackId);
 		*Stack = NewStack;

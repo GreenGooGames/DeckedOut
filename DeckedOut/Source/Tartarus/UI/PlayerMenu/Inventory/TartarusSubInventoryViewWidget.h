@@ -87,8 +87,8 @@ private:
 
 #pragma region Inventory
 public:
-	void LinkInventory(UTartarusInventoryComponent* const Inventory, const EInventoryType SubInventoryId);
-	EInventoryType GetInventoryId() const { return InventoryId; }
+	void LinkInventory(UTartarusInventoryComponent* const Inventory, const FGameplayTag SubInventoryId);
+	FGameplayTag GetInventoryId() const { return InventoryId; }
 protected:
 	/*
 	* Retries all entries that are represented in this View.
@@ -100,6 +100,6 @@ protected:
 
 private:
 	TWeakObjectPtr<UTartarusInventoryComponent> InventoryComponent = nullptr;
-	EInventoryType InventoryId = EInventoryType::MAX;
+	FGameplayTag InventoryId = FGameplayTag::EmptyTag;
 #pragma endregion
 };

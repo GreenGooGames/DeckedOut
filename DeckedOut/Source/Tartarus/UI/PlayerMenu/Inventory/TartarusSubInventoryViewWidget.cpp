@@ -207,7 +207,7 @@ void UTartarusSubInventoryViewWidget::HandleItemsDataLoaded(FGuid ASyncLoadReque
 #pragma endregion
 
 #pragma region Inventory
-void UTartarusSubInventoryViewWidget::LinkInventory(UTartarusInventoryComponent* const Inventory, const EInventoryType SubInventoryId)
+void UTartarusSubInventoryViewWidget::LinkInventory(UTartarusInventoryComponent* const Inventory, const FGameplayTag SubInventoryId)
 {
 	InventoryId = SubInventoryId;
 	InventoryComponent = Inventory;

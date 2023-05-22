@@ -3,6 +3,7 @@
 #pragma once
 #include "Misc/EnumRange.h"
 #include "System/TartarusHelpers.h"
+#include "GameplayTagContainer.h"
 
 #include "TartarusInventoryData.generated.h"
 
@@ -15,17 +16,6 @@ enum class EInventoryChanged : uint8
 	Retrieved
 };
 
-UENUM()
-enum class EInventoryType : uint8
-{
-	Compass,
-	Artifact,
-	Card,
-	MAX			UMETA(Hidden)
-};
-
-ENUM_RANGE_BY_COUNT(EInventoryType, EInventoryType::MAX);
-
 USTRUCT()
 struct FInventoryStackId
 {
@@ -33,23 +23,24 @@ struct FInventoryStackId
 
 public:
 	FInventoryStackId() {};
-	FInventoryStackId(const EInventoryType OwningInventoryId)
+	FInventoryStackId(const FGameplayTag& OwningInventoryId)
 	{
 		StackId = FGuid::NewGuid();
-		InventoryId = OwningInventoryId;
+		SubInventoryId = OwningInventoryId;
 	}
 
 	const FGuid& GetStackId() const { return StackId; }
-	const EInventoryType& GetInventoryId() const { return InventoryId; }
+	const FGameplayTag& GetInventoryId() const { return SubInventoryId; }
 
 	bool IsValid() const
 	{
-		return StackId.IsValid() && InventoryId != EInventoryType::MAX;
+		return StackId.IsValid() && SubInventoryId != FGameplayTag::EmptyTag;
 	}
+
 	void Invalidate()
 	{
 		StackId.Invalidate();
-		InventoryId = EInventoryType::MAX;
+		SubInventoryId = FGameplayTag::EmptyTag;
 	}
 
 	bool operator==(const FInventoryStackId& rhs) const { return GetStackId() == rhs.GetStackId(); }
@@ -57,7 +48,7 @@ public:
 
 private:
 	FGuid StackId = FGuid();
-	EInventoryType InventoryId = EInventoryType::MAX;
+	FGameplayTag SubInventoryId = FGameplayTag::EmptyTag;
 };
 
 USTRUCT()
@@ -67,9 +58,7 @@ struct FInventoryStack
 
 public:
 	FInventoryStack() {}
-	FInventoryStack(const EInventoryType InventoryId, const FPrimaryAssetId NewEntryId, const int32 NewStackSize);
-
-	//bool operator==(const FInventoryStack& rhs) { return GetStackId() == rhs.GetStackId(); }
+	FInventoryStack(const FGameplayTag InventoryId, const FPrimaryAssetId NewEntryId, const int32 NewStackSize);
 
 	int32 StackSize = 0;
 	
@@ -88,9 +77,9 @@ struct FSubInventory
 
 public:
 	FSubInventory() {}
-	FSubInventory(const EInventoryType NewInventoryId, const int32 InventorySize)
+	FSubInventory(const FGameplayTag& NewInventoryId, const int32 InventorySize)
 	{
-		InventoryId = NewInventoryId;
+		SubInventoryId = NewInventoryId;
 		Content.SetNum(InventorySize);
 	}
 
@@ -106,6 +95,6 @@ protected:
 	FInventoryStack* FindEditableStack(const FInventoryStackId& StackId);
 
 private:
-	EInventoryType InventoryId = EInventoryType::MAX;
+	FGameplayTag SubInventoryId = FGameplayTag::EmptyTag;
 	TArray<FInventoryStack> Content;
 };

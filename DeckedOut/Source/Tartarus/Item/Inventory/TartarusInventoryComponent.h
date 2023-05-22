@@ -25,11 +25,11 @@ struct FGetSortItemDataRequestInfo : public FASyncLoadRequest
 
 public:
 	FGetSortItemDataRequestInfo() {}
-	FGetSortItemDataRequestInfo(const TArray<FPrimaryAssetId>& ItemIdsToLoad, EInventoryType SubInventoryId);
+	FGetSortItemDataRequestInfo(const TArray<FPrimaryAssetId>& ItemIdsToLoad, FGameplayTag SubInventoryId);
 
 public:
 	TArray<FPrimaryAssetId> ItemIds;
-	EInventoryType InventoryId;
+	FGameplayTag InventoryId;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -52,7 +52,7 @@ public:
 	* Retrieves an entry from the inventory from a random matching stack.
 	* Return: True if the entry was retrieved, False if the entry was not in the inventory or if more than the stored num of entries was requested.
 	*/
-	bool RetrieveEntry(const EInventoryType InventoryId, const FPrimaryAssetId EntryId, const int32 StackSize);
+	bool RetrieveEntry(const FGameplayTag InventoryId, const FPrimaryAssetId EntryId, const int32 StackSize);
 
 	/*
 	* Retrieves an entry from the inventory from a specified stack.
@@ -64,13 +64,13 @@ public:
 	* Retrieves an overview of all the entries of a sub-inventory.
 	* Return: Array representing the inventory slots.
 	*/
-	const TArray<FInventoryStack>& GetOverview(const EInventoryType InventoryId) const;
+	const TArray<FInventoryStack>& GetOverview(const FGameplayTag InventoryId) const;
 
 	/*
 	* Retrieves an overview of all entries matching the id.
 	* Return: Data stored in the inventory of each slot that contains the given id.
 	*/
-	const TArray<const FInventoryStack*> GetOverviewMulti(const EInventoryType InventoryId, const FPrimaryAssetId EntryId) const;
+	const TArray<const FInventoryStack*> GetOverviewMulti(const FGameplayTag InventoryId, const FPrimaryAssetId EntryId) const;
 
 	/*
 	* Retrieves an overview of a single slot.
@@ -82,13 +82,13 @@ public:
 	* Retrieves the number of slots in the inventory that are available for storage.
 	* Return: Number of available slots.
 	*/
-	int32 GetAvailableSlotCount(const EInventoryType InventoryId) const;
+	int32 GetAvailableSlotCount(const FGameplayTag InventoryId) const;
 
 	/*
 	* Checks if the inventory contains an entry for the AssetId
 	* Return: True, if an entry is found. False, if no entry is found.
 	*/
-	bool Contains(const EInventoryType InventoryId, const FPrimaryAssetId EntryId) const;
+	bool Contains(const FGameplayTag InventoryId, const FPrimaryAssetId EntryId) const;
 
 	/*
 	* Checks if the inventory contains an entry for the StackId.
@@ -110,22 +110,22 @@ public:
 
 	/*
 	* Retreives the ID's of all sub inventories owned by this Inventory.
-	* Return: Array of EInventoryType with the ID of each owned inventory.
+	* Return: Array of FGameplayTag with the ID of each owned inventory.
 	*/
-	TArray<EInventoryType> GetSubInventoryIds() const;
+	TArray<FGameplayTag> GetSubInventoryIds() const;
 	
 	/*
 	* Retreives the Name of a sub inventory.
 	* Return: Localized Name of the inventory.
 	*/
-	FText GetSubInventoryName(const EInventoryType InventoryId) const;
+	FText GetSubInventoryName(const FGameplayTag InventoryId) const;
 
-	TArray<UTartarusContextAction*> GetSubInventoryContextActions(const EInventoryType InventoryId) const;
+	TArray<UTartarusContextAction*> GetSubInventoryContextActions(const FGameplayTag InventoryId) const;
 
 	/*
 	* Sorts the ivnentory alphabetically.
 	*/
-	void SortInventory(const EInventoryType InventoryId);
+	void SortInventory(const FGameplayTag InventoryId);
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
@@ -134,7 +134,7 @@ protected:
 	void OnItemDataRecieved(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData);
 
 private:
-	TMap<EInventoryType, FSubInventory> SubInventories;
+	TMap<FGameplayTag, FSubInventory> SubInventories;
 	FInventoryEntryUpdate InventoryEntryUpdateEvent;
 	FInventoryContentUpdate InventoryContentUpdateEvent;
 

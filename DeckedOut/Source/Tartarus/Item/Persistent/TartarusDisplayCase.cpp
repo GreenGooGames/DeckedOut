@@ -185,7 +185,7 @@ void ATartarusDisplayCase::HandleArtifactsDataReceived(FGuid ASyncLoadRequestId,
 	for (const UTartarusItem* const Artifact : ArtifactsData)
 	{
 		// Get all stacks that contains the current artifact.
-		const TArray<const FInventoryStack*> InventoryArtifacts = PlayerInventory->GetOverviewMulti(EInventoryType::Artifact, Artifact->GetPrimaryAssetId());
+		const TArray<const FInventoryStack*> InventoryArtifacts = PlayerInventory->GetOverviewMulti(Artifact->InventoryId, Artifact->GetPrimaryAssetId());
 	
 		// For each stack, try to empty the whole stack and add it to the display.
 		for (const FInventoryStack* const InventoryStack : InventoryArtifacts)
@@ -196,7 +196,7 @@ void ATartarusDisplayCase::HandleArtifactsDataReceived(FGuid ASyncLoadRequestId,
 				const FPrimaryAssetId ArtifactId = InventoryStack->GetEntryId();
 	
 				// Retrieve the artifact from the player invetory.
-				const bool bHasRetrieved = PlayerInventory->RetrieveEntry(EInventoryType::Artifact, ArtifactId, 1);
+				const bool bHasRetrieved = PlayerInventory->RetrieveEntry(Artifact->InventoryId, ArtifactId, 1);
 				if (!bHasRetrieved)
 				{
 					continue;

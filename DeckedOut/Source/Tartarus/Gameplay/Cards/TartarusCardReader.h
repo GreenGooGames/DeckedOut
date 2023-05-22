@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Interaction/TartarusInteractableTargetInterface.h"
 #include "System/TartarusAsyncLoadData.h"
+#include "GameplayTagContainer.h"
 
 #include "TartarusCardReader.generated.h"
 
@@ -51,6 +52,10 @@ protected:
 	// Collision on this object.
 	UPROPERTY(EditDefaultsOnly)
 		TObjectPtr<UBoxComponent> Collider = nullptr;
+
+private:
+	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess=true))
+		FGameplayTag CardInventoryId = FGameplayTag::EmptyTag;
 
 #pragma region ITartarusInteractableTargetInterface
 public:
