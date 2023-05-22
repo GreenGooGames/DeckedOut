@@ -22,6 +22,8 @@ class TARTARUS_API UTartarusPrimaryGameLayout : public UCommonUserWidget
 	GENERATED_BODY()
 
 public:
+	static UTartarusPrimaryGameLayout* const Get(AController* PlayerController);
+
 	void PushWidgetToLayerAsync(const FGameplayTag& LayerName, TSoftClassPtr<UTartarusLayoutWidget> WidgetClass);
 	void PopWidgetFromLayer(const FGameplayTag& LayerName, UTartarusLayoutWidget* const Widget);
 

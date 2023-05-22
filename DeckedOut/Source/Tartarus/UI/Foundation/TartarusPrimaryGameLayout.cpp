@@ -10,6 +10,19 @@
 
 #include "UI/Foundation/TartarusLayoutWidget.h"
 #include "CommonInputSubsystem.h"
+#include "TartarusPrimaryGameLayout.h"
+#include "Player/TartarusPlayerController.h"
+
+UTartarusPrimaryGameLayout* const UTartarusPrimaryGameLayout::Get(AController* PlayerController)
+{
+	ATartarusPlayerController* Controller = Cast<ATartarusPlayerController>(PlayerController);
+	if (!IsValid(Controller))
+	{
+		return nullptr;
+	}
+
+	return 	Controller->GetPrimaryGameLayout();
+}
 
 void UTartarusPrimaryGameLayout::PushWidgetToLayerAsync(const FGameplayTag& LayerName, TSoftClassPtr<UTartarusLayoutWidget> WidgetClass)
 {
