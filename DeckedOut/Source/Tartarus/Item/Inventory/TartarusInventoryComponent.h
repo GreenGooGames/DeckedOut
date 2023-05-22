@@ -120,8 +120,6 @@ public:
 	*/
 	FText GetSubInventoryName(const FGameplayTag InventoryId) const;
 
-	TArray<UTartarusContextAction*> GetSubInventoryContextActions(const FGameplayTag InventoryId) const;
-
 	/*
 	* Sorts the ivnentory alphabetically.
 	*/

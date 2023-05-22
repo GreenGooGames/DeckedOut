@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UI/Foundation/TartarusActivatableWidget.h"
+#include "GameplayTagContainer.h"
 
 #include "TartarusInventoryWidget.generated.h"
 
@@ -15,6 +16,7 @@ class UTartarusInventoryInfoWidget;
 class UTartarusInventorySlotWidgetData;
 class UTartarusSubInventoryViewWidget;
 class UTartarusSwitcherWidget;
+class UTartarusContextActionBulk;
 
 /**
  * 
@@ -93,5 +95,9 @@ protected:
 
 	template<typename T>
 	T* FindParentOfType();
+
+private:
+	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess=true))
+		TMap<FGameplayTag, UTartarusContextActionBulk*> AvailableContextActions;
 #pragma endregion
 };

@@ -12,7 +12,7 @@
 #include "CommonListView.h"
 #include "UI/Foundation/ContextAction/TartarusContextActionListData.h"
 
-void UTartarusContextMenuWidget::SetContext(const UTartarusInventorySlotWidgetData* const Item)
+void UTartarusContextMenuWidget::SetContext(const UTartarusInventorySlotWidgetData* const Item, const TArray<UTartarusContextAction*>& ContextActions)
 {
 	ListView->ClearListItems();
 
@@ -24,7 +24,6 @@ void UTartarusContextMenuWidget::SetContext(const UTartarusInventorySlotWidgetDa
 		return;
 	}
 
-	const TArray<UTartarusContextAction*>& ContextActions = PlayerInventoryComponent->GetSubInventoryContextActions(Item->GetInventoryStackId().GetInventoryId());
 	for (UTartarusContextAction* const ContextAction : ContextActions)
 	{
 		CreateEntry(ContextAction, Item);

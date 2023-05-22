@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "Item/Inventory/TartarusInventoryData.h"
 #include "GameplayTagContainer.h"
 
 #include "TartarusSubInventoryData.generated.h"
@@ -23,7 +22,6 @@ public:
 	int32 GetNumberOfSlots() const { return NumberOfSlots; }
 	FGameplayTag GetType() const { return InventoryId; }
 	const FText& GetName() const { return Name; }
-	TArray<TObjectPtr<UTartarusContextAction>> GetContextActions() const { return ContextActions; }
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Default")
@@ -34,7 +32,4 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 		FText Name = FText();
-
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
-		TArray<TObjectPtr<UTartarusContextAction>> ContextActions;
 };

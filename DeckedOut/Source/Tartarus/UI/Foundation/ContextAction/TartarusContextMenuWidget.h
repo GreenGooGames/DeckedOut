@@ -21,7 +21,7 @@ class TARTARUS_API UTartarusContextMenuWidget : public UCommonActivatableWidget
 	GENERATED_BODY()
 	
 public:
-	void SetContext(const UTartarusInventorySlotWidgetData* const SlotWidgetData);
+	void SetContext(const UTartarusInventorySlotWidgetData* const SlotWidgetData, const TArray<UTartarusContextAction*>& ContextActions);
 
 protected:
 	UPROPERTY(meta = (BindWidget))

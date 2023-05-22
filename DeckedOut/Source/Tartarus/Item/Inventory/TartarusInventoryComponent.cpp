@@ -213,23 +213,6 @@ FText UTartarusInventoryComponent::GetSubInventoryName(const FGameplayTag Invent
 	return FText();
 }
 
-TArray<UTartarusContextAction*> UTartarusInventoryComponent::GetSubInventoryContextActions(const FGameplayTag InventoryId) const
-{
-	TArray<UTartarusContextAction*> ContextActions;
-
-	for (const auto& SubInventoryData : ToCreateSubInventories)
-	{
-		if (SubInventoryData->GetType() != InventoryId)
-		{
-			continue;
-		}
-
-		ContextActions = SubInventoryData->GetContextActions();
-	}
-
-	return ContextActions;
-}
-
 void UTartarusInventoryComponent::SortInventory(const FGameplayTag InventoryId)
 {
 	if (!SubInventories.Contains(InventoryId))

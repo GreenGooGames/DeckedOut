@@ -20,6 +20,7 @@
 #include "UI/PlayerMenu/Inventory/TartarusSubInventoryViewWidget.h"
 #include "Widgets/CommonActivatableWidgetContainer.h"
 #include "UI/PlayerMenu/TartarusPlayerMenuLayoutWidget.h"
+#include "UI/Foundation/ContextAction/TartarusContextActionBulk.h"
 
 void UTartarusInventoryWidget::NativeOnInitialized()
 {
@@ -206,7 +207,8 @@ void UTartarusInventoryWidget::HandleItemClicked(UObject* Item)
 		ContextMenu->ActivateWidget();
 	}
 
-	ContextMenu->SetContext(SlotData);
+	// Getting the slot data inventory id is good enough here instead of getting the current active subinventory widget.
+	ContextMenu->SetContext(SlotData, AvailableContextActions[SlotData->GetInventoryStackId().GetInventoryId()]->GetContextActions());
 }
 
 template<typename T>
