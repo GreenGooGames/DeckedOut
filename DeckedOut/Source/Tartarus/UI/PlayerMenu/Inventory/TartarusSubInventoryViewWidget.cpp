@@ -234,30 +234,46 @@ void UTartarusSubInventoryViewWidget::OnInventoryEntryUpdated(EInventoryChanged 
 	// If this Sub-Inventory contains the InventoryEntry that has changed, update the data for the TileView.
 	const TArray<UObject*> ListItems = TileView->GetListItems();
 
-	for (UObject* const Item : ListItems)
+	if (StackId.GetInventoryId() != InventoryId)
 	{
-		UTartarusInventorySlotWidgetData* const ItemData = Cast<UTartarusInventorySlotWidgetData>(Item);
-		if (!IsValid(ItemData))
-		{
-			continue;
-		}
+		return;
+	}
 
-		if (ItemData->GetInventoryStackId() != StackId)
+	// Check if the ListView was representing the Entry and update it.
+	const int Index = ListItems.IndexOfByPredicate([&](UObject* const Item)
 		{
-			continue;
-		}
+			UTartarusInventorySlotWidgetData* const ItemData = Cast<UTartarusInventorySlotWidgetData>(Item);
+			if (!IsValid(ItemData))
+			{
+				return false;
+			}
 
+			if (ItemData->GetInventoryStackId() != StackId)
+			{
+				return false;
+			}
+
+			return true;
+		});
+	if (Index != INDEX_NONE)
+	{
+		UTartarusInventorySlotWidgetData* const ItemData = Cast<UTartarusInventorySlotWidgetData>(ListItems[Index]);
 		const FInventoryStack* const InventoryEntry = InventoryComponent->GetOverviewSingle(StackId);
-		
+
 		// If another item is currently occupying the slot in the inventory, update the Display Texture.
 		if (InventoryEntry != nullptr && ItemData->GetItemId() != InventoryEntry->GetEntryId())
 		{
-			TArray<UTartarusInventorySlotWidgetData*> ToLoadItemDataWidgets = {ItemData};
+			TArray<UTartarusInventorySlotWidgetData*> ToLoadItemDataWidgets = { ItemData };
 			AsyncRequestSetDisplayTexture(ToLoadItemDataWidgets);
 		}
 
 		// Update The data stored to reflect the inventory entry.
 		ItemData->UpdateData(InventoryEntry);
+	}
+	else
+	{
+		// This is a new entry, represent it.
+		RefreshData();
 	}
 }
 #pragma endregion

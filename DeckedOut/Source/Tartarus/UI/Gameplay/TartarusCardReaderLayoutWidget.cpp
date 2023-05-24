@@ -77,11 +77,11 @@ bool UTartarusCardReaderLayoutWidget::TransferToInventory(const UTartarusInvento
 		return false;
 	}
 
-	// TODO: Find out if the item is stackable or not instead of passing false.
+	// TODO: Find out if the item is stackable or not instead of passing false, except for when storing in the CardReader Inventory then we don't stack.
 	FInventoryStackId StoredStackId = Recipient->StoreEntry(SubInventoryId, ItemAssestId, false, 1);
 	if (!StoredStackId.IsValid())
 	{
-		Host->StoreEntry(SubInventoryId, ItemData->GetItemId(), false, 1);
+		Host->StoreEntry(SubInventoryId, ItemAssestId, false, 1);
 		return false;
 	}
 
