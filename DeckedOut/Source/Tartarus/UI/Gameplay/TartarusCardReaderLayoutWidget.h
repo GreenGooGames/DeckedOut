@@ -13,6 +13,10 @@ class UTartarusSubInventoryViewWidget;
 class UTartarusItemSelectionWidget;
 class UTartarusItemDetailsWidget;
 class UTartarusGameModifiersWidget;
+class UTartarusContextMenuWidget;
+class UTartarusContextActionBulk;
+class UTartarusInventorySlotWidgetData;
+class UTartarusInventoryComponent;
 
 /**
  * 
@@ -28,26 +32,14 @@ public:
 protected:
 	UPROPERTY(meta = (BindWidget))
 		TObjectPtr<UTartarusActionBarWidget> ActionBarWidget = nullptr;
-
-	UPROPERTY(meta = (BindWidget))
-		TObjectPtr<UTartarusSubInventoryViewWidget> InventoryWidget = nullptr;
-
-	UPROPERTY(meta = (BindWidget))
-		TObjectPtr<UTartarusItemSelectionWidget> ActiveCardsWidget = nullptr;
 		
 	UPROPERTY(meta = (BindWidget))
 		TObjectPtr<UTartarusGameModifiersWidget> GameModifiersWidget = nullptr;
 
-	void InitializeInventoryWidget();
-
-private:
-	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess=true))
-		FGameplayTag SubInventoryId = FGameplayTag::EmptyTag;
-
 #pragma region UCommonActivatableWidget
 protected:
 	virtual UWidget* NativeGetDesiredFocusTarget() const override;
-	virtual void NativeOnActivated() override;
+	virtual void NativeOnInitialized() override;
 #pragma endregion
 
 #pragma region ItemInfo
@@ -57,5 +49,32 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 		TObjectPtr<UTartarusItemDetailsWidget> ItemDetailsWidget = nullptr;
+#pragma endregion
+
+#pragma region Inventory
+protected:
+	bool TransferToInventory(const UTartarusInventorySlotWidgetData* const ItemData, UTartarusInventoryComponent* const Host, UTartarusInventoryComponent* const Recipient);
+
+private:
+	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
+		FGameplayTag SubInventoryId = FGameplayTag::EmptyTag;
+
+#pragma region CardReaderInventory
+protected:
+	UPROPERTY(meta = (BindWidget))
+		TObjectPtr<UTartarusSubInventoryViewWidget> CardReaderInventoryWidget = nullptr;
+
+	void InitializeCardReaderInventoryWidget();
+	void HandleCardReaderInventoryItemClicked(UObject* Item);
+#pragma endregion
+
+#pragma region PlayerInventory
+protected:
+	UPROPERTY(meta = (BindWidget))
+		TObjectPtr<UTartarusSubInventoryViewWidget> PlayerInventoryWidget = nullptr;
+
+	void InitializePlayerInventoryWidget();
+	void HandlePlayerInventoryItemClicked(UObject* Item);
+#pragma endregion
 #pragma endregion
 };

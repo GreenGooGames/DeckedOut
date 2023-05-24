@@ -89,6 +89,8 @@ private:
 public:
 	void LinkInventory(UTartarusInventoryComponent* const Inventory, const FGameplayTag SubInventoryId);
 	FGameplayTag GetInventoryId() const { return InventoryId; }
+	UTartarusInventoryComponent* GetInventory() { return InventoryComponent.Get(); }
+
 protected:
 	/*
 	* Retries all entries that are represented in this View.

@@ -45,15 +45,22 @@ FInventoryStackId UTartarusInventoryComponent::StoreEntry(const UTartarusItem* c
 		return FInventoryStackId();
 	}
 
+	FInventoryStackId StackId = StoreEntry(Entry->InventoryId, Entry->GetPrimaryAssetId(), Entry->bIsStackable, StackSize);
+
+	return StackId;
+}
+
+FInventoryStackId UTartarusInventoryComponent::StoreEntry(const FGameplayTag& EntryInventoryId, const FPrimaryAssetId& EntryId, const bool bIsEntryStackAble, const int32 StackSize)
+{
 	// Verify the given parameters.
-	if (!Entry->InventoryId.IsValid())
+	if (!EntryInventoryId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the entry: InventoryId was invalid!"), *FString(__FUNCTION__));
 		return FInventoryStackId();
 	}
-	
+
 	// Verify that the asset has a valid Id.
-	if (!Entry->GetPrimaryAssetId().IsValid())
+	if (!EntryId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the entry: ItemId was invalid!"), *FString(__FUNCTION__));
 		return FInventoryStackId();
@@ -65,22 +72,22 @@ FInventoryStackId UTartarusInventoryComponent::StoreEntry(const UTartarusItem* c
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the entry: StackSize was  <= 0 !"), *FString(__FUNCTION__));
 		return FInventoryStackId();
 	}
-	
+
 	// Ensure that the entry is stackable if storing multiples.
-	if (!Entry->bIsStackable && StackSize > 1)
+	if (!bIsEntryStackAble && StackSize > 1)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to store the entry: Trying to add multiples of a unique entry in the same stack!"), *FString(__FUNCTION__));
 		return FInventoryStackId();
 	}
 
 	// Try to add the entry to the specified sub inventory.
-	const FInventoryStackId StackId = SubInventories[Entry->InventoryId].AddEntry(Entry->GetPrimaryAssetId(), Entry->bIsStackable, StackSize);
+	const FInventoryStackId StackId = SubInventories[EntryInventoryId].AddEntry(EntryId, bIsEntryStackAble, StackSize);
 	if (!StackId.IsValid())
 	{
 		return FInventoryStackId();
 	}
-	
-	OnInventoryEntryUpdated().Broadcast(EInventoryChanged::Stored, StackId, SubInventories[Entry->InventoryId].FindStack(StackId)->StackSize);
+
+	OnInventoryEntryUpdated().Broadcast(EInventoryChanged::Stored, StackId, SubInventories[EntryInventoryId].FindStack(StackId)->StackSize);
 
 	return StackId;
 }

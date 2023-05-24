@@ -47,6 +47,7 @@ public:
 	* Return: The StackId of the stack the Entry was added to.
 	*/
 	FInventoryStackId StoreEntry(const UTartarusItem* const Entry, const int32 StackSize);
+	FInventoryStackId StoreEntry(const FGameplayTag& EntryInventoryId, const FPrimaryAssetId& EntryId, const bool bIsEntryStackAble, const int32 StackSize);
 
 	/*
 	* Retrieves an entry from the inventory from a random matching stack.

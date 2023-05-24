@@ -24,6 +24,12 @@ public:
 	*/
 	bool TryInteract(const FTransform& OriginTransform, const FVector& Offset = FVector::ZeroVector) const;
 
+	/*
+	* Retrieves the Current Target to interact with.
+	* Return: The Interface WeakPtr of the best interactable target.
+	*/
+	TWeakInterfacePtr<ITartarusInteractableTargetInterface> GetTarget() { return CurrentTarget; }
+
 protected:
 	// The maximum range between the source and target for interaction to be possible.
 	UPROPERTY(EditDefaultsOnly)
