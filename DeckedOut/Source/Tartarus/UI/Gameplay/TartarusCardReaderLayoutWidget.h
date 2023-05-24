@@ -34,12 +34,11 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 		TObjectPtr<UTartarusItemSelectionWidget> ActiveCardsWidget = nullptr;
-	
-	UPROPERTY(meta = (BindWidget))
-		TObjectPtr<UTartarusItemDetailsWidget> ItemDetailsWidget = nullptr;
-	
+		
 	UPROPERTY(meta = (BindWidget))
 		TObjectPtr<UTartarusGameModifiersWidget> GameModifiersWidget = nullptr;
+
+	void InitializeInventoryWidget();
 
 private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess=true))
@@ -49,5 +48,14 @@ private:
 protected:
 	virtual UWidget* NativeGetDesiredFocusTarget() const override;
 	virtual void NativeOnActivated() override;
+#pragma endregion
+
+#pragma region ItemInfo
+protected:
+	void InitializeItemInfoWidget();
+	void HandleItemSelectionChanged(UObject* Item);
+
+	UPROPERTY(meta = (BindWidget))
+		TObjectPtr<UTartarusItemDetailsWidget> ItemDetailsWidget = nullptr;
 #pragma endregion
 };

@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "UI/Foundation/TartarusActivatableWidget.h"
+#include "System/TartarusAsyncLoadData.h"
 
 #include "TartarusItemDetailsWidget.generated.h"
 
 class UCommonLazyImage;
 class UCommonListView;
+class UTartarusItem;
 
 /**
  * 
@@ -18,10 +20,28 @@ class TARTARUS_API UTartarusItemDetailsWidget : public UTartarusActivatableWidge
 {
 	GENERATED_BODY()
 	
+public:
+	void SetItemReference(const FPrimaryAssetId& ToRepresentItemId);
+
 protected:
 	UPROPERTY(meta = (BindWidget))
 		TObjectPtr<UCommonLazyImage> ItemImage = nullptr;
 
 	UPROPERTY(meta = (BindWidget))
 		TObjectPtr<UCommonListView> ItemInfoListView = nullptr;
+
+	void Refresh(UTartarusItem* const Item);
+
+private:
+	FPrimaryAssetId RepresentingItemId = FPrimaryAssetId();
+
+#pragma region AsyncLoading
+protected:
+	void ASyncRequestLoadItemData();
+	void HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData);
+	void HandleOnRequestCompleted(FASyncLoadRequest* const CompletedRequest);
+
+private:
+	TArray<FASyncLoadRequest> ItemDataRequests;
+#pragma endregion
 };

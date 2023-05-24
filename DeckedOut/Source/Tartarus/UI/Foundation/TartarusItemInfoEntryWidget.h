@@ -5,7 +5,10 @@
 #include "Blueprint/IUserObjectListEntry.h"
 #include "CoreMinimal.h"
 #include "CommonUserWidget.h"
+
 #include "TartarusItemInfoEntryWidget.generated.h"
+
+class UCommonTextBlock;
 
 /**
  * 
@@ -15,4 +18,17 @@ class TARTARUS_API UTartarusItemInfoEntryWidget : public UCommonUserWidget, publ
 {
 	GENERATED_BODY()
 	
+protected:
+	UPROPERTY(meta = (BindWidget))
+		TObjectPtr<UCommonTextBlock> MainText = nullptr;
+	
+	UPROPERTY(meta = (BindWidget))
+		TObjectPtr<UCommonTextBlock> SubText = nullptr;
+
+	void SetText(const FText& InMainText, const FText& InSubText);
+
+#pragma region IUserObjectListEntry
+protected:
+	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
+#pragma endregion
 };
