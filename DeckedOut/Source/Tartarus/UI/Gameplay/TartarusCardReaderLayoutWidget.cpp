@@ -142,8 +142,6 @@ void UTartarusCardReaderLayoutWidget::HandleCardReaderInventoryItemClicked(UObje
 		UE_LOG(LogTartarus, Log, TEXT("%s: Unable to handle CardReader inventory item click: Failed to transfer the item!"), *FString(__FUNCTION__));
 		return;
 	}
-
-	// Remove the modifier from the GameInstance.
 }
 #pragma endregion
 
@@ -194,8 +192,6 @@ void UTartarusCardReaderLayoutWidget::HandlePlayerInventoryItemClicked(UObject* 
 		UE_LOG(LogTartarus, Log, TEXT("%s: Unable to handle CardReader inventory item click: Failed to transfer the item!"), *FString(__FUNCTION__));
 		return;
 	}
-
-	// Add the modifer to the GameInstance.
 }
 #pragma endregion
 #pragma endregion
