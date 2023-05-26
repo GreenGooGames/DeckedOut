@@ -4,7 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "UI/Foundation/TartarusActivatableWidget.h"
+
 #include "TartarusGameModifiersWidget.generated.h"
+
+enum class EGameModifier : uint8;
+
+class UCommonListView;
 
 /**
  * 
@@ -14,4 +19,13 @@ class TARTARUS_API UTartarusGameModifiersWidget : public UTartarusActivatableWid
 {
 	GENERATED_BODY()
 	
+protected:
+	virtual void NativeOnInitialized() override;
+
+	void Refresh();
+	void HandleGameModifiersChanged(const EGameModifier Modifier, const float Adjustment);
+
+private:
+	UPROPERTY(meta = (BindWidget))
+		TObjectPtr<UCommonListView> GameModifierList = nullptr;
 };

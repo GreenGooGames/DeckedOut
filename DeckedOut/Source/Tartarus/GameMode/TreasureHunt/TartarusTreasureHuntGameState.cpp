@@ -2,6 +2,8 @@
 
 
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
+#include "TartarusTreasureHuntGameState.h"
+#include "Gameplay/Ruleset/TartarusGameModifier.h"
 
 #pragma region TreasureHuntState
 void ATartarusTreasureHuntGameState::ChangeTreasureHuntState(const ETreasureHuntState NewState)
@@ -25,23 +27,57 @@ bool ATartarusTreasureHuntGameState::IsTreasureHuntActive() const
 }
 #pragma endregion
 
-void ATartarusTreasureHuntGameState::EditGameModifier(const EGameModifier Modifier, const float Adjustment)
+#pragma region GameModifiers
+const TPair<TObjectPtr<const UTartarusGameModifier>, float>* ATartarusTreasureHuntGameState::FindGameModifier(const EGameModifier ModifierType)
 {
-	switch (Modifier)
+	for (auto& GameModifier : GameModifiers)
 	{
-	case EGameModifier::Sneak:
-	{
-		GameModifiers.SneakModifier += Adjustment;
-		break;
+		if (GameModifier.Key->GetType() != ModifierType)
+		{
+			continue;
+		}
+
+		return &GameModifier;
 	}
-	case EGameModifier::Silence:
-	{
-		GameModifiers.SilenceModifier += Adjustment;
-		break;
-	}
-	// Intentional fall-trough
-	case EGameModifier::None:
-	default:
-		break;
-	}
+
+	return nullptr;
 }
+
+void ATartarusTreasureHuntGameState::EditGameModifier(const UTartarusGameModifier* const Modifier, const float Adjustment)
+{
+	if (!IsValid(Modifier))
+	{
+		return;
+	}
+
+	bool bHasModified = false;
+	for (auto GameModifier : GameModifiers)
+	{
+		if (GameModifier.Key->GetType() != Modifier->GetType())
+		{
+			continue;
+		}
+
+		GameModifier.Value += Adjustment;
+		bHasModified = true;
+	}
+
+	if (!bHasModified)
+	{
+		GameModifiers.Add(Modifier, Adjustment);
+	}
+
+	OnGameModifiersChanged().Broadcast(Modifier->GetType(), Adjustment);
+}
+
+void ATartarusTreasureHuntGameState::ResetGameModifiers()
+{
+	//for (auto& Modifier : GameModifiers)
+	//{
+	//	Modifier.Value = 0;
+	//}
+	GameModifiers.Empty();
+
+	OnGameModifiersChanged().Broadcast(EGameModifier::None, 0.0f);
+}
+#pragma endregion

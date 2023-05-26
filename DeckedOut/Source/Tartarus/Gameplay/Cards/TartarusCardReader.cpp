@@ -8,6 +8,7 @@
 #include "Gameplay/Cards/TartarusCard.h"
 #include "Engine/World.h"
 #include "Logging/TartarusLogChannels.h"
+#include "Gameplay/Ruleset/TartarusGameModifier.h"
 
 #if WITH_EDITOR
 #include "Engine/Engine.h"
@@ -113,9 +114,9 @@ void ATartarusCardReader::ApplyModifiers(const TMap<UTartarusItem*, int32>& Card
 			continue;
 		}
 
-		for (const auto& Modifier : Card->Modifiers)
+		for (const auto& ModifierWeight : Card->ModifierWeights)
 		{
-			GameState->EditGameModifier(Modifier.Key, Modifier.Value * CardData.Value);
+			GameState->EditGameModifier(ModifierWeight.Key, ModifierWeight.Value * CardData.Value);
 
 #if WITH_EDITOR
 			FString EnumToString = "";
@@ -123,12 +124,12 @@ void ATartarusCardReader::ApplyModifiers(const TMap<UTartarusItem*, int32>& Card
 			const UEnum* const ModiferTypePtr = FindObject<UEnum>(FTopLevelAssetPath(TEXT("/Script/Tartarus.EGameModifier")), true);
 			if (IsValid(ModiferTypePtr))
 			{
-				EnumToString = ModiferTypePtr->GetNameStringByValue(static_cast<int64>(Modifier.Key));
+				EnumToString = ModiferTypePtr->GetNameStringByValue(static_cast<int64>(ModifierWeight.Value));
 			}
 
-			UE_LOG(LogTartarus, Warning, TEXT("%s: Applied modifer %s with value %d!"), *FString(__FUNCTION__), *EnumToString, Modifier.Value * CardData.Value);
+			UE_LOG(LogTartarus, Warning, TEXT("%s: Applied modifer %s with value %d!"), *FString(__FUNCTION__), *EnumToString, ModifierWeight.Value * CardData.Value);
 
-			FString Text = FString("Applied modifer ") + EnumToString + FString(" with value ") + FString::SanitizeFloat(Modifier.Value * CardData.Value);
+			FString Text = FString("Applied modifer ") + EnumToString + FString(" with value ") + FString::SanitizeFloat(ModifierWeight.Value * CardData.Value);
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, Text);
 #endif
 		}

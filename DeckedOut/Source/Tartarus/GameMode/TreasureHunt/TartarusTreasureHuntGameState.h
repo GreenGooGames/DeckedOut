@@ -7,26 +7,8 @@
 
 #include "TartarusTreasureHuntGameState.generated.h"
 
-UENUM(BlueprintType)
-enum class EGameModifier : uint8
-{
-	None,
-	Sneak,
-	Silence
-};
-
-USTRUCT(BlueprintType)
-struct FGameModifiers
-{
-	GENERATED_BODY()
-
-public:
-	// Has a chance to lower the volume of sound when generating clank.
-	float SneakModifier = 0.0f;
-
-	// Has a chance to completely nullify a sound when generating clank..
-	float SilenceModifier = 0.0f;
-};
+enum class EGameModifier : uint8;
+class UTartarusGameModifier;
 
 UENUM()
 enum class ETreasureHuntState : uint8
@@ -37,6 +19,7 @@ enum class ETreasureHuntState : uint8
 };
 
 DECLARE_EVENT_TwoParams(ATartarusTreasureHuntGameState, FRunningStateChanged, ETreasureHuntState /*OldState*/, ETreasureHuntState /*NewState*/);
+DECLARE_EVENT_TwoParams(ATartarusTreasureHuntGameState, FGameModifiersChanged, const EGameModifier /*ModifierType*/, const float /*Adjustment*/);
 
 /**
  * 
@@ -63,27 +46,35 @@ public:
 	*/
 	FRunningStateChanged& OnRunningStateChanged() { return RunningStateChangedEvent; }
 
+private:
+	ETreasureHuntState TreasureHuntState = ETreasureHuntState::Inactive;
+	FRunningStateChanged RunningStateChangedEvent = FRunningStateChanged();
+#pragma endregion
+
+#pragma region GameModifiers
+public:
+	const TMap<TObjectPtr<const UTartarusGameModifier>, float>& GetWeightedGameModifiers() const { return GameModifiers; };
+
 	/*
 	* Modifiers applied to this instance of the game. Usually set trough the chosen card deck.
 	* Return: Struct containing all modifiers applied to the game.
 	*/
-	const FGameModifiers& GetGameModifiers() const { return GameModifiers; }
+	const TPair<TObjectPtr<const UTartarusGameModifier>, float>* FindGameModifier(const EGameModifier ModifierType);
 
 	/*
 	* Updates the given game modifier with the provided adjustment.
 	*/
-	void EditGameModifier(const EGameModifier Modifier, const float Adjustment);
+	void EditGameModifier(const UTartarusGameModifier* const Modifier, const float Adjustment);
 
 	/*
 	* Resets the Game Modifiers to their default values.
 	*/
-	void ResetGameModifiers() { GameModifiers = FGameModifiers(); };
+	void ResetGameModifiers();
 
-protected:
+	FGameModifiersChanged& OnGameModifiersChanged() { return GameModifiersChangedEventHandle; }
 
 private:
-	ETreasureHuntState TreasureHuntState = ETreasureHuntState::Inactive;
-	FRunningStateChanged RunningStateChangedEvent = FRunningStateChanged();
-	FGameModifiers GameModifiers = FGameModifiers();
+	TMap<TObjectPtr<const UTartarusGameModifier>, float> GameModifiers;
+	FGameModifiersChanged GameModifiersChangedEventHandle = FGameModifiersChanged();
 #pragma endregion
 };

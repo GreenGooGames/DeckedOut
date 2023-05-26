@@ -8,7 +8,8 @@
 #include "TartarusCard.generated.h"
 
 class ATartarusTreasureHuntGameState;
-enum class EGameModifier : uint8;
+class UTartarusGameModifier;
+
 /**
  * 
  */
@@ -19,5 +20,5 @@ class TARTARUS_API UTartarusCard : public UTartarusItem
 	
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Card")
-		TMap<EGameModifier, float> Modifiers;
+		TMap<TObjectPtr<UTartarusGameModifier>, float> ModifierWeights;
 };

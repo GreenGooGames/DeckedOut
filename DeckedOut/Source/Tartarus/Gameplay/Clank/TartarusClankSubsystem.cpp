@@ -7,6 +7,7 @@
 #include "Engine/World.h"
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
 #include "TimerManager.h"
+#include "Gameplay/Ruleset/TartarusGameModifier.h"
 
 void UTartarusClankSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
@@ -97,12 +98,11 @@ ENoiseLevel UTartarusClankSubsystem::ApplyGameModifers(const ENoiseLevel NoiseLe
 		return NoiseLevel;
 	}
 
-	const FGameModifiers& Modifiers = GameState->GetGameModifiers();
 	ENoiseLevel Volume = NoiseLevel;
 	const float Random = FMath::FRand();
 
 	// Check to completely silence the sound.
-	if (Modifiers.SilenceModifier > Random)
+	if (GameState->FindGameModifier(EGameModifier::Silence) && GameState->FindGameModifier(EGameModifier::Silence)->Value > Random)
 	{
 		Volume = ENoiseLevel::None;
 
@@ -111,7 +111,7 @@ ENoiseLevel UTartarusClankSubsystem::ApplyGameModifers(const ENoiseLevel NoiseLe
 #endif
 	}
 	// Check to reduce the volume.
-	else if (Modifiers.SneakModifier > Random)
+	else if (GameState->FindGameModifier(EGameModifier::Sneak) && GameState->FindGameModifier(EGameModifier::Sneak)->Value > Random)
 	{
 		Volume = static_cast<ENoiseLevel>((uint8)Volume - 1);
 
