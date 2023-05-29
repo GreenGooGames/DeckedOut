@@ -32,11 +32,11 @@ protected:
 		TObjectPtr<UBoxComponent> Collider = nullptr;
 
 private:
-	// the layer to push the widget to on interaction.
+	// The layer to push the widget to on interaction.
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 		FGameplayTag WidgetLayer = FGameplayTag::EmptyTag;
 
-	// the template of the widget to shaow on interaction.
+	// The template of the widget to show on interaction.
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
 		TSoftClassPtr<UTartarusLayoutWidget> WidgetTemplate = nullptr;
 
