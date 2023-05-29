@@ -4,18 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "UI/Foundation/TartarusLayoutWidget.h"
-#include "GameplayTagContainer.h"
 
 #include "TartarusCardReaderLayoutWidget.generated.h"
 
 class UTartarusActionBarWidget;
-class UTartarusSubInventoryViewWidget;
-class UTartarusItemSelectionWidget;
-class UTartarusItemDetailsWidget;
 class UTartarusGameModifiersWidget;
-class UTartarusContextMenuWidget;
-class UTartarusContextActionBulk;
-class UTartarusInventorySlotWidgetData;
+class UTartarusTransferWidget;
+class UTartarusItemDetailsWidget;
 class UTartarusInventoryComponent;
 
 /**
@@ -51,30 +46,18 @@ protected:
 		TObjectPtr<UTartarusItemDetailsWidget> ItemDetailsWidget = nullptr;
 #pragma endregion
 
-#pragma region Inventory
+#pragma region Transfer
 protected:
-	bool TransferToInventory(const UTartarusInventorySlotWidgetData* const ItemData, UTartarusInventoryComponent* const Host, UTartarusInventoryComponent* const Recipient);
+	UPROPERTY(meta = (BindWidget))
+		TObjectPtr<UTartarusTransferWidget> TransferWidget = nullptr;
+
+	void InitializeTransferWidget();
 
 private:
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
-		FGameplayTag SubInventoryId = FGameplayTag::EmptyTag;
+		FGameplayTag CardsSubInventoryId = FGameplayTag::EmptyTag;
 
-#pragma region CardReaderInventory
-protected:
-	UPROPERTY(meta = (BindWidget))
-		TObjectPtr<UTartarusSubInventoryViewWidget> CardReaderInventoryWidget = nullptr;
-
-	void InitializeCardReaderInventoryWidget();
-	void HandleCardReaderInventoryItemClicked(UObject* Item);
-#pragma endregion
-
-#pragma region PlayerInventory
-protected:
-	UPROPERTY(meta = (BindWidget))
-		TObjectPtr<UTartarusSubInventoryViewWidget> PlayerInventoryWidget = nullptr;
-
-	void InitializePlayerInventoryWidget();
-	void HandlePlayerInventoryItemClicked(UObject* Item);
-#pragma endregion
+	UTartarusInventoryComponent* FindCardReaderInventory() const;
+	UTartarusInventoryComponent* FindPlayerInventory() const;
 #pragma endregion
 };
