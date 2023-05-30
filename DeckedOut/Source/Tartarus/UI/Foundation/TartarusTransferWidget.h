@@ -23,7 +23,7 @@ class TARTARUS_API UTartarusTransferWidget : public UTartarusActivatableWidget
 	GENERATED_BODY()
 
 public:
-	void LinkInventories(const FGameplayTag& SubInventoryId, UTartarusInventoryComponent* const HostInventory, UTartarusInventoryComponent* const ClientInventory);
+	void LinkInventories(UTartarusInventoryComponent* const HostInventory, UTartarusInventoryComponent* const ClientInventory);
 	FEntrySelectionChangedEvent& OnEntrySelectionChanged() { return OnEntrySelectionChangedHandle; }
 
 protected:

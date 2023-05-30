@@ -9,15 +9,9 @@
 #include "UI/PlayerMenu/Inventory/TartarusInventorySlotWidgetData.h"
 #include "CommonTileView.h"
 
-void UTartarusTransferWidget::LinkInventories(const FGameplayTag& SubInventoryId, UTartarusInventoryComponent* const HostInventory, UTartarusInventoryComponent* const ClientInventory)
+void UTartarusTransferWidget::LinkInventories(UTartarusInventoryComponent* const HostInventory, UTartarusInventoryComponent* const ClientInventory)
 {
 	// Verify the Input Parameters.
-	if (!SubInventoryId.IsValid())
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to Initialize the TransferWidget: The given SubInventory is invalid!"), *FString(__FUNCTION__));
-		return;
-	}
-
 	if (!IsValid(HostInventory) || !IsValid(ClientInventory))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to Initialize the TransferWidget: Host and/or Client Inventory is invalid!"), *FString(__FUNCTION__));
@@ -32,6 +26,8 @@ void UTartarusTransferWidget::LinkInventories(const FGameplayTag& SubInventoryId
 	}
 
 	// Initialize the SubInventory Widgets.
+	const FGameplayTag SubInventoryId = HostInventory->GetSubInventoryIds()[0];
+
 	HostInventoryWidget->LinkInventory(HostInventory, SubInventoryId);
 	HostInventoryWidget->SetLocalizedWidgetName(HostInventory->GetSubInventoryName(SubInventoryId));
 	HostInventoryWidget->GetTileView()->OnItemClicked().AddUObject(this, &UTartarusTransferWidget::HandleHostInventoryItemClicked);

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/Gameplay/TartarusDisplayCaseLayoutWidget.h"
+#include "UI/Gameplay/TartarusStorageLayoutWidget.h"
 
 #include "UI/Foundation/TartarusActionBarWidget.h"
 #include "UI/Foundation/TartarusItemDetailsWidget.h"
@@ -11,7 +11,7 @@
 #include "Interaction/TartarusInteractableSourceComponent.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 
-UTartarusDisplayCaseLayoutWidget::UTartarusDisplayCaseLayoutWidget()
+UTartarusStorageLayoutWidget::UTartarusStorageLayoutWidget()
 {
 	bIsBackHandler = true;
 	bIsBackActionDisplayedInActionBar = true;
@@ -19,7 +19,7 @@ UTartarusDisplayCaseLayoutWidget::UTartarusDisplayCaseLayoutWidget()
 }
 
 #pragma region UCommonActivatableWidget
-UWidget* UTartarusDisplayCaseLayoutWidget::NativeGetDesiredFocusTarget() const
+UWidget* UTartarusStorageLayoutWidget::NativeGetDesiredFocusTarget() const
 {
 	if (!IsValid(TransferWidget))
 	{
@@ -30,7 +30,7 @@ UWidget* UTartarusDisplayCaseLayoutWidget::NativeGetDesiredFocusTarget() const
 	return TransferWidget;
 }
 
-void UTartarusDisplayCaseLayoutWidget::NativeOnInitialized()
+void UTartarusStorageLayoutWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
@@ -43,12 +43,12 @@ void UTartarusDisplayCaseLayoutWidget::NativeOnInitialized()
 #pragma endregion
 
 #pragma region ItemInfo
-void UTartarusDisplayCaseLayoutWidget::InitializeItemInfoWidget()
+void UTartarusStorageLayoutWidget::InitializeItemInfoWidget()
 {
-	TransferWidget->OnEntrySelectionChanged().AddUObject(this, &UTartarusDisplayCaseLayoutWidget::HandleItemSelectionChanged);
+	TransferWidget->OnEntrySelectionChanged().AddUObject(this, &UTartarusStorageLayoutWidget::HandleItemSelectionChanged);
 }
 
-void UTartarusDisplayCaseLayoutWidget::HandleItemSelectionChanged(UObject* Item)
+void UTartarusStorageLayoutWidget::HandleItemSelectionChanged(UObject* Item)
 {
 	UTartarusInventorySlotWidgetData* const WidgetData = Cast<UTartarusInventorySlotWidgetData>(Item);
 	if (!IsValid(WidgetData))
@@ -62,39 +62,39 @@ void UTartarusDisplayCaseLayoutWidget::HandleItemSelectionChanged(UObject* Item)
 #pragma endregion
 
 #pragma region Transfer
-void UTartarusDisplayCaseLayoutWidget::InitializeTransferWidget()
+void UTartarusStorageLayoutWidget::InitializeTransferWidget()
 {
-	TransferWidget->LinkInventories(ArtifactsSubInventoryId, FindInteractingInventory(), FindPlayerInventory());
+	TransferWidget->LinkInventories(FindInteractingInventory(), FindPlayerInventory());
 	TransferWidget->ActivateWidget();
 }
 
-UTartarusInventoryComponent* UTartarusDisplayCaseLayoutWidget::FindInteractingInventory() const
+UTartarusInventoryComponent* UTartarusStorageLayoutWidget::FindInteractingInventory() const
 {
 	UTartarusInteractableSourceComponent* const PlayerInteractableComponent = GetOwningPlayer()->FindComponentByClass<UTartarusInteractableSourceComponent>();
 	if (!IsValid(PlayerInteractableComponent))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to find the CardReader inventory: Unable to find the Interactable Component!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to find the Interactable inventory: Unable to find the Interactable Component!"), *FString(__FUNCTION__));
 		return nullptr;
 	}
 
 	AActor* const InteractingActor = Cast<AActor>(PlayerInteractableComponent->GetTarget().Get());
 	if (!IsValid(InteractingActor))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to find the CardReader inventory: The Interacting Actor is invalid!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to find the Interactable inventory: The Interacting Actor is invalid!"), *FString(__FUNCTION__));
 		return nullptr;
 	}
 
-	UTartarusInventoryComponent* const CardReaderInventory = InteractingActor->FindComponentByClass<UTartarusInventoryComponent>();
-	if (!IsValid(CardReaderInventory))
+	UTartarusInventoryComponent* const InteractableInventory = InteractingActor->FindComponentByClass<UTartarusInventoryComponent>();
+	if (!IsValid(InteractableInventory))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to find the CardReader inventory: Unable to find the Inventory Component!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to find the Interactable inventory: Unable to find the Inventory Component!"), *FString(__FUNCTION__));
 		return nullptr;
 	}
 
-	return CardReaderInventory;
+	return InteractableInventory;
 }
 
-UTartarusInventoryComponent* UTartarusDisplayCaseLayoutWidget::FindPlayerInventory() const
+UTartarusInventoryComponent* UTartarusStorageLayoutWidget::FindPlayerInventory() const
 {
 	UTartarusInventoryComponent* const InventoryComponent = GetOwningPlayer()->FindComponentByClass<UTartarusInventoryComponent>();
 	if (!IsValid(InventoryComponent))

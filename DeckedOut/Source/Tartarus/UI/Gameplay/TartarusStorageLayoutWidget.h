@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "UI/Foundation/TartarusLayoutWidget.h"
 
-#include "TartarusDisplayCaseLayoutWidget.generated.h"
+#include "TartarusStorageLayoutWidget.generated.h"
 
 class UTartarusTransferWidget;
 class UTartarusActionBarWidget;
@@ -16,12 +16,12 @@ class UTartarusInventoryComponent;
  * 
  */
 UCLASS()
-class TARTARUS_API UTartarusDisplayCaseLayoutWidget : public UTartarusLayoutWidget
+class TARTARUS_API UTartarusStorageLayoutWidget : public UTartarusLayoutWidget
 {
 	GENERATED_BODY()
 	
 public:
-	UTartarusDisplayCaseLayoutWidget();
+	UTartarusStorageLayoutWidget();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -50,11 +50,7 @@ protected:
 	void InitializeTransferWidget();
 
 private:
-	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
-		FGameplayTag ArtifactsSubInventoryId = FGameplayTag::EmptyTag;
-
 	UTartarusInventoryComponent* FindInteractingInventory() const;
 	UTartarusInventoryComponent* FindPlayerInventory() const;
 #pragma endregion
-
 };
