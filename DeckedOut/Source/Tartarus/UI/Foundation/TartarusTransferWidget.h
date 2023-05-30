@@ -44,5 +44,6 @@ private:
 #pragma region UCommonActivatableWidget
 protected:
 	virtual UWidget* NativeGetDesiredFocusTarget() const override;
+	virtual void NativeOnActivated() override;
 #pragma endregion
 };

@@ -32,13 +32,11 @@ void UTartarusTransferWidget::LinkInventories(UTartarusInventoryComponent* const
 	HostInventoryWidget->SetLocalizedWidgetName(HostInventory->GetSubInventoryName(SubInventoryId));
 	HostInventoryWidget->GetTileView()->OnItemClicked().AddUObject(this, &UTartarusTransferWidget::HandleHostInventoryItemClicked);
 	HostInventoryWidget->GetTileView()->OnItemSelectionChanged().AddLambda([&](UObject* SelectedItem) {OnEntrySelectionChangedHandle.Broadcast(SelectedItem); });
-	HostInventoryWidget->ActivateWidget();
 
 	ClientInventoryWidget->LinkInventory(ClientInventory, SubInventoryId);
 	ClientInventoryWidget->SetLocalizedWidgetName(ClientInventory->GetSubInventoryName(SubInventoryId));
 	ClientInventoryWidget->GetTileView()->OnItemClicked().AddUObject(this, &UTartarusTransferWidget::HandleClientInventoryItemClicked);
 	ClientInventoryWidget->GetTileView()->OnItemSelectionChanged().AddLambda([&](UObject* SelectedItem) {OnEntrySelectionChangedHandle.Broadcast(SelectedItem); });
-	ClientInventoryWidget->ActivateWidget();
 }
 
 bool UTartarusTransferWidget::TransferToInventory(const UTartarusInventorySlotWidgetData* const InventorySlotWidgetData, UTartarusInventoryComponent* const SourceInventory, UTartarusInventoryComponent* const TargetInventory)
@@ -110,5 +108,20 @@ UWidget* UTartarusTransferWidget::NativeGetDesiredFocusTarget() const
 	}
 
 	return HostInventoryWidget;
+}
+
+void UTartarusTransferWidget::NativeOnActivated()
+{
+	Super::NativeOnActivated();
+
+	// Verify this widget its data.
+	if (!IsValid(HostInventoryWidget) || !IsValid(ClientInventoryWidget))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to Activate the TransferWidget: Host and/or Client Inventory Widget is invalid!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	HostInventoryWidget->ActivateWidget();
+	ClientInventoryWidget->ActivateWidget();
 }
 #pragma endregion

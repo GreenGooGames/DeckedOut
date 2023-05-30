@@ -40,6 +40,13 @@ void UTartarusStorageLayoutWidget::NativeOnInitialized()
 	// Link the Active Cards and the Inventory to display the selected item in the ItemDetailsWidget.
 	InitializeItemInfoWidget();
 }
+
+void UTartarusStorageLayoutWidget::NativeOnActivated()
+{
+	Super::NativeOnActivated();
+
+	TransferWidget->ActivateWidget();
+}
 #pragma endregion
 
 #pragma region ItemInfo
@@ -65,7 +72,6 @@ void UTartarusStorageLayoutWidget::HandleItemSelectionChanged(UObject* Item)
 void UTartarusStorageLayoutWidget::InitializeTransferWidget()
 {
 	TransferWidget->LinkInventories(FindInteractingInventory(), FindPlayerInventory());
-	TransferWidget->ActivateWidget();
 }
 
 UTartarusInventoryComponent* UTartarusStorageLayoutWidget::FindInteractingInventory() const

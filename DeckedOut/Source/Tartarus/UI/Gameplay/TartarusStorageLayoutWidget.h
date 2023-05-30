@@ -31,6 +31,7 @@ protected:
 protected:
 	virtual UWidget* NativeGetDesiredFocusTarget() const override;
 	virtual void NativeOnInitialized() override;
+	virtual void NativeOnActivated() override;
 #pragma endregion
 
 #pragma region ItemInfo

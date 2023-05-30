@@ -75,6 +75,7 @@ void UTartarusSubInventoryViewWidget::NativeOnActivated()
 
 	if (!IsValid(InventoryComponent.Get()))
 	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to Activate: The InventoryComponent is invalid!"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -87,6 +88,8 @@ void UTartarusSubInventoryViewWidget::NativeOnActivated()
 
 void UTartarusSubInventoryViewWidget::NativeOnDeactivated()
 {
+	Super::NativeOnDeactivated();
+
 	if (!IsValid(InventoryComponent.Get()))
 	{
 		return;
