@@ -3,20 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "Interaction/TartarusInteractableTargetInterface.h"
+#include "Interaction/Objects/TartarusInteractablePopupActor.h"
 #include "Item/Inventory/TartarusInventoryData.h"
 #include "Item/System/TartarusAsyncItemData.h"
-#include "System/TartarusASyncLoadData.h"
 
 #include "TartarusDisplayCase.generated.h"
 
 class UTartarusInventoryComponent;
-class UTartarusItem;
 class ATartarusItemInstance;
-class UTartarusWidgetComponent;
-
-struct FItemTableRow;
 
 USTRUCT(BlueprintType)
 struct FDisplayCaseSlot
@@ -43,28 +37,11 @@ private:
 	FInventoryStackId InventoryStackId = FInventoryStackId();
 };
 
-#pragma region ASyncDisplay
-USTRUCT()
-struct FDisplayRequestInfo : public FASyncLoadRequest
-{
-	GENERATED_BODY()
-
-public:
-	FDisplayRequestInfo() {}
-	FDisplayRequestInfo(const int32 Slot);
-
-	int32 GetDisplaySlot() const { return SlotIndex; }
-
-private:
-	int32 SlotIndex = INDEX_NONE;
-};
-#pragma endregion
-
 /*
 * Actor that displays its inventory content.
 */
 UCLASS()
-class TARTARUS_API ATartarusDisplayCase : public AActor, public ITartarusInteractableTargetInterface
+class TARTARUS_API ATartarusDisplayCase : public ATartarusInteractablePopupActor
 {
 	GENERATED_BODY()
 	
@@ -72,56 +49,54 @@ public:
 	// Sets default values for this actor's properties
 	ATartarusDisplayCase();
 
-public:
-	bool AddToDisplay(const UTartarusItem* const Item);
-	bool RemoveFromDisplay(const FInventoryStackId& InventoryStackId);
-
+#pragma region Display
 protected:
 	// Slots used to display items in the inventory.
 	UPROPERTY(EditDefaultsOnly)
 		TArray<FDisplayCaseSlot> DisplaySlots;
-	
-	// Inventory component.
-	UPROPERTY(EditDefaultsOnly)
-		TObjectPtr<UTartarusInventoryComponent> InventoryComponent;
 
 	// Spawn parameters for items to display.
 	UPROPERTY(EditDefaultsOnly)
 		FItemSpawnParameters ItemSpawnParameters = FItemSpawnParameters();
 
-	int32 FindAvailableSlot() const;
-	void HandleDisplayRequestCompleted(ATartarusItemInstance* const DisplayItem, const int32 DisplaySlotIndex);
+	void UpdateDisplaySlots();
+	void DisplayItemASync(FDisplayCaseSlot& Slot, const FInventoryStack& InventoryStack);
+	void DisplayItem(FDisplayCaseSlot& Slot, const FInventoryStack& InventoryStack, ATartarusItemInstance* const ItemInstance);
+	void RemoveItem(FDisplayCaseSlot& Slot);
+#pragma endregion
 
-	void HandleArtifactsDataReceived(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ArtifactsData);
-
-#pragma region ASyncDisplay
-// [Koen Goossens] TODO: Refactor the TartarusEquipableManager as the workflow is the same.
+#pragma region Inventory
 protected:
-	bool ASyncRequestDisplay(const FInventoryStackId& InventoryStackId, const int32 SlotIndex);
+	// Inventory component.
+	UPROPERTY(EditDefaultsOnly)
+		TObjectPtr<UTartarusInventoryComponent> InventoryComponent;
 
-	void HandleRequestCompleted(const FDisplayRequestInfo* const CompletedRequest, const TWeakObjectPtr<ATartarusItemInstance> DisplayItem);
+	void OnInventoryEntryChanged(EInventoryChanged ChangeType, FInventoryStackId StackId, int32 StackSize);
+#pragma endregion
 
+#pragma region AsyncLoad
+private:
+	struct FDisplayRequestInfo : public FASyncLoadRequest
+	{
+	public:
+		FDisplayRequestInfo() {}
+		FDisplayRequestInfo(FDisplayCaseSlot* Slot, const FInventoryStack* ToDisplayStack);
+
+		FDisplayCaseSlot* const GetDisplaySlot() { return DisplaySlot; };
+		const FInventoryStack* const GetInventoryStack() { return InventoryStack; };
+
+	private:
+		FDisplayCaseSlot* DisplaySlot = nullptr;
+		const FInventoryStack* InventoryStack = nullptr;
+	};
+
+protected:
+	FGuid RequestItemDataAsync(TArray<FPrimaryAssetId> AssetsToLoad);
 	void HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData);
 	void HandleItemSpawned(FGuid ASyncLoadRequestId, TArray<TWeakObjectPtr<ATartarusItemInstance>> SpawnedItems);
+	void HandleRequestCompleted(const FDisplayRequestInfo* const CompletedRequest);
 
 private:
 	TArray<FDisplayRequestInfo> DisplayRequests;
-#pragma endregion
-
-#pragma region TartarusInteractableTargetInterface
-public:
-	virtual bool IsInteractable() const override;
-	virtual bool StartInteraction(const TObjectPtr<AController> InstigatorController) override;
-	virtual void DisableInteraction() override;
-	virtual bool ToggleInteractionPrompt(const bool bShowPrompt);
-
-protected:
-	UPROPERTY(EditDefaultsOnly)
-		TObjectPtr<UTartarusWidgetComponent> InteractionWidgetComponent = nullptr;
-
-	UPROPERTY(EditDefaultsOnly)
-		FText InteractionText = FText();
-
-	void CreateInteractionWidgetComponent();
 #pragma endregion
 };

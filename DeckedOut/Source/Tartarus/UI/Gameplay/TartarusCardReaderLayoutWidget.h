@@ -14,7 +14,7 @@ class UTartarusItemDetailsWidget;
 class UTartarusInventoryComponent;
 
 /**
- * 
+ * TODO: This class is 90% the same as the DisplayCase Widget. Inherit and overrride.
  */
 UCLASS()
 class TARTARUS_API UTartarusCardReaderLayoutWidget : public UTartarusLayoutWidget

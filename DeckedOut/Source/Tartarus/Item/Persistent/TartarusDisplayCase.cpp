@@ -5,8 +5,6 @@
 
 #include "Components/PrimitiveComponent.h"
 #include "Engine/World.h"
-#include "GameFramework/Controller.h"
-#include "GameFramework/PlayerController.h"
 #include "Item/Inventory/TartarusInventoryComponent.h"
 #include "Item/Inventory/TartarusInventoryData.h"
 #include "Item/System/TartarusItemSubsystem.h"
@@ -14,9 +12,6 @@
 #include "Item/TartarusItemData.h"
 #include "Item/TartarusItemInstance.h"
 #include "Logging/TartarusLogChannels.h"
-#include "TartarusDisplayCase.h"
-#include "UI/Gameplay/TartarusInteractionWidget.h"
-#include "UI/Foundation/TartarusWidgetComponent.h"
 
 #pragma region FDisplayCaseSlot
 FDisplayCaseSlot::FDisplayCaseSlot(const FVector& SlotLocation)
@@ -36,256 +31,158 @@ void FDisplayCaseSlot::SetDisplayedItem(const FInventoryStackId& ItemInventorySt
 }
 #pragma endregion
 
-#pragma region ASyncDisplay
-FDisplayRequestInfo::FDisplayRequestInfo(const int32 Slot)
-{
-	RequestId = FGuid::NewGuid();
-	SlotIndex = Slot;
-}
-#pragma endregion
-
 // Sets default values
 ATartarusDisplayCase::ATartarusDisplayCase()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	RootComponent = CreateDefaultSubobject<USceneComponent>("RootComponent");
-
 	InventoryComponent = CreateDefaultSubobject<UTartarusInventoryComponent>("Inventory component", false);
+	if (!IsValid(InventoryComponent))
+	{
+		return;
+	}
 
-	// Interaction
-	CreateInteractionWidgetComponent();
+	InventoryComponent->OnInventoryEntryUpdated().AddUObject(this, &ATartarusDisplayCase::OnInventoryEntryChanged);
 }
 
-bool ATartarusDisplayCase::AddToDisplay(const UTartarusItem* const Item)
+#pragma region Display
+void ATartarusDisplayCase::UpdateDisplaySlots()
 {
-	// Store the item in the inventory.
-	// [Koen Goossens] TODO: Magic Number 1.
-	const FInventoryStackId InventoryStackId = InventoryComponent->StoreEntry(Item, 1);
-	if (!InventoryStackId.IsValid())
+	if (!IsValid(InventoryComponent))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not display item: No slots available!"), *FString(__FUNCTION__));
-		return false;
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to Update the display Slots: The inventory is invalid!"), *FString(__FUNCTION__));
+		return;
 	}
 
-	// Get an available display slot.
-	const int32 SlotIndex = FindAvailableSlot();
-	if (SlotIndex == INDEX_NONE)
+	const TArray<FInventoryStack>& InventoryEntries = InventoryComponent->GetOverview(InventoryComponent->GetSubInventoryIds()[0]);
+
+	if (DisplaySlots.Num() != InventoryEntries.Num())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Could not display item: No slots available!"), *FString(__FUNCTION__));
-		return false;
+		DisplaySlots.SetNum(InventoryEntries.Num());
 	}
 
-	const bool bIsRequestSuccess = ASyncRequestDisplay(InventoryStackId, SlotIndex);
-
-	return bIsRequestSuccess;
-}
-
-bool ATartarusDisplayCase::RemoveFromDisplay(const FInventoryStackId& InventoryStackId)
-{
-	if (!InventoryComponent->Contains(InventoryStackId))
+	for (int32 i = 0; i < InventoryEntries.Num(); i++)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item not in inventory!"), *FString(__FUNCTION__));
-		return false;
-	}
-
-	// Get the slot that has its display removed.
-	int32 SlotIndex = INDEX_NONE;
-	for (int32 i = 0; i < DisplaySlots.Num(); i++)
-	{
-		const FDisplayCaseSlot& DisplaySlot = DisplaySlots[i];
-
-		if (DisplaySlot.GetInventoryStackId() != InventoryStackId)
+		// Skip this InventoryEntry if it is already being displayed in the corresponding slot.
+		if (DisplaySlots[i].GetInventoryStackId() == InventoryEntries[i].GetStackId())
 		{
 			continue;
 		}
-		SlotIndex = i;
-	}
 
-	if (SlotIndex == INDEX_NONE)
+		// If there is no valid entry, nothings needs to be displayed.
+		if (!InventoryEntries[i].GetEntryId().IsValid())
+		{
+			// If an item is currently being shown, remove it.
+			if (IsValid(DisplaySlots[i].GetDisplayItem().Get()))
+			{
+				RemoveItem(DisplaySlots[i]);
+			}
+
+			continue;
+		}
+
+		// This entry is not being displayed, make a request to display it.
+		DisplayItemASync(DisplaySlots[i], InventoryEntries[i]);
+	}
+}
+
+void ATartarusDisplayCase::DisplayItemASync(FDisplayCaseSlot& Slot, const FInventoryStack& InventoryStack)
+{
+	FDisplayRequestInfo RequestInfo = FDisplayRequestInfo(&Slot, &InventoryStack);
+
+	const TArray<FPrimaryAssetId> AssetsToLoad = { InventoryStack.GetEntryId() };
+	const FGuid RequestId = RequestItemDataAsync(AssetsToLoad);
+	if (!RequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item not being displayed!"), *FString(__FUNCTION__));
-		return false;
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to display an item: Could not create an ASync request!"), *FString(__FUNCTION__));
+		return;
 	}
 
-	ATartarusItemInstance* const DisplayInstance = DisplaySlots[SlotIndex].GetDisplayItem().Get();
+	RequestInfo.SetASyncLoadRequestId(RequestId);
+	DisplayRequests.Add(RequestInfo);
+}
 
-	// Get the itemsubssytem to despawn the display item.
+void ATartarusDisplayCase::DisplayItem(FDisplayCaseSlot& Slot, const FInventoryStack& InventoryStack, ATartarusItemInstance* const ItemInstance)
+{
+	if (!IsValid(ItemInstance))
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: The ItemInstance is invalid!"), *FString(__FUNCTION__));
+		return;
+	}
+
+	// Attach the Instance to this object.
+	Slot.SetDisplayedItem(InventoryStack.GetStackId(), ItemInstance);
+
+	const FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules::SnapToTargetIncludingScale;
+
+	UPrimitiveComponent* PhysicsComponent = Cast<UPrimitiveComponent>(ItemInstance->GetRootComponent());
+	PhysicsComponent->SetSimulatePhysics(false);
+	ItemInstance->AttachToActor(this, AttachmentRules);
+
+	const FVector RelativeLocation = Slot.GetSlotRelativeLocation();
+	ItemInstance->SetActorRelativeLocation(RelativeLocation);
+}
+
+void ATartarusDisplayCase::RemoveItem(FDisplayCaseSlot& Slot)
+{
+	ATartarusItemInstance* const DisplayInstance = Slot.GetDisplayItem().Get();
+
+	// Get the ItemSubsystem to despawn the display item.
 	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
 	if (!IsValid(ItemSubsystem))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item subsystem is invalid!"), *FString(__FUNCTION__));
-		return false;
+		return;
 	}
 
 	const bool bIsDespawned = ItemSubsystem->DespawnItem(DisplayInstance);
 	if (!bIsDespawned)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item not despawned!"), *FString(__FUNCTION__));
-		return false;
+		return;
 	}
 
 	// Clear the DisplaySlots entry,
-	DisplaySlots[SlotIndex].SetDisplayedItem(FInventoryStackId(), nullptr);
+	Slot.SetDisplayedItem(FInventoryStackId(), nullptr);
+}
+#pragma endregion
 
-	// Remove the item from the inventory.
-	InventoryComponent->RetrieveEntry(InventoryStackId, 1);
+#pragma region Inventory
+void ATartarusDisplayCase::OnInventoryEntryChanged(EInventoryChanged ChangeType, FInventoryStackId StackId, int32 StackSize)
+{
+	UpdateDisplaySlots();
+}
+#pragma endregion
 
-	return true;
+#pragma region AsyncLoad
+#pragma optimize("", off)
+ATartarusDisplayCase::FDisplayRequestInfo::FDisplayRequestInfo(FDisplayCaseSlot* const Slot, const FInventoryStack* ToDisplayStack)
+{
+	DisplaySlot = Slot;
+	InventoryStack = ToDisplayStack;
 }
 
-int32 ATartarusDisplayCase::FindAvailableSlot() const
+FGuid ATartarusDisplayCase::RequestItemDataAsync(TArray<FPrimaryAssetId> AssetsToLoad)
 {
-	for (int32 i = 0; i < DisplaySlots.Num(); i++)
-	{
-		if (!DisplaySlots[i].IsAvailable())
-		{
-			continue;
-		}
-
-		return i;
-	}
-
-	return INDEX_NONE;
-}
-
-void ATartarusDisplayCase::HandleDisplayRequestCompleted(ATartarusItemInstance* const DisplayItem, const int32 DisplaySlotIndex)
-{
-	DisplaySlots[DisplaySlotIndex].SetDisplayedItem(DisplaySlots[DisplaySlotIndex].GetInventoryStackId(), DisplayItem);
-
-	const FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules::SnapToTargetIncludingScale;
-	UPrimitiveComponent* PhysicsComponent = Cast<UPrimitiveComponent>(DisplayItem->GetRootComponent());
-	PhysicsComponent->SetSimulatePhysics(false);
-
-	DisplayItem->AttachToActor(this, AttachmentRules);
-
-	const FVector RelativeLocation = DisplaySlots[DisplaySlotIndex].GetSlotRelativeLocation();
-	DisplayItem->SetActorRelativeLocation(RelativeLocation);
-}
-
-void ATartarusDisplayCase::HandleArtifactsDataReceived(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ArtifactsData)
-{
-	// Get the inventory of the player.
-	AController* const PlayerController = GetWorld()->GetFirstPlayerController<AController>();
-	if (!IsValid(PlayerController))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No player in the world!"), *FString(__FUNCTION__));
-		return;
-	}
-
-	UTartarusInventoryComponent* const PlayerInventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
-	if (!IsValid(PlayerInventory))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to Treasure: No inventory on player!"), *FString(__FUNCTION__));
-		return;
-	}
-
-	// Loop over each artifact, and look if the player has it in their inventory.
-	for (const UTartarusItem* const Artifact : ArtifactsData)
-	{
-		// Get all stacks that contains the current artifact.
-		const TArray<const FInventoryStack*> InventoryArtifacts = PlayerInventory->GetOverviewMulti(Artifact->InventoryId, Artifact->GetPrimaryAssetId());
-	
-		// For each stack, try to empty the whole stack and add it to the display.
-		for (const FInventoryStack* const InventoryStack : InventoryArtifacts)
-		{
-			// Keep reducing the current stack StackCount untill none are left in the inventory.
-			for (int32 i = 0; i < InventoryStack->StackSize; i++)
-			{
-				const FPrimaryAssetId ArtifactId = InventoryStack->GetEntryId();
-	
-				// Retrieve the artifact from the player invetory.
-				const bool bHasRetrieved = PlayerInventory->RetrieveEntry(Artifact->InventoryId, ArtifactId, 1);
-				if (!bHasRetrieved)
-				{
-					continue;
-				}
-	
-				const bool bAddedToDisplay = AddToDisplay(Artifact);
-				if (bAddedToDisplay)
-				{
-					continue;
-				}
-	
-				// If the item was not added to the display, give it back to the player.
-				PlayerInventory->StoreEntry(Artifact, 1);
-			}
-		}
-	}
-}
-
-#pragma region ASyncDisplay
-bool ATartarusDisplayCase::ASyncRequestDisplay(const FInventoryStackId& InventoryStackId, const int32 SlotIndex)
-{
-	// Check that the item to display exists in the inventory.
-	if (!InventoryComponent->Contains(InventoryStackId))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: stack not in the inventory!"), *FString(__FUNCTION__));
-		return false;
-	}
-
-	// Get the item subsystem.
-	UWorld* const World = GetWorld();
-	if (!IsValid(World))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: World is invalid!"), *FString(__FUNCTION__));
-		return false;
-	}
-
-	UTartarusItemSubsystem* const ItemSubsystem = World->GetSubsystem<UTartarusItemSubsystem>();
+	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
 	if (!IsValid(ItemSubsystem))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Item subsystem is invalid!"), *FString(__FUNCTION__));
-		return false;
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to create a request to retrieve the Item data: ItemSubsystem is not found!"), *FString(__FUNCTION__));
+		return FGuid();
 	}
 
-	// Request data of the item to display.
-	FGetItemDataRequestCompletedEvent OnDataRequestCompleted;
-	OnDataRequestCompleted.AddUObject(this, &ATartarusDisplayCase::HandleItemDataLoaded);
-	
-	// Get the overview of the stack.
-	const FInventoryStack* ItemStack = InventoryComponent->GetOverviewSingle(InventoryStackId);
-	
-	TArray<FPrimaryAssetId> ToSpawnItemIds;
-	ToSpawnItemIds.Add(ItemStack->GetEntryId());
-	
-	FGuid ASyncRequestId = ItemSubsystem->AsyncRequestGetItemsData(ToSpawnItemIds, OnDataRequestCompleted);
-	if (!ASyncRequestId.IsValid())
+	FGetItemDataRequestCompletedEvent OnRequestCompleted;
+	OnRequestCompleted.AddUObject(this, &ATartarusDisplayCase::HandleItemDataLoaded);
+
+	const FGuid RequestId = ItemSubsystem->AsyncRequestGetItemsData(AssetsToLoad, OnRequestCompleted);
+	if (!RequestId.IsValid())
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Could not request the item data!"), *FString(__FUNCTION__));
-		return false;
-	}
-	
-	FDisplayRequestInfo DisplayRequest = FDisplayRequestInfo(SlotIndex);
-	DisplayRequest.SetASyncLoadRequestId(ASyncRequestId);
-	DisplayRequests.Add(DisplayRequest);
-	
-	// Occupy the slot untill the request finishes.
-	DisplaySlots[SlotIndex].SetDisplayedItem(InventoryStackId, nullptr);
-
-	return true;
-}
-
-void ATartarusDisplayCase::HandleRequestCompleted(const FDisplayRequestInfo* const CompletedRequest, const TWeakObjectPtr<ATartarusItemInstance> DisplayItem)
-{
-	if (!CompletedRequest)
-	{
-		return;
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to create a request to retrieve the Item data: Failed to create a request!"), *FString(__FUNCTION__));
+		return FGuid();
 	}
 
-	// If no item was displayed, free up the slot.
-	if (!IsValid(DisplayItem.Get()))
-	{
-		DisplaySlots[CompletedRequest->GetDisplaySlot()].SetDisplayedItem(FInventoryStackId(), nullptr);
-	}
-	// If the item is an interactable, disable interaction.
-	else if(ITartarusInteractableTargetInterface* const Interactable = Cast<ITartarusInteractableTargetInterface>(DisplayItem.Get()))
-	{
-		Interactable->DisableInteraction();
-	}
-
-	DisplayRequests.RemoveSingleSwap(*CompletedRequest);
+	return RequestId;
 }
 
 void ATartarusDisplayCase::HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray<UTartarusItem*> ItemsData)
@@ -295,11 +192,10 @@ void ATartarusDisplayCase::HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray
 		{
 			return Request.GetASyncLoadRequestId() == ASyncLoadRequestId;
 		});
-
-	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
+	if (!CurrentRequest)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Could not find the request!"), *FString(__FUNCTION__));
-		return HandleRequestCompleted(CurrentRequest, nullptr);
+		return HandleRequestCompleted(CurrentRequest);
 	}
 
 	// Get the item subsystem.
@@ -307,26 +203,27 @@ void ATartarusDisplayCase::HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray
 	if (!IsValid(World))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: World is invalid!"), *FString(__FUNCTION__));
-		return HandleRequestCompleted(CurrentRequest, nullptr);
+		return HandleRequestCompleted(CurrentRequest);
 	}
 
 	UTartarusItemSubsystem* const ItemSubsystem = World->GetSubsystem<UTartarusItemSubsystem>();
 	if (!IsValid(ItemSubsystem))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Item subsystem is invalid!"), *FString(__FUNCTION__));
-		return HandleRequestCompleted(CurrentRequest, nullptr);
+		return HandleRequestCompleted(CurrentRequest);
 	}
 
+	// Make a request to spawn the Item.
 	FItemSpawnRequestCompletedEvent OnItemsSpawned;
 	OnItemsSpawned.AddUObject(this, &ATartarusDisplayCase::HandleItemSpawned);
-	
+
 	FGuid ASyncRequestId = ItemSubsystem->AsyncRequestSpawnItems(ItemsData, FTransform::Identity, ItemSpawnParameters, OnItemsSpawned);
 	if (!ASyncRequestId.IsValid())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Could not request the item data!"), *FString(__FUNCTION__));
-		return HandleRequestCompleted(CurrentRequest, nullptr);
+		return HandleRequestCompleted(CurrentRequest);
 	}
-	
+
 	CurrentRequest->SetASyncLoadRequestId(ASyncRequestId);
 }
 
@@ -337,127 +234,37 @@ void ATartarusDisplayCase::HandleItemSpawned(FGuid ASyncLoadRequestId, TArray<TW
 		{
 			return Request.GetASyncLoadRequestId() == ASyncLoadRequestId;
 		});
-
-	if (!CurrentRequest || !CurrentRequest->GetRequestId().IsValid())
+	if (!CurrentRequest)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: Could not find the request!"), *FString(__FUNCTION__));
-		return HandleRequestCompleted(CurrentRequest, nullptr);
+		return HandleRequestCompleted(CurrentRequest);
 	}
 
-	// Assign the Spawned actor to the slot the request ocupies.
-	if (SpawnedItems.IsEmpty() || !SpawnedItems[0].IsValid())
+	if (CurrentRequest->GetDisplaySlot() == nullptr)
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: No item spawned!"), *FString(__FUNCTION__));
-		return HandleRequestCompleted(CurrentRequest, nullptr);
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: The DisplaySlot is no longer valid!"), *FString(__FUNCTION__));
+		return HandleRequestCompleted(CurrentRequest);
 	}
 
-	const int32 SlotIndex = CurrentRequest->GetDisplaySlot();
-	ATartarusItemInstance* const ItemToDisplay = SpawnedItems[0].Get();
+	if (CurrentRequest->GetInventoryStack() == nullptr)
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to display item: The InventoryStack is no longer valid!"), *FString(__FUNCTION__));
+		return HandleRequestCompleted(CurrentRequest);
+	}
 
-	// [Koen Goossens] TODO: This should be executed trough a delegate on the request.
-	HandleDisplayRequestCompleted(ItemToDisplay, SlotIndex);
-	
-	HandleRequestCompleted(CurrentRequest, SpawnedItems[0]);
-}
-#pragma endregion
+	DisplayItem(*CurrentRequest->GetDisplaySlot(), *CurrentRequest->GetInventoryStack(), SpawnedItems[0].Get());
 
-#pragma region TartarusInteractableTargetInterface
-bool ATartarusDisplayCase::IsInteractable() const
-{
-	return WasRecentlyRendered();
+	HandleRequestCompleted(CurrentRequest);
 }
 
-bool ATartarusDisplayCase::StartInteraction(const TObjectPtr<AController> InstigatorController)
+void ATartarusDisplayCase::HandleRequestCompleted(const FDisplayRequestInfo* const CompletedRequest)
 {
-	// Get the inventory of the instigator.
-	UTartarusInventoryComponent* const PlayerInventory = InstigatorController->FindComponentByClass<UTartarusInventoryComponent>();
-	if (!IsValid(PlayerInventory))
-	{
-		return false;
-	}
-
-	// Get the number of available slots to display.
-	int32 NumAvailableSlots = 0;
-
-	for (const FDisplayCaseSlot& DisplaySlot : DisplaySlots)
-	{
-		if (DisplaySlot.IsAvailable())
-		{
-			NumAvailableSlots++;
-		}
-	}
-
-	if (NumAvailableSlots <= 0)
-	{
-		return false;
-	}
-
-	// Find all treasure keys in the inventory of the player, by first getting all treasure key id's from the ItemManager.
-	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
-	if (!IsValid(ItemSubsystem))
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Spawn and link key to treasure: Item subsystem is invalid!"), *FString(__FUNCTION__));
-		return false;
-	}
-
-	TArray<EItemType> ItemTypes;
-	ItemTypes.Add(EItemType::Artifact);
-	FGetItemDataRequestCompletedEvent OnRequestCompleted;
-	OnRequestCompleted.AddUObject(this, &ATartarusDisplayCase::HandleArtifactsDataReceived);
-
-	const FGuid AsyncRequestId = ItemSubsystem->AsyncRequestGetItemsData(ItemTypes, OnRequestCompleted);
-	if (!AsyncRequestId.IsValid())
-	{
-		return false;
-	}
-
-	return true;
-}
-
-void ATartarusDisplayCase::DisableInteraction()
-{
-	check(false);
-	UE_LOG(LogTartarus, Warning, TEXT("%s: Not Implemented!"), *FString(__FUNCTION__));
-}
-
-bool ATartarusDisplayCase::ToggleInteractionPrompt(const bool bShowPrompt)
-{
-	if (!IsValid(InteractionWidgetComponent))
-	{
-		return false;
-	}
-
-	InteractionWidgetComponent->SetHiddenInGame(!bShowPrompt);
-	
-	return true;
-}
-
-void ATartarusDisplayCase::CreateInteractionWidgetComponent()
-{
-	// Create and setup the Widget Component to display the interaction prompt.
-	InteractionWidgetComponent = CreateDefaultSubobject<UTartarusWidgetComponent>(TEXT("InteractionWidget"));
-	if (!IsValid(InteractionWidgetComponent))
+	if (!CompletedRequest)
 	{
 		return;
 	}
 
-	InteractionWidgetComponent->SetupAttachment(RootComponent);
-	InteractionWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	InteractionWidgetComponent->SetSimulatePhysics(false);
-	InteractionWidgetComponent->SetHiddenInGame(true);
-
-	// Setup the Widget to display with the correct data.
-	InteractionWidgetComponent->OnWidgetCreatedEvent().AddLambda([&](UTartarusWidgetComponent* WidgetComponent)
-		{
-			// Setup the Widget to display with the correct data.
-			UTartarusInteractionWidget* const InteractionWidget = Cast<UTartarusInteractionWidget>(WidgetComponent->GetWidget());
-			if (!IsValid(InteractionWidget))
-			{
-				return;
-			}
-
-			InteractionWidget->SetText(InteractionText);
-			InteractionWidget->UpdateInputActionWidget();
-		});
+	DisplayRequests.RemoveSingleSwap(*CompletedRequest);
 }
+#pragma optimize("", on)
 #pragma endregion

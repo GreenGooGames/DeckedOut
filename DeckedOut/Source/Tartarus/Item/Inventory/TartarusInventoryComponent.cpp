@@ -105,6 +105,7 @@ bool UTartarusInventoryComponent::RetrieveEntry(const FGameplayTag InventoryId, 
 	const FInventoryStackId* const StackId = SubInventories[InventoryId].FindStackId(EntryId);
 	if (StackId == nullptr)
 	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to retrieve the entry: Could not find the entry!"), *FString(__FUNCTION__));
 		return false;
 	}
 
@@ -124,6 +125,7 @@ bool UTartarusInventoryComponent::RetrieveEntry(const FInventoryStackId& StackId
 	const bool bHasRemoved = SubInventories[StackId.GetInventoryId()].RemoveEntry(StackId, StackSize);
 	if (!bHasRemoved)
 	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Unable to retrieve the entry: Entry is not removed!"), *FString(__FUNCTION__));
 		return false;
 	}
 
