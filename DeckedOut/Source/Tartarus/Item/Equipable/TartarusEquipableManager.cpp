@@ -72,7 +72,7 @@ bool UTartarusEquipableManager::Unequip(const FInventoryStackId& InventoryStackI
 			return true;
 		}
 
-		if (!ItemSpawnParameters.IsManaged())
+		if (ItemSpawnParameters.ShouldItemSubystemManage())
 		{
 			UE_LOG(LogTartarus, Error, TEXT("%s: Failed to unequip item, Expecting the equipable manager to manage the item but its not set to!"), *FString(__FUNCTION__));
 			return false;

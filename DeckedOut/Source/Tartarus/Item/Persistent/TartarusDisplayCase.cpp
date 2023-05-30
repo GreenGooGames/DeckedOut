@@ -127,21 +127,13 @@ void ATartarusDisplayCase::DisplayItem(FDisplayCaseSlot& Slot, const FInventoryS
 void ATartarusDisplayCase::RemoveItem(FDisplayCaseSlot& Slot)
 {
 	ATartarusItemInstance* const DisplayInstance = Slot.GetDisplayItem().Get();
-
-	// Get the ItemSubsystem to despawn the display item.
-	UTartarusItemSubsystem* const ItemSubsystem = GetWorld()->GetSubsystem<UTartarusItemSubsystem>();
-	if (!IsValid(ItemSubsystem))
+	if (!IsValid(DisplayInstance))
 	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item subsystem is invalid!"), *FString(__FUNCTION__));
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: DisplayedInstance is invalid!"), *FString(__FUNCTION__));
 		return;
 	}
 
-	const bool bIsDespawned = ItemSubsystem->DespawnItem(DisplayInstance);
-	if (!bIsDespawned)
-	{
-		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove item from display: Item not despawned!"), *FString(__FUNCTION__));
-		return;
-	}
+	DisplayInstance->Destroy();
 
 	// Clear the DisplaySlots entry,
 	Slot.SetDisplayedItem(FInventoryStackId(), nullptr);
