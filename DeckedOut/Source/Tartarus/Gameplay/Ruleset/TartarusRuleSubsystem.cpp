@@ -18,6 +18,7 @@ void UTartarusRuleSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	}
 
 	GameState->OnRunningStateChanged().AddUObject(this, &UTartarusRuleSubsystem::HandleGameRunningStateChanged);
+	ActiveRulesetStage = INDEX_NONE;
 }
 
 void UTartarusRuleSubsystem::HandleGameRunningStateChanged(ETreasureHuntState OldState, ETreasureHuntState NewState)
@@ -65,6 +66,7 @@ void UTartarusRuleSubsystem::DisableRuleset()
 	}
 
 	Ruleset->Reset(GetWorld());
+	ActiveRulesetStage = INDEX_NONE;
 }
 
 void UTartarusRuleSubsystem::HandleClankLevelChanged(int32 ClankLevel)

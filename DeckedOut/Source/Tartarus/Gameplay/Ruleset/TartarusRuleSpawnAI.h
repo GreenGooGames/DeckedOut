@@ -4,8 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Gameplay/Ruleset/TartarusRule.h"
+#include "GameplayTagContainer.h"
 
 #include "TartarusRuleSpawnAI.generated.h"
+
+class ATartarusAICharacter;
 
 /**
  * 
@@ -20,12 +23,14 @@ public:
 	virtual bool StopRule(UWorld* const World) override;
 
 protected:
-	UPROPERTY(EditDefaultsOnly)
-		int32 NumToSpawn = 0;
+	// List of the AI to spawn and how many.
+	 UPROPERTY(EditDefaultsOnly)
+		TMap<TSoftClassPtr<ATartarusAICharacter>, int> ClassesToSpawnCount;
 
-	// UPROPERTY(EditDefaultsOnly)
-	//	TArray<TSoftClassPtr<TartarusAICharacter>> AIClasses;
+	 // The ID of the spawnpoints that are a valid target to spawn on.
+	 UPROPERTY(EditDefaultsOnly)
+		 FGameplayTag SpawnPointId = FGameplayTag::EmptyTag;
 
 private:
-	// FGuid AIBatchId = FGuid();
+	FGuid AIBatchId = FGuid();
 };

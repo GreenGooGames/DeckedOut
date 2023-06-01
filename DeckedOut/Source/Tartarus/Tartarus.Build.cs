@@ -20,11 +20,14 @@ public class Tartarus : ModuleRules
 				"Core", 
 				"CoreUObject", 
 				"Engine",
-                "EnhancedInput",
-                "InputCore", 
+				"EnhancedInput",
+				"InputCore", 
 				"HeadMountedDisplay",
 				"GameplayTags",
 				"SlateCore",
-				"CommonInput"});
+				"CommonInput",
+				"StateTreeModule",
+				"GameplayStateTreeModule",
+				"NavigationSystem"});
 	}
 }
