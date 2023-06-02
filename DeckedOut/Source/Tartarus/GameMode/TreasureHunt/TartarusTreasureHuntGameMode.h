@@ -8,7 +8,7 @@
 
 #include "TartarusTreasureHuntGameMode.generated.h"
 
-class UTartarusRuleset;
+class UTartarusRulesetData;
 class UTartarusItem;
 
 /**
@@ -23,7 +23,7 @@ public:
 	void StartTreasureHunt();
 	void StopTreasureHunt();
 
-	// TODO: Refactor starter itoms into a TartarusRule.
+	// TODO: Refactor starter items into a TartarusRule.
 #pragma region StarterGifts
 protected:
 	// TreasureKey item handle to be gifted to the players when a treasure hunt starts.
@@ -42,9 +42,9 @@ protected:
 
 #pragma region RuleSet
 protected:
-	// The ruleset to apply during this gamemode.
+	// The data of the ruleset to apply during this gamemode.
 	UPROPERTY(EditDefaultsOnly)
-		TObjectPtr<UTartarusRuleset> Ruleset;
+		TObjectPtr<UTartarusRulesetData> RulesetData;
 
 	// Applies the ruleset to the Rule subsystem.
 	bool ApplyRuleset() const;

@@ -5,7 +5,6 @@
 
 #include "Engine/World.h"
 #include "GameMode/TreasureHunt/TartarusTreasureHuntGameState.h"
-#include "Gameplay/Clank/TartarusClankSubsystem.h"
 #include "Gameplay/Ruleset/TartarusRuleset.h"
 
 void UTartarusRuleSubsystem::OnWorldBeginPlay(UWorld& InWorld)
@@ -18,7 +17,17 @@ void UTartarusRuleSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	}
 
 	GameState->OnRunningStateChanged().AddUObject(this, &UTartarusRuleSubsystem::HandleGameRunningStateChanged);
-	ActiveRulesetStage = INDEX_NONE;
+}
+
+void UTartarusRuleSubsystem::SetRuleset(UTartarusRulesetData* const RulesetData)
+{
+	if (IsValid(Ruleset))
+	{
+		Ruleset->Deactivate();
+	}
+
+	Ruleset = NewObject<UTartarusRuleset>();
+	Ruleset->Initialize(RulesetData);
 }
 
 void UTartarusRuleSubsystem::HandleGameRunningStateChanged(ETreasureHuntState OldState, ETreasureHuntState NewState)
@@ -49,33 +58,10 @@ void UTartarusRuleSubsystem::HandleGameRunningStateChanged(ETreasureHuntState Ol
 
 void UTartarusRuleSubsystem::EnableRuleset()
 {
-	UTartarusClankSubsystem* const ClankSubsystem = GetWorld()->GetSubsystem<UTartarusClankSubsystem>();
-	if (IsValid(ClankSubsystem))
-	{
-		ClankSubsystem->OnClankLevelChanged().AddUObject(this, &UTartarusRuleSubsystem::HandleClankLevelChanged);
-		HandleClankLevelChanged(0);
-	}
+	Ruleset->Activate(GetWorld());
 }
 
 void UTartarusRuleSubsystem::DisableRuleset()
 {
-	UTartarusClankSubsystem* const ClankSubsystem = GetWorld()->GetSubsystem<UTartarusClankSubsystem>();
-	if (IsValid(ClankSubsystem))
-	{
-		ClankSubsystem->OnClankLevelChanged().RemoveAll(this);
-	}
-
-	Ruleset->Reset(GetWorld());
-	ActiveRulesetStage = INDEX_NONE;
-}
-
-void UTartarusRuleSubsystem::HandleClankLevelChanged(int32 ClankLevel)
-{
-	// Check if the change in clank level caused an advancement in the ruleset.
-	const bool bStageChanged = Ruleset->ActivateStage(GetWorld(), ActiveRulesetStage, ClankLevel);
-
-	if (!bStageChanged)
-	{
-		return;
-	}
+	Ruleset->Deactivate();
 }

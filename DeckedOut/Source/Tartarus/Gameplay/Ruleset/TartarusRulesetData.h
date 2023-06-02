@@ -3,28 +3,34 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/DataAsset.h"
 
 #include "TartarusRulesetData.generated.h"
 
 class UTartarusRule;
 
-USTRUCT(BlueprintType)
-struct FRulesetStage
+UCLASS()
+class TARTARUS_API UTartarusRulesetStageData : public UDataAsset
 {
 	GENERATED_BODY()
 
 public:
-	bool SatisfiesCondition(const int32 IntegerConditionValue);
-	void Activate(UWorld* const World);
-	void Deactivate(UWorld* const World);
-
-protected:
 	// Integer value to reach to activate the rules of this stage.
 	UPROPERTY(EditDefaultsOnly)
 		int32 IntegerCondition = 0;
 
-	// [Koen Goossens] TODO: ASync SoftClassPtr.
 	// The rules to apply during this stage.
 	UPROPERTY(EditDefaultsOnly)
-		TArray<TObjectPtr<UTartarusRule>> Rules;
+		TArray<TSoftClassPtr<UTartarusRule>> RuleTemplates;
+};
+
+UCLASS()
+class TARTARUS_API UTartarusRulesetData : public UDataAsset
+{
+	GENERATED_BODY()
+
+public:
+	// Collection of all the stages data.
+	UPROPERTY(EditDefaultsOnly)
+		TArray<TObjectPtr<UTartarusRulesetStageData>> StageTemplates;
 };

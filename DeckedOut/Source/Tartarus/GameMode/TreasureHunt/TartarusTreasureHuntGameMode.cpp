@@ -124,7 +124,7 @@ bool ATartarusTreasureHuntGameMode::ApplyRuleset() const
 		return false;
 	}
 
-	RuleSubsystem->SetRuleset(Ruleset);
+	RuleSubsystem->SetRuleset(RulesetData);
 
 	return true;
 }

@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/DataAsset.h"
+#include "UObject/Object.h"
 
 #include "TartarusRule.generated.h"
 
 UCLASS()
-class TARTARUS_API UTartarusRule : public UDataAsset
+class TARTARUS_API UTartarusRule : public UObject
 {
 	GENERATED_BODY()
 

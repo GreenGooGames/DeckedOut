@@ -8,6 +8,7 @@
 #include "TartarusRuleSubsystem.generated.h"
 
 class UTartarusRuleset;
+class UTartarusRulesetData;
 enum class ETreasureHuntState : uint8;
 
 /**
@@ -22,18 +23,15 @@ protected:
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
 public:
-	void SetRuleset(UTartarusRuleset* const NewRuleset) { Ruleset = NewRuleset; }
+	void SetRuleset(UTartarusRulesetData* const RulesetData);
 
 protected:
 	// Fired when the GameState changes, Spawns/Despawns all treasures.
 	void HandleGameRunningStateChanged(ETreasureHuntState OldState, ETreasureHuntState NewState);
 
-
-	void HandleClankLevelChanged(int32 ClankLevel);
 	void EnableRuleset();
 	void DisableRuleset();
 
 private:
 	TObjectPtr<UTartarusRuleset> Ruleset;
-	int32 ActiveRulesetStage = INDEX_NONE;
 };
