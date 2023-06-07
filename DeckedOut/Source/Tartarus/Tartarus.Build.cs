@@ -28,6 +28,7 @@ public class Tartarus : ModuleRules
 				"CommonInput",
 				"StateTreeModule",
 				"GameplayStateTreeModule",
-				"NavigationSystem"});
+				"NavigationSystem",
+				"AIModule"});
 	}
 }

@@ -14,7 +14,8 @@
 				"CommonUI",
 				"DeveloperSettings",
 				"CoreUObject",
-				"StateTreeModule"
+				"StateTreeModule",
+				"AIModule"
 			]
 		}
 	],
