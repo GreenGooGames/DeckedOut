@@ -261,7 +261,7 @@ FGuid UTartarusTreasureSubsystem::AsyncRequestSpawnAndLink(const FInventoryStack
 	
 	// Async load the treasure class.
 	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
-	if (!AssetManager.IsValid())
+	if (!AssetManager.IsInitialized())
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Request failed: Asset manager was invalid!"), *FString(__FUNCTION__));
 		return FGuid();
@@ -382,7 +382,7 @@ void UTartarusTreasureSubsystem::CancelASyncRequests()
 	// Clear all ongoing AsyncRequests.
 	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
 
-	if (AssetManager.IsValid())
+	if (AssetManager.IsInitialized())
 	{
 		for (const FTreasureSpawnRequestInfo& AsyncRequest : SpawnAndLinkRequests)
 		{

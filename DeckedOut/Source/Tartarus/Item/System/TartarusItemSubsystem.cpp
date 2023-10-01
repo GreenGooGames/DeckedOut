@@ -105,7 +105,7 @@ FGuid UTartarusItemSubsystem::AsyncRequestSpawnItems(const TArray<UTartarusItem*
 {
 	// Get the AsyncLoader.
 	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
-	if (!AssetManager.IsValid())
+	if (!AssetManager.IsInitialized())
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), *FString(__FUNCTION__));
 		return FGuid();
@@ -229,7 +229,7 @@ FGuid UTartarusItemSubsystem::AsyncRequestGetItemsData(const TArray<FPrimaryAsse
 {
 	// Get the AsyncLoader.
 	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
-	if (!AssetManager.IsValid())
+	if (!AssetManager.IsInitialized())
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), *FString(__FUNCTION__));
 		return FGuid();
@@ -261,7 +261,7 @@ FGuid UTartarusItemSubsystem::AsyncRequestGetItemsData(const TArray<EItemType>& 
 {
 	// Get the AsyncLoader.
 	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
-	if (!AssetManager.IsValid())
+	if (!AssetManager.IsInitialized())
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to create request: Asset Manager was invalid!"), *FString(__FUNCTION__));
 		return FGuid();

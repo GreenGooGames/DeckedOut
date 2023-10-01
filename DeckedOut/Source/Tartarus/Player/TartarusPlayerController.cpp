@@ -53,7 +53,7 @@ void ATartarusPlayerController::ShowPrimaryGameLayoutASync()
 {
 	// Get the AsyncLoader.
 	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
-	if (!AssetManager.IsValid())
+	if (!AssetManager.IsInitialized())
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to show GameLayout: AssetManager is invalid!"), *FString(__FUNCTION__));
 		return;

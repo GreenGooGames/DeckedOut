@@ -41,7 +41,7 @@ void UTartarusPrimaryGameLayout::PushWidgetToLayerAsync(const FGameplayTag& Laye
 
 	// Retrieve the AssetManager that handles async loading.
 	UTartarusAssetManager& AssetManager = UTartarusAssetManager::Get();
-	if (!AssetManager.IsValid())
+	if (!AssetManager.IsInitialized())
 	{
 		UE_LOG(LogTartarus, Error, TEXT("%s: Unable To push Widget to Layer: Could not retrieve the AssetManager!"), *FString(__FUNCTION__));
 		return;
