@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Corrbolg",
+	"Description": "An invetory plugin, Corrbolg is bag contained a variable amount of items depending on if the tide was high or low from Irish mythology.",
+	"Category": "Other",
+	"CreatedBy": "Koen Goossens",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": true,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "Corrbolg",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
