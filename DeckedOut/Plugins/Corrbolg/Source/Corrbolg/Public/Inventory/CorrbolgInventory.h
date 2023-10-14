@@ -22,6 +22,12 @@ class CORRBOLG_API UCorrbolgInventory : public UObject
 	
 public:
 	/**
+	* Retrieves the filter to store entries.
+	* @return: The filter on this inventory.
+	*/
+	const FGameplayTag& GetEntryFilter() const {return EntryFilter;}
+
+	/**
 	* Applies the given settings to this inventory.
 	* @param Settings: The setting to apply.
 	*/

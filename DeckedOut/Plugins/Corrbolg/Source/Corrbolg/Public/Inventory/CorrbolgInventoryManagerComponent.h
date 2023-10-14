@@ -3,6 +3,7 @@
 
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 
 #include "CorrbolgInventoryManagerComponent.generated.h"
 
@@ -48,4 +49,6 @@ private:
 
 	/** Creates an inventory for each setting provided.*/
 	void SetupInventories();
+
+	UCorrbolgInventory* FindInventoryForFilter(const FGameplayTag& Filter) const;
 };

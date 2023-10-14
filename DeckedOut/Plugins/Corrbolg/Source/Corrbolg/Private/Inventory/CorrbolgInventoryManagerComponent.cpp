@@ -16,17 +16,22 @@ void UCorrbolgInventoryManagerComponent::BeginPlay()
 
 bool UCorrbolgInventoryManagerComponent::StoreEntry(UCorrbolgInventoryEntryDefinition* const EntryDefinition) const
 {
-	for (UCorrbolgInventory* const Inventory : Inventories)
+	if (!IsValid(EntryDefinition))
 	{
-		const bool bIsItemStored = Inventory->StoreEntry(EntryDefinition);
+		UE_LOG(LogCorrbolg, Log, TEXT("%s: Failed to store entry, no entry definition provided."), *FString(__FUNCTION__));
+		return false;
+	}
 
-		if (bIsItemStored)
-		{
-			return true;
-		}
+	UCorrbolgInventory* const Inventory = FindInventoryForFilter(EntryDefinition->GetType());
+	if (!IsValid(Inventory))
+	{
+		UE_LOG(LogCorrbolg, Log, TEXT("%s: Failed to store entry, no inventory found that could store the entry."), *FString(__FUNCTION__));
+		return false;
 	}
 	
-	return false;
+	const bool bIsItemStored = Inventory->StoreEntry(EntryDefinition);
+	
+	return bIsItemStored;
 }
 
 UCorrbolgInventoryEntryDefinition* UCorrbolgInventoryManagerComponent::RetrieveEntry(const FGuid& EntryId) const
@@ -71,4 +76,17 @@ void UCorrbolgInventoryManagerComponent::SetupInventories()
 		Inventory->ApplySettings(Settings);
 		Inventories.Add(Inventory);
 	}
+}
+
+UCorrbolgInventory* UCorrbolgInventoryManagerComponent::FindInventoryForFilter(const FGameplayTag& Filter) const
+{
+	for (UCorrbolgInventory* const Inventory : Inventories)
+	{
+		if (Inventory->GetEntryFilter().MatchesTagExact(Filter))
+		{
+			return Inventory;
+		}
+	}
+
+	return nullptr;
 }
