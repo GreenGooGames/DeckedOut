@@ -7,7 +7,8 @@ public class Corrbolg : ModuleRules
 	public Corrbolg(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
+		IWYUSupport = IWYUSupport.Full;
+
 		PublicIncludePaths.AddRange(
 			new string[] {
 				// ... add public include paths required here ...
@@ -26,6 +27,11 @@ public class Corrbolg : ModuleRules
 			new string[]
 			{
 				"Core",
+				"EnhancedInput",
+				"SlateCore",
+				"CommonInput",
+				"CommonUI",
+				"UMG"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

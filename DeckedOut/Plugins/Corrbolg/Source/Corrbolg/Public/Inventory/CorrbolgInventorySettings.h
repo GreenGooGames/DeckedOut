@@ -17,9 +17,14 @@ class CORRBOLG_API UCorrbolgInventorySettings : public UDataAsset
 	
 public:
 	const FGameplayTag& GetFilter() const { return Filter;}
+	const FText& GetName() const { return Name; }
 
 protected:
 	/** Filter to only allow entries of a defined types.*/
-	UPROPERTY(EditDefaultsOnly)
-	FGameplayTag Filter = FGameplayTag();
+	UPROPERTY(EditDefaultsOnly, Category = "Default")
+	FGameplayTag Filter = FGameplayTag::EmptyTag;
+
+	/** Name of the inventory, used to identify in UI.*/
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	FText Name = FText();
 };
