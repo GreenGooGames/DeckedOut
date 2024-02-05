@@ -4,14 +4,52 @@
 
 #include "CoreMinimal.h"
 #include "CommonActivatableWidget.h"
+
 #include "CorrbolgInventoryWidget.generated.h"
 
+class UCorrbolgNavigationWidget;
+class UCommonVisibilitySwitcher;
+class UCorrbolgEntryPreview;
+class UCorrbolgInventoryManagerComponent;
+
 /**
- * 
+ * The main widget that defines the layout of the inventory.
  */
 UCLASS()
 class CORRBOLG_API UCorrbolgInventoryWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
 	
+private:
+	/* Searches for an inventory component on the owning player. */
+	UCorrbolgInventoryManagerComponent* FindInventoryComponent() const;
+
+#pragma region Navigation bar
+protected:
+	/* Widget containing the nagivation tools to switch between different inventories. */
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UCorrbolgNavigationWidget> NavigationBar = nullptr;
+
+private:
+	/* Links the navigation bar to the Visibility Switcher. */
+	void ConstructNavigationBar();
+#pragma endregion
+
+#pragma region Inventory Overview
+protected:
+	/* Visibility Switcher owning all inventory overviews. */
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UCommonVisibilitySwitcher> InventorySwitcher = nullptr;
+
+private:
+	/* Creates the inventory overview widgets for each inventory owned.	*/
+	void ConstructInventoryView();
+#pragma endregion
+
+#pragma region Highlighted Entry Preview
+protected:
+	/* Widget showing a preview of the item highligted in the invetory overview. */
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UCorrbolgEntryPreview> EntryPreview = nullptr;
+#pragma endregion
 };
