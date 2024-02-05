@@ -3,7 +3,7 @@
 	"Version": 1,
 	"VersionName": "1.0",
 	"FriendlyName": "Corrbolg",
-	"Description": "An invetory plugin, Corrbolg is bag contained a variable amount of items depending on if the tide was high or low from Irish mythology.",
+	"Description": "An inventory plugin, Corrbolg is a bag that contained a variable amount of items depending on if the tide was high or low from Irish mythology.",
 	"Category": "Other",
 	"CreatedBy": "Koen Goossens",
 	"CreatedByURL": "",
