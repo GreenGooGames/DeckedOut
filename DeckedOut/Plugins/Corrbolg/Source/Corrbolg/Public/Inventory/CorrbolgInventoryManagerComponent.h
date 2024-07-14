@@ -37,18 +37,29 @@ public:
 	*/
 	UCorrbolgInventoryEntryDefinition* RetrieveEntry(const FGuid& EntryId) const;
 
+	/**
+	* Retrieves the inventory settings used to intialize the inventories with.
+	* @return: The settings used to initialize the inventories.
+	*/
+	const TArray<TSoftObjectPtr<UCorrbolgInventorySettings>>& GetInventorySettings() const;
+
 protected:
-	/** List of invnetory settings to initialize inventories of.*/
+	/** List of inventory settings to initialize inventories of.*/
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TSoftObjectPtr<UCorrbolgInventorySettings>> InventorySettings = TArray<TSoftObjectPtr<UCorrbolgInventorySettings>>();
 
 private:
 	/** Collection holding all inventories managed by this component.*/
-	UPROPERTY()
+	UPROPERTY(Transient)
 	TArray<TObjectPtr<UCorrbolgInventory>> Inventories = TArray<TObjectPtr<UCorrbolgInventory>>();
 
 	/** Creates an inventory for each setting provided.*/
 	void SetupInventories();
-
+	
+	/**
+	* Try to find an inventory that matches the filter.
+	* @param Filter: The filter to find an inventory for.
+	* @return: The inventory, or nullptr if none matched.
+	*/
 	UCorrbolgInventory* FindInventoryForFilter(const FGameplayTag& Filter) const;
 };

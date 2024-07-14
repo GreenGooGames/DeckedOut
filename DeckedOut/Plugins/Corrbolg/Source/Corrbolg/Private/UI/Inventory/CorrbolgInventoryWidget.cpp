@@ -7,6 +7,8 @@
 #include "Logging/CorrbolgLogChannels.h"
 #include "UI/Prefabs/CorrbolgNavigationWidget.h"
 #include "CommonVisibilitySwitcher.h"
+#include "UI/Inventory/CorrbolgInventoryViewWidget.h"
+#include "Inventory/CorrbolgInventorySettings.h"
 
 UCorrbolgInventoryManagerComponent* UCorrbolgInventoryWidget::FindInventoryComponent() const
 {
@@ -56,9 +58,28 @@ void UCorrbolgInventoryWidget::ConstructInventoryView()
 		return;
 	}
 
-	// Get all inventories
-	// For each inventory
-	// Get the UI name (stored in the inventory settings)
-	// Then create an inventory overview.
+	// Get all inventories, and create an inventory view widget for them.
+	const TArray<TSoftObjectPtr<UCorrbolgInventorySettings>>& InventorySettings = InventoryComponent->GetInventorySettings();
+	for (const TSoftObjectPtr<UCorrbolgInventorySettings>& SoftSettings : InventorySettings)
+	{
+		UCorrbolgInventorySettings* const Settings = SoftSettings.LoadSynchronous();
+		if (!IsValid(Settings))
+		{
+			continue;
+		}
+
+		const FName WidgetName = MakeUniqueObjectName(this, UCorrbolgInventoryViewWidget::StaticClass(), FName(Settings->GetName().ToString()));
+		
+		UCorrbolgInventoryViewWidget* const InventoryView = CreateWidget<UCorrbolgInventoryViewWidget>(this, UCorrbolgInventoryViewWidget::StaticClass(), WidgetName);
+		if (!IsValid(InventoryView))
+		{
+			continue;
+		}
+
+		InventorySwitcher->AddChild(InventoryView);
+
+		// TODO: Setup the inventory view widget, like creating the slots for the tileview, the slots data class,
+		// link the tile view changed events to update he EntryPreview to the highligted slot.
+	}
 }
 #pragma endregion

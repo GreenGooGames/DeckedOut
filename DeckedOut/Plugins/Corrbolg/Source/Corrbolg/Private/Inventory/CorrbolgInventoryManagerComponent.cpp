@@ -48,6 +48,11 @@ UCorrbolgInventoryEntryDefinition* UCorrbolgInventoryManagerComponent::RetrieveE
 	return nullptr;
 }
 
+const TArray<TSoftObjectPtr<UCorrbolgInventorySettings>>& UCorrbolgInventoryManagerComponent::GetInventorySettings() const
+{
+	return InventorySettings;
+}
+
 void UCorrbolgInventoryManagerComponent::SetupInventories()
 {
 	if (InventorySettings.IsEmpty())

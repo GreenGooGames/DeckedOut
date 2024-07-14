@@ -48,7 +48,7 @@ private:
 
 #pragma region Highlighted Entry Preview
 protected:
-	/* Widget showing a preview of the item highligted in the invetory overview. */
+	/* Widget showing a preview of the item highligted in the inventory overview. */
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UCorrbolgEntryPreview> EntryPreview = nullptr;
 #pragma endregion
