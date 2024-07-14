@@ -3,6 +3,7 @@
 
 #include "Interaction/TartarusInteractableSourceComponent.h"
 
+#include "Engine/HitResult.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
 #include "Kismet/KismetSystemLibrary.h"

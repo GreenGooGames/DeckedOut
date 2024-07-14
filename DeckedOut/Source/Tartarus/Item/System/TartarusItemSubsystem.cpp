@@ -69,7 +69,7 @@ TWeakObjectPtr<ATartarusItemInstance> UTartarusItemSubsystem::SpawnItem(const TS
 	if (!ItemInstance)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to spawn an item!"), *FString(__FUNCTION__));
-		return false;
+		return nullptr;
 	}
 
 	ItemInstance->Initialize(ItemId);

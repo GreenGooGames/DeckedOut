@@ -127,7 +127,7 @@ void ATartarusCardReader::ApplyModifiers(const TMap<UTartarusItem*, int32>& Card
 				EnumToString = ModiferTypePtr->GetNameStringByValue(static_cast<int64>(ModifierWeight.Value));
 			}
 
-			UE_LOG(LogTartarus, Warning, TEXT("%s: Applied modifer %s with value %d!"), *FString(__FUNCTION__), *EnumToString, ModifierWeight.Value * CardData.Value);
+			UE_LOG(LogTartarus, Warning, TEXT("%s: Applied modifer %s with value %f!"), *FString(__FUNCTION__), *EnumToString, ModifierWeight.Value * CardData.Value);
 
 			FString Text = FString("Applied modifer ") + EnumToString + FString(" with value ") + FString::SanitizeFloat(ModifierWeight.Value * CardData.Value);
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, Text);
