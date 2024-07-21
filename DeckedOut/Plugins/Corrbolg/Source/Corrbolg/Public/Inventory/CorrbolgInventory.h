@@ -47,6 +47,9 @@ public:
 	*/
 	UCorrbolgInventoryEntryDefinition* RetrieveEntry(const FGuid& EntryId);
 
+	/** Retrieves a list of all entries. */
+	const TArray<FCorrbolgInventoryEntry>& GetEntries() const;
+
 private:
 	/** Filter to only allow entries with matching tags.*/
 	FGameplayTag EntryFilter = FGameplayTag();

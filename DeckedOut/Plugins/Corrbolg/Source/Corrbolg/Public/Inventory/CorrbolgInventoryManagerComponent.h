@@ -43,6 +43,13 @@ public:
 	*/
 	const TArray<TSoftObjectPtr<UCorrbolgInventorySettings>>& GetInventorySettings() const;
 
+	/**
+	* Try to find an inventory that matches the filter.
+	* @param Filter: The filter to find an inventory for.
+	* @return: The inventory, or nullptr if none matched.
+	*/
+	const UCorrbolgInventory* FindInventoryForFilterConst(const FGameplayTag& Filter) const;
+
 protected:
 	/** List of inventory settings to initialize inventories of.*/
 	UPROPERTY(EditDefaultsOnly)

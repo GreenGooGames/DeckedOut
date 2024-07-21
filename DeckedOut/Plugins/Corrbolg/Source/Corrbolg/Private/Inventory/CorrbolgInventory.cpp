@@ -74,6 +74,11 @@ UCorrbolgInventoryEntryDefinition* UCorrbolgInventory::RetrieveEntry(const FGuid
     return RemovedEntryDefinition;
 }
 
+const TArray<FCorrbolgInventoryEntry>& UCorrbolgInventory::GetEntries() const
+{
+    return Entries;
+}
+
 bool UCorrbolgInventory::AddEntry(UCorrbolgInventoryEntryDefinition* const EntryDefinition)
 {
     if (!IsValid(EntryDefinition))

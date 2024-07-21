@@ -53,6 +53,11 @@ const TArray<TSoftObjectPtr<UCorrbolgInventorySettings>>& UCorrbolgInventoryMana
 	return InventorySettings;
 }
 
+const UCorrbolgInventory* UCorrbolgInventoryManagerComponent::FindInventoryForFilterConst(const FGameplayTag& Filter) const
+{
+	return FindInventoryForFilter(Filter);
+}
+
 void UCorrbolgInventoryManagerComponent::SetupInventories()
 {
 	if (InventorySettings.IsEmpty())

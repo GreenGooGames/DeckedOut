@@ -68,7 +68,7 @@ void UCorrbolgInventoryWidget::ConstructInventoryView()
 			continue;
 		}
 
-		const FName WidgetName = MakeUniqueObjectName(this, UCorrbolgInventoryViewWidget::StaticClass(), FName(Settings->GetName().ToString()));
+		const FName WidgetName = MakeUniqueObjectName(this, UCorrbolgInventoryViewWidget::StaticClass());
 		
 		UCorrbolgInventoryViewWidget* const InventoryView = CreateWidget<UCorrbolgInventoryViewWidget>(this, UCorrbolgInventoryViewWidget::StaticClass(), WidgetName);
 		if (!IsValid(InventoryView))
@@ -80,6 +80,7 @@ void UCorrbolgInventoryWidget::ConstructInventoryView()
 
 		// TODO: Setup the inventory view widget, like creating the slots for the tileview, the slots data class,
 		// link the tile view changed events to update he EntryPreview to the highligted slot.
+		InventoryView->Init(*Settings);
 	}
 }
 #pragma endregion
