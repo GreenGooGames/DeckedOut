@@ -31,6 +31,7 @@ void UCorrbolgInventoryViewWidget::Refresh() const
 
 	TileView->ClearListItems();
 
+	// Get all entries of the inventory and initialize the data to display.
 	const TArray<FCorrbolgInventoryEntry>& InventoryEntries = Inventory->GetEntries();
 	for (const FCorrbolgInventoryEntry& Entry : InventoryEntries)
 	{
@@ -40,8 +41,8 @@ void UCorrbolgInventoryViewWidget::Refresh() const
 			continue;
 		}
 
+		ListItem->Init(Entry);
 		TileView->AddItem(ListItem);
-		ListItem->Init();
 	}
 }
 

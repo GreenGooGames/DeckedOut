@@ -3,6 +3,20 @@
 
 #include "UI/Inventory/CorrbolgInventoryViewListItem.h"
 
-void UCorrbolgInventoryViewListItem::Init()
+#include "Inventory/CorrbolgInventoryEntry.h"
+#include "Inventory/CorrbolgInventoryEntryDefinition.h"
+#include "Inventory/Fragments/CorrbolgInventoryUIFragment.h"
+
+void UCorrbolgInventoryViewListItem::Init(const FCorrbolgInventoryEntry& Entry)
 {
+	UCorrbolgInventoryUIFragment* UIFragment = nullptr;
+	const bool bFoundUIFragment = Entry.EntryDefinition->GetFragments().FindItemByClass<UCorrbolgInventoryUIFragment>(&UIFragment);
+
+	if (bFoundUIFragment == false)
+	{
+		return;
+	}
+
+	StackSize = Entry.StackSize;
+	Texture = UIFragment->Image;
 }
