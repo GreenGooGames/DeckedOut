@@ -92,3 +92,17 @@ DeckedOut/Binaries/Win64/UnrealEditor-Win64-DebugGame.modules
 DeckedOut/Binaries/Win64/UnrealEditor-DeckedOut-Win64-DebugGame.pdb
 DeckedOut/Binaries/Win64/UnrealEditor-DeckedOut-Win64-DebugGame.dll
 DeckedOut/Binaries/Win64/DeckedOutEditor-Win64-DebugGame.target
+
+# Game packages
+DeckedOut/Packages
+DeckedOut/Binaries/Win64/tbb.dll
+DeckedOut/Binaries/Win64/tbb.pdb
+DeckedOut/Binaries/Win64/tbb12.dll
+DeckedOut/Binaries/Win64/tbbmalloc.dll
+DeckedOut/Binaries/Win64/tbbmalloc.pdb
+DeckedOut/Binaries/Win64/Tartarus.target
+DeckedOut/Binaries/Win64/Tartarus.pdb
+DeckedOut/Binaries/Win64/Tartarus.exp
+DeckedOut/Binaries/Win64/OpenImageDenoise.dll
+DeckedOut/Binaries/Win64/D3D12/d3d12SDKLayers.dll
+DeckedOut/Binaries/Win64/D3D12/D3D12Core.dll
