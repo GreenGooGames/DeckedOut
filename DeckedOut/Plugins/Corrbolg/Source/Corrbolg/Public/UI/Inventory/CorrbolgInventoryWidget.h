@@ -11,6 +11,7 @@ class UCorrbolgNavigationWidget;
 class UCommonVisibilitySwitcher;
 class UCorrbolgEntryPreview;
 class UCorrbolgInventoryManagerComponent;
+class UCorrbolgInventoryViewWidget;
 
 /**
  * The main widget that defines the layout of the inventory.
@@ -19,10 +20,9 @@ UCLASS()
 class CORRBOLG_API UCorrbolgInventoryWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
-	
-private:
-	/* Searches for an inventory component on the owning player. */
-	UCorrbolgInventoryManagerComponent* FindInventoryComponent() const;
+
+protected:
+	virtual void NativeOnInitialized() override;
 
 #pragma region Navigation bar
 protected:
@@ -40,6 +40,9 @@ protected:
 	/* Visibility Switcher owning all inventory overviews. */
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UCommonVisibilitySwitcher> InventorySwitcher = nullptr;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSoftClassPtr<UCorrbolgInventoryViewWidget> InventoryViewClass = nullptr;
 
 private:
 	/* Creates the inventory overview widgets for each inventory owned.	*/

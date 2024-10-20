@@ -5,6 +5,7 @@
 #include "UI/Inventory/CorrbolgInventoryViewListItem.h"
 #include "CommonLazyImage.h"
 #include "CommonTextBlock.h"
+#include "Engine/Texture2D.h"
 
 void UCorrbolgInventoryViewEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
@@ -16,8 +17,13 @@ void UCorrbolgInventoryViewEntryWidget::NativeOnListItemObjectSet(UObject* ListI
 		return;
 	}
 
-	DisplayImage->SetBrushFromLazyTexture(ListItem->GetTexture());
+	// TODO: Do something if no texture is provided.
+	if(ListItem->GetTexture().IsValid())
+	{
+		DisplayImage->SetBrushFromLazyTexture(ListItem->GetTexture());
+	}
 
+	// TODO: Hide the text if the entry is an empty inventory entry.
 	const FText StackSizeToDisplay = FText::FromString(FString("x").Append(FString::FromInt(ListItem->GetStackSize())));
 	StackSizeText->SetText(StackSizeToDisplay);
 }

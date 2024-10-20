@@ -35,7 +35,4 @@ private:
 	/** The inventory filter to show items for. */
 	FGameplayTag Filter = FGameplayTag::EmptyTag;
 
-	/* Searches for an inventory component on the owning player. */
-	UCorrbolgInventoryManagerComponent* FindInventoryComponent() const;
-
 };

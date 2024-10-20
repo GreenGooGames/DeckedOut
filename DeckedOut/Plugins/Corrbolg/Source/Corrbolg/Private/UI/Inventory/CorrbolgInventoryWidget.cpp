@@ -3,30 +3,22 @@
 
 #include "UI/Inventory/CorrbolgInventoryWidget.h"
 
+#include "GameFramework/Pawn.h"
+
 #include "Inventory/CorrbolgInventoryManagerComponent.h"
 #include "Logging/CorrbolgLogChannels.h"
 #include "UI/Prefabs/CorrbolgNavigationWidget.h"
 #include "CommonVisibilitySwitcher.h"
 #include "UI/Inventory/CorrbolgInventoryViewWidget.h"
 #include "Inventory/CorrbolgInventorySettings.h"
+#include "Utilities/CorrbolgUtilities.h"
 
-UCorrbolgInventoryManagerComponent* UCorrbolgInventoryWidget::FindInventoryComponent() const
+void UCorrbolgInventoryWidget::NativeOnInitialized()
 {
-	const APlayerController* const PlayerController = GetOwningPlayer<APlayerController>();
-	if (!IsValid(PlayerController))
-	{
-		UE_LOG(LogCorrbolg, Log, TEXT("%s: Failed to find inventory component: No player controller!"), *FString(__FUNCTION__));
-		return nullptr;
-	}
+	Super::NativeOnInitialized();
 
-	UCorrbolgInventoryManagerComponent* const InventoryComponent = PlayerController->FindComponentByClass<UCorrbolgInventoryManagerComponent>();
-	if (!IsValid(InventoryComponent))
-	{
-		UE_LOG(LogCorrbolg, Log, TEXT("%s: Failed to find inventory component: No inventory found!"), *FString(__FUNCTION__));
-		return nullptr;
-	}
-
-	return InventoryComponent;
+	ConstructInventoryView();
+	ConstructNavigationBar();
 }
 
 #pragma region Navigation bar
@@ -37,7 +29,7 @@ void UCorrbolgInventoryWidget::ConstructNavigationBar()
 		UE_LOG(LogCorrbolg, Log, TEXT("%s: Failed to construct navigation bar: No NavigationBar widget!"), *FString(__FUNCTION__));
 		return;
 	}
-	
+
 	if (!IsValid(InventorySwitcher))
 	{
 		UE_LOG(LogCorrbolg, Log, TEXT("%s: Failed to construct navigation bar: No InventorySwitcher widget!"), *FString(__FUNCTION__));
@@ -51,7 +43,7 @@ void UCorrbolgInventoryWidget::ConstructNavigationBar()
 #pragma region Inventory Overview
 void UCorrbolgInventoryWidget::ConstructInventoryView()
 {
-	const UCorrbolgInventoryManagerComponent* const InventoryComponent = FindInventoryComponent();
+	const UCorrbolgInventoryManagerComponent* const InventoryComponent = FCorrbolgUtilities::FindInventoryComponent(GetOwningPlayer());
 	if (!IsValid(InventoryComponent))
 	{
 		UE_LOG(LogCorrbolg, Log, TEXT("%s: Failed to construct inventory view: No inventory component!"), *FString(__FUNCTION__));
@@ -69,8 +61,8 @@ void UCorrbolgInventoryWidget::ConstructInventoryView()
 		}
 
 		const FName WidgetName = MakeUniqueObjectName(this, UCorrbolgInventoryViewWidget::StaticClass());
-		
-		UCorrbolgInventoryViewWidget* const InventoryView = CreateWidget<UCorrbolgInventoryViewWidget>(this, UCorrbolgInventoryViewWidget::StaticClass(), WidgetName);
+
+		UCorrbolgInventoryViewWidget* const InventoryView = CreateWidget<UCorrbolgInventoryViewWidget>(this, InventoryViewClass.LoadSynchronous(), WidgetName);
 		if (!IsValid(InventoryView))
 		{
 			continue;

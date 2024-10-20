@@ -9,15 +9,18 @@
 #include "UI/Inventory/CorrbolgInventoryViewListItem.h"
 #include "Logging/CorrbolgLogChannels.h"
 #include "CommonTileView.h"
+#include "Utilities/CorrbolgUtilities.h"
 
 void UCorrbolgInventoryViewWidget::Init(const UCorrbolgInventorySettings& Settings)
 {
 	Filter = Settings.GetFilter();
+
+	Refresh();
 }
 
 void UCorrbolgInventoryViewWidget::Refresh() const
 {
-	UCorrbolgInventoryManagerComponent* const InventoryManager = FindInventoryComponent();
+	UCorrbolgInventoryManagerComponent* const InventoryManager = FCorrbolgUtilities::FindInventoryComponent(GetOwningPlayer());
 	if (!IsValid(InventoryManager))
 	{
 		return;
@@ -46,21 +49,3 @@ void UCorrbolgInventoryViewWidget::Refresh() const
 	}
 }
 
-UCorrbolgInventoryManagerComponent* UCorrbolgInventoryViewWidget::FindInventoryComponent() const
-{
-	const APlayerController* const PlayerController = GetOwningPlayer<APlayerController>();
-	if (!IsValid(PlayerController))
-	{
-		UE_LOG(LogCorrbolg, Log, TEXT("%s: Failed to find inventory component: No player controller!"), *FString(__FUNCTION__));
-		return nullptr;
-	}
-
-	UCorrbolgInventoryManagerComponent* const InventoryComponent = PlayerController->FindComponentByClass<UCorrbolgInventoryManagerComponent>();
-	if (!IsValid(InventoryComponent))
-	{
-		UE_LOG(LogCorrbolg, Log, TEXT("%s: Failed to find inventory component: No inventory found!"), *FString(__FUNCTION__));
-		return nullptr;
-	}
-
-	return InventoryComponent;
-}

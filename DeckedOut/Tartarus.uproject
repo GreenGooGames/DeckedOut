@@ -50,6 +50,10 @@
 			"SupportedTargetPlatforms": [
 				"Win64"
 			]
+		},
+		{
+			"Name": "Corrbolg",
+			"Enabled": true
 		}
 	]
 }

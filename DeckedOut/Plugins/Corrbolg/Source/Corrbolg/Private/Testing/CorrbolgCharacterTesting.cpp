@@ -46,10 +46,10 @@ void ACorrbolgCharacterTesting::BeginPlay()
 
 void ACorrbolgCharacterTesting::ToggleInventoryUI()
 {
-	if (InventoryWidgetInstance.IsValid() && InventoryWidgetInstance->GetIsVisible())
+	if (InventoryWidgetInstance.IsValid() && InventoryWidgetInstance->IsInViewport())
 	{
 		// Remove the widget if it exists.
-		InventoryWidgetInstance->RemoveFromViewport();
+		InventoryWidgetInstance->RemoveFromParent();
 		return;
 	}
 	else if (InventoryWidgetInstance.IsValid())

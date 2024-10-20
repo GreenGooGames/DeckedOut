@@ -5,6 +5,7 @@
 #include "Inventory/CorrbolgInventoryEntryDefinition.h"
 #include "Inventory/CorrbolgInventorySettings.h"
 #include "Logging/CorrbolgLogChannels.h"
+#include "Inventory/Fragments/CorrbolgInventoryUIFragment.h"
 
 void UCorrbolgInventory::ApplySettings(const UCorrbolgInventorySettings* const Settings)
 {
@@ -15,6 +16,25 @@ void UCorrbolgInventory::ApplySettings(const UCorrbolgInventorySettings* const S
     }
 
     EntryFilter = Settings->GetFilter();
+    bAreEntriesLimited = Settings->GetEntryLimit() >= -1 ? true : false;
+
+    // If the entries are limited, initialize all inventory entries with an empty entry.
+    if (bAreEntriesLimited)
+    {
+        for (int i = 0; i < Settings->GetEntryLimit(); i++)
+        {
+            UCorrbolgInventoryUIFragment* const DefaultUIFragment = NewObject<UCorrbolgInventoryUIFragment>();
+            DefaultUIFragment->Image = nullptr;
+
+            TArray<UCorrbolgInventoryEntryFragment*> EntryFragments = TArray<UCorrbolgInventoryEntryFragment*>();
+            EntryFragments.Add(DefaultUIFragment);
+            
+            UCorrbolgInventoryEntryDefinition* const DefaultDefinition = NewObject<UCorrbolgInventoryEntryDefinition>();
+            DefaultDefinition->Init(FGuid::NewGuid(), FText::FromString(""), FText::FromString(""), EntryFilter, EntryFragments);
+
+            StoreEntry(DefaultDefinition);
+        }
+    }
 }
 
 bool UCorrbolgInventory::StoreEntry(UCorrbolgInventoryEntryDefinition* const EntryDefinition)
@@ -42,6 +62,8 @@ bool UCorrbolgInventory::StoreEntry(UCorrbolgInventoryEntryDefinition* const Ent
         }
     }
 
+    // TODO: If bAreEntriesLimited, then nver add additional entries, instead search for a default entry like stackable entry, and replace it.
+
     AddEntry(EntryDefinition);
 
     return true;
@@ -68,6 +90,8 @@ UCorrbolgInventoryEntryDefinition* UCorrbolgInventory::RetrieveEntry(const FGuid
 
     if (Entry->StackSize <= 0)
     {
+        // TODO: If bAreEntriesLimited, then never remove entries, instead replace with a default entry.
+
         Entries.RemoveSingle(*Entry);
     }
 

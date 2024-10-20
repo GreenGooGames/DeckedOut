@@ -9,18 +9,26 @@
 #include "TartarusItemInstance.h"
 #include "GameplayTagContainer.h"
 
+#include "Inventory/CorrbolgInventoryEntryInterface.h"
+
 #include "TartarusItem.generated.h"
+
+class UCorrbolgInventoryEntryDefinition;
 
 /**
  * 
  */
 UCLASS()
-class TARTARUS_API UTartarusItem : public UPrimaryDataAsset
+class TARTARUS_API UTartarusItem : public UPrimaryDataAsset, public ICorrbolgInventoryEntryInterface
 {
 	GENERATED_BODY()
 	
 public:
 #pragma region General_Info
+// Name to represent the item.
+	UPROPERTY(EditDefaultsOnly, Category = "General")
+	FGuid Id = FGuid();
+
 	// Name to represent the item.
 	UPROPERTY(EditDefaultsOnly, Category = "General")
 		FText Name = FText();
@@ -38,8 +46,13 @@ public:
 		TSoftObjectPtr<UTexture2D> DisplayTexture = nullptr;
 
 	// The type of the item.
-	UPROPERTY(EditDefaultsOnly, Category = "General")
+	UPROPERTY()
 		EItemType ItemType = EItemType::None;
+		
+	// The type of the item.
+	UPROPERTY(EditDefaultsOnly, Category = "General")
+		FGameplayTag ItemTypeTag = FGameplayTag::EmptyTag;
+
 #pragma endregion
 
 #pragma region Inventory_Info
@@ -62,4 +75,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Equip")
 		bool bCanAutoEquip = false;
 #pragma endregion
+
+#pragma region ICorrbolgInventoryEntryInterface
+public:
+	virtual UCorrbolgInventoryEntryDefinition* CreateEntryDefinition() const override;
+
+#pragma endregion
+
 };

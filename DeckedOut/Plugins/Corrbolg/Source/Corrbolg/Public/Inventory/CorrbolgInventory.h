@@ -54,6 +54,9 @@ private:
 	/** Filter to only allow entries with matching tags.*/
 	FGameplayTag EntryFilter = FGameplayTag();
 
+	/** Wether this can only have a limited amount of entries.*/
+	bool bAreEntriesLimited = false;
+
 	/**The entries stored in the inventory.*/
 	UPROPERTY()
 	TArray<FCorrbolgInventoryEntry> Entries = TArray<FCorrbolgInventoryEntry>();

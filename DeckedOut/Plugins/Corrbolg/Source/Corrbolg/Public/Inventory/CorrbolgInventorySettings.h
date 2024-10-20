@@ -5,6 +5,8 @@
 #include "Engine/DataAsset.h"
 #include "GameplayTagContainer.h"
 
+#include "UI/Inventory/CorrbolgInventoryViewWidget.h"
+
 #include "CorrbolgInventorySettings.generated.h"
 
 /**
@@ -17,12 +19,17 @@ class CORRBOLG_API UCorrbolgInventorySettings : public UDataAsset
 	
 public:
 	const FGameplayTag& GetFilter() const { return Filter;}
-	const FText& GetName() const { return Name; }
+	const FText& GetName() const { return Name;}
+	const int& GetEntryLimit() const {return EntryLimit;}
 
 protected:
 	/** Filter to only allow entries of a defined types.*/
 	UPROPERTY(EditDefaultsOnly, Category = "Default")
 	FGameplayTag Filter = FGameplayTag::EmptyTag;
+
+	/** Number of individual entries to hold, negative value indicates unlimited.*/
+	UPROPERTY(EditDefaultsOnly, Category = "Default")
+	int EntryLimit = -1;
 
 	/** Name of the inventory, used to identify in UI.*/
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
