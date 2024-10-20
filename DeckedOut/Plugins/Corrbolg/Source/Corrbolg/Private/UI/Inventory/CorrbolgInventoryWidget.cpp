@@ -70,8 +70,7 @@ void UCorrbolgInventoryWidget::ConstructInventoryView()
 
 		InventorySwitcher->AddChild(InventoryView);
 
-		// TODO: Setup the inventory view widget, like creating the slots for the tileview, the slots data class,
-		// link the tile view changed events to update he EntryPreview to the highligted slot.
+		// link the tile view changed events to update the EntryPreview to the highligted slot.
 		InventoryView->Init(*Settings);
 	}
 }

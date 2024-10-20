@@ -24,6 +24,24 @@ void UCorrbolgInventoryEntryDefinition::Init(const UCorrbolgInventoryEntryDefini
     Init(EntryDefinition->GetId(), EntryDefinition->GetName(), EntryDefinition->GetDescription(), EntryDefinition->GetType(), EntryDefinition->GetFragments());
 }
 
+void UCorrbolgInventoryEntryDefinition::Reset()
+{
+    EntryId = FGuid();
+    EntryName = FText();
+    EntryDescription = FText();
+    EntryType = FGameplayTag::EmptyTag;
+    EntryFragments.Empty();
+}
+
+bool UCorrbolgInventoryEntryDefinition::IsDefault() const
+{
+    return  EntryId == FGuid() &&
+            EntryName.IsEmpty() &&
+            EntryDescription.IsEmpty() &&
+            EntryType == FGameplayTag::EmptyTag &&
+            EntryFragments.IsEmpty();
+}
+
 bool UCorrbolgInventoryEntryDefinition::IsStackable() const
 {
     return EntryFragments.IsEmpty();

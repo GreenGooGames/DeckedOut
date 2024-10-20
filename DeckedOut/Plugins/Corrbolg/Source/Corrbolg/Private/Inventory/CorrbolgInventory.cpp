@@ -5,7 +5,6 @@
 #include "Inventory/CorrbolgInventoryEntryDefinition.h"
 #include "Inventory/CorrbolgInventorySettings.h"
 #include "Logging/CorrbolgLogChannels.h"
-#include "Inventory/Fragments/CorrbolgInventoryUIFragment.h"
 
 void UCorrbolgInventory::ApplySettings(const UCorrbolgInventorySettings* const Settings)
 {
@@ -23,16 +22,10 @@ void UCorrbolgInventory::ApplySettings(const UCorrbolgInventorySettings* const S
     {
         for (int i = 0; i < Settings->GetEntryLimit(); i++)
         {
-            UCorrbolgInventoryUIFragment* const DefaultUIFragment = NewObject<UCorrbolgInventoryUIFragment>();
-            DefaultUIFragment->Image = nullptr;
-
-            TArray<UCorrbolgInventoryEntryFragment*> EntryFragments = TArray<UCorrbolgInventoryEntryFragment*>();
-            EntryFragments.Add(DefaultUIFragment);
-            
             UCorrbolgInventoryEntryDefinition* const DefaultDefinition = NewObject<UCorrbolgInventoryEntryDefinition>();
-            DefaultDefinition->Init(FGuid::NewGuid(), FText::FromString(""), FText::FromString(""), EntryFilter, EntryFragments);
+            DefaultDefinition->Reset();
 
-            StoreEntry(DefaultDefinition);
+            AddEntry(DefaultDefinition);
         }
     }
 }
@@ -62,7 +55,17 @@ bool UCorrbolgInventory::StoreEntry(UCorrbolgInventoryEntryDefinition* const Ent
         }
     }
 
-    // TODO: If bAreEntriesLimited, then nver add additional entries, instead search for a default entry like stackable entry, and replace it.
+    // If the inventory size is limited, replace a default entry.
+    if (bAreEntriesLimited)
+    {
+        FCorrbolgInventoryEntry* const DefaultEntry = FindDefaultEntry(EntryDefinition);
+        if (DefaultEntry != nullptr)
+        {
+            DefaultEntry->EntryDefinition = EntryDefinition;
+            DefaultEntry->StackSize++;
+            return true;
+        }
+    }
 
     AddEntry(EntryDefinition);
 
@@ -90,9 +93,14 @@ UCorrbolgInventoryEntryDefinition* UCorrbolgInventory::RetrieveEntry(const FGuid
 
     if (Entry->StackSize <= 0)
     {
-        // TODO: If bAreEntriesLimited, then never remove entries, instead replace with a default entry.
-
-        Entries.RemoveSingle(*Entry);
+        if (bAreEntriesLimited)
+        {
+            Entry->Reset();
+        }
+        else
+        {
+            Entries.RemoveSingle(*Entry);
+        }
     }
 
     return RemovedEntryDefinition;
@@ -131,4 +139,19 @@ FCorrbolgInventoryEntry* UCorrbolgInventory::FindStackableEntry(const UCorrbolgI
         });
     
     return StackableEntry;
+}
+
+FCorrbolgInventoryEntry* UCorrbolgInventory::FindDefaultEntry(const UCorrbolgInventoryEntryDefinition* const EntryDefinition)
+{
+    FCorrbolgInventoryEntry* const DefaultEntry = Entries.FindByPredicate([&EntryDefinition](const FCorrbolgInventoryEntry& Entry)
+        {
+            if (Entry.EntryDefinition->IsDefault())
+            {
+                return true;
+            }
+
+            return false;
+        });
+
+    return DefaultEntry;
 }

@@ -34,11 +34,15 @@ public:
 	*/
 	void Init(const UCorrbolgInventoryEntryDefinition* const EntryDefinition);
 
+	void Reset();
+
 	const FGuid& GetId() const { return EntryId; }
 	const FText& GetName() const { return EntryName; }
 	const FText& GetDescription() const { return EntryDescription; }
 	const FGameplayTag& GetType() const { return EntryType; }
 	const TArray<TObjectPtr<UCorrbolgInventoryEntryFragment>>& GetFragments() const { return EntryFragments; }
+
+	bool IsDefault() const;
 
 	/**
 	* Checks if the Entry is stackable.

@@ -32,4 +32,6 @@ public:
 	{
 		return StackSize == rhs.StackSize && EntryDefinition == rhs.EntryDefinition;
 	}
+
+	void Reset();
 };
