@@ -28,6 +28,8 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UCommonTileView> TileView = nullptr;
 
+	virtual void NativeOnActivated() override;
+
 	/** Updates the data and refreshes the tileview. */
 	void Refresh() const;
 

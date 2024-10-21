@@ -61,7 +61,7 @@ void UTartarusAISubsystem::RegisterSpawnLocation(const FGameplayTag& SpawnPointI
 	SpawnPoints.FindOrAdd(SpawnPointId).Add(SpawnTransform);
 }
 
-const FTransform& UTartarusAISubsystem::GetRandomSpawnPoint(const FGameplayTag& SpawnPointId) const
+const FTransform UTartarusAISubsystem::GetRandomSpawnPoint(const FGameplayTag& SpawnPointId) const
 {
 	TArray<FTransform> Spawns = SpawnPoints.FindRef(SpawnPointId);
 	if (Spawns.IsEmpty())

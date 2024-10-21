@@ -12,10 +12,13 @@
 #include "System/TartarusAssetManager.h"
 #include "UI/Foundation/TartarusPrimaryGameLayout.h"
 #include "GameFramework/Pawn.h"
+#include "Inventory/CorrbolgInventoryManagerComponent.h"
 
 ATartarusPlayerController::ATartarusPlayerController()
 {
-	InventoryComponent = CreateDefaultSubobject<UTartarusInventoryComponent>("Inventory component", false);
+	TartarusInventoryComponent = CreateDefaultSubobject<UTartarusInventoryComponent>("Tartarus Inventory component", false);
+	CorrbolgInventoryComponent = CreateDefaultSubobject<UCorrbolgInventoryManagerComponent>("Corrbolg Inventory component", false);
+	
 	InteractableComponent = CreateDefaultSubobject<UTartarusInteractableSourceComponent>("InteractableComponent", false);
 }
 

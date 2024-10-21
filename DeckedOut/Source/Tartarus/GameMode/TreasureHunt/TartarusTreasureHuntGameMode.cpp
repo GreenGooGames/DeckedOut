@@ -11,6 +11,7 @@
 #include "Item/TartarusItem.h"
 #include "Item/TartarusItemData.h"
 #include "Logging/TartarusLogChannels.h"
+#include "Inventory/CorrbolgInventoryManagerComponent.h"
 
 void ATartarusTreasureHuntGameMode::StartTreasureHunt()
 {
@@ -63,8 +64,9 @@ void ATartarusTreasureHuntGameMode::StopTreasureHunt()
 		return;
 	}
 
-	UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
-	if (!IsValid(Inventory))
+	UTartarusInventoryComponent* const TartarusInventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
+	UCorrbolgInventoryManagerComponent* const Inventory = PlayerController->FindComponentByClass<UCorrbolgInventoryManagerComponent>();
+	if (!IsValid(TartarusInventory) || !IsValid(Inventory))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to remove gifted items: No inventory found.!"), *FString(__FUNCTION__));
 		return;
@@ -76,15 +78,17 @@ void ATartarusTreasureHuntGameMode::StopTreasureHunt()
 		return;
 	}
 
-	Inventory->RetrieveEntry(GiftedTreasureKeyInventoryId, 1);
+	TartarusInventory->RetrieveEntry(GiftedTreasureKeyInventoryId, 1);
+	Inventory->RetrieveEntry(GiftItem->Id);
 }
 
 #pragma region StarterGifts
 bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const PlayerController)
 {
 	// Get the player inventory.
-	UTartarusInventoryComponent* const Inventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
-	if (!IsValid(Inventory))
+	UTartarusInventoryComponent* const InstigatorTartarusInventory = PlayerController->FindComponentByClass<UTartarusInventoryComponent>();
+	UCorrbolgInventoryManagerComponent* const InstigatorInventory = PlayerController->FindComponentByClass<UCorrbolgInventoryManagerComponent>();
+	if (!IsValid(InstigatorTartarusInventory) || !IsValid(InstigatorInventory))
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: No inventory found.!"), *FString(__FUNCTION__));
 		return false;
@@ -97,8 +101,16 @@ bool ATartarusTreasureHuntGameMode::GiftStarterItems(const AController* const Pl
 		return false;
 	}
 
-	GiftedTreasureKeyInventoryId = Inventory->StoreEntry(GiftItem, 1);
+	GiftedTreasureKeyInventoryId = InstigatorTartarusInventory->StoreEntry(GiftItem, 1);
 	if (!GiftedTreasureKeyInventoryId.IsValid())
+	{
+		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not store the item in the Tartarus inventory!"), *FString(__FUNCTION__));
+		return false;
+	}
+
+	TObjectPtr<UCorrbolgInventoryEntryDefinition> EntryDefinition = GiftItem->CreateEntryDefinition();
+	const bool bIsStored = InstigatorInventory->StoreEntry(EntryDefinition.Get());
+	if (!bIsStored)
 	{
 		UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to gift item: Could not store the item in the inventory!"), *FString(__FUNCTION__));
 		return false;

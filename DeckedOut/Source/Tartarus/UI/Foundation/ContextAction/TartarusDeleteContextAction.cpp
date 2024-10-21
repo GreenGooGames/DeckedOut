@@ -19,7 +19,7 @@ void UTartarusDeleteContextAction::ExecuteAction(UTartarusContextActionListData*
 		return;
 	}
 
-	UTartarusInventoryComponent* const InventoryComponent = PlayerController->GetInventoryComponent();
+	UTartarusInventoryComponent* const InventoryComponent = PlayerController->GetTartarusInventoryComponent();
 	if (!IsValid(InventoryComponent))
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to perform Delete action: No inventory found!"), *FString(__FUNCTION__));

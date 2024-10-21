@@ -11,6 +11,7 @@ class UInputAction;
 class UTartarusInventoryComponent;
 class UTartarusInteractableSourceComponent;
 class UTartarusPrimaryGameLayout;
+class UCorrbolgInventoryManagerComponent;
 
 struct FStreamableHandle;
 
@@ -43,11 +44,15 @@ protected:
 
 #pragma region Inventory
 public:
-	FORCEINLINE UTartarusInventoryComponent* GetInventoryComponent() const { return InventoryComponent; };
+	FORCEINLINE UTartarusInventoryComponent* GetTartarusInventoryComponent() const { return TartarusInventoryComponent; };
+	FORCEINLINE UCorrbolgInventoryManagerComponent* GetInventoryComponent() const { return CorrbolgInventoryComponent; };
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
-		TObjectPtr<UTartarusInventoryComponent> InventoryComponent = nullptr;
+		TObjectPtr<UTartarusInventoryComponent> TartarusInventoryComponent = nullptr;
+			
+	UPROPERTY(EditDefaultsOnly)
+		TObjectPtr<UCorrbolgInventoryManagerComponent> CorrbolgInventoryComponent = nullptr;
 
 #pragma endregion
 

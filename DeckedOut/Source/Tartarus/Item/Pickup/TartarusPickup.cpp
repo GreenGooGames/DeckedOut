@@ -14,12 +14,14 @@
 #include "TartarusPickup.h"
 #include "UI/Gameplay/TartarusInteractionWidget.h"
 #include "UI/Foundation/TartarusWidgetComponent.h"
+#include "Inventory/CorrbolgInventoryManagerComponent.h"
 
 #pragma region FPickupRequestInfo
-FPickupRequestInfo::FPickupRequestInfo(UTartarusInventoryComponent* const InstigatorInventory, const bool bIsPickupRequest)
+FPickupRequestInfo::FPickupRequestInfo(UTartarusInventoryComponent* const InstigatorTartarusInventory, UCorrbolgInventoryManagerComponent* const InstigatorInventory, const bool bIsPickupRequest)
 {
 	RequestId = FGuid::NewGuid();
 	
+	TartarusInventory = InstigatorTartarusInventory;
 	Inventory = InstigatorInventory;
 	bShouldPickup = bIsPickupRequest;
 }
@@ -54,7 +56,7 @@ void ATartarusPickup::Initialize(const FPrimaryAssetId ItemReferenceId)
 		return;
 	}
 
-	FPickupRequestInfo PickupRequest = FPickupRequestInfo(nullptr, false);
+	FPickupRequestInfo PickupRequest = FPickupRequestInfo(nullptr, nullptr, false);
 	PickupRequest.SetASyncLoadRequestId(RequestId);
 	PickupRequests.Add(PickupRequest);
 }
@@ -68,8 +70,9 @@ bool ATartarusPickup::PickupItemAsync(const TObjectPtr<AController> InstigatorCo
 	}
 
 	// As base behavior, any item interacted with is stored into the instigator inventory.
-	UTartarusInventoryComponent* const InstigatorInventory = InstigatorController->FindComponentByClass<UTartarusInventoryComponent>();
-	if (!IsValid(InstigatorInventory))
+	UTartarusInventoryComponent* const InstigatorTartarusInventory = InstigatorController->FindComponentByClass<UTartarusInventoryComponent>();
+	UCorrbolgInventoryManagerComponent* const InstigatorInventory = InstigatorController->FindComponentByClass<UCorrbolgInventoryManagerComponent>();
+	if (!IsValid(InstigatorTartarusInventory) || !IsValid(InstigatorInventory))
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Controller has no inventory!"), *FString(__FUNCTION__));
 		return false;
@@ -83,14 +86,14 @@ bool ATartarusPickup::PickupItemAsync(const TObjectPtr<AController> InstigatorCo
 		return false;
 	}
 
-	FPickupRequestInfo PickupRequest = FPickupRequestInfo(InstigatorInventory, true);
+	FPickupRequestInfo PickupRequest = FPickupRequestInfo(InstigatorTartarusInventory, InstigatorInventory, true);
 	PickupRequest.SetASyncLoadRequestId(RequestId);
 	PickupRequests.Add(PickupRequest);
 
 	return true;
 }
 
-bool ATartarusPickup::PickupItem(UTartarusInventoryComponent* const Inventory, const UTartarusItem* const Item)
+bool ATartarusPickup::PickupItem(UTartarusInventoryComponent* const TartarusInventory, UCorrbolgInventoryManagerComponent* const Inventory, const UTartarusItem* const Item)
 {
 	// Validate if all data and environment.
 	if (!IsValid(Inventory))
@@ -107,7 +110,15 @@ bool ATartarusPickup::PickupItem(UTartarusInventoryComponent* const Inventory, c
 	}
 
 	// Pickup the item by storing it in the inventory.
-	const bool bIsStored = Inventory->StoreEntry(Item, StackSize).IsValid();
+	const bool bIsTartarusStored = TartarusInventory->StoreEntry(Item, StackSize).IsValid();
+	if (!bIsTartarusStored)
+	{
+		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Could not store the Tartarus item in the inventory!"), *FString(__FUNCTION__));
+		return false;
+	}
+
+	TObjectPtr<UCorrbolgInventoryEntryDefinition> const EntryDefinition = Item->CreateEntryDefinition();
+	const bool bIsStored = Inventory->StoreEntry(EntryDefinition.Get());
 	if (!bIsStored)
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Interaction Failed: Could not store the item in the inventory!"), *FString(__FUNCTION__));
@@ -257,7 +268,7 @@ void ATartarusPickup::HandleItemDataLoaded(FGuid ASyncLoadRequestId, TArray<UTar
 
 	if (CurrentRequest->ShouldPickup())
 	{
-		if (!PickupItem(CurrentRequest->GetInventory(), ItemsData[0]))
+		if (!PickupItem(CurrentRequest->GetTartarusInventory(), CurrentRequest->GetInventory(), ItemsData[0]))
 		{
 			UE_LOG(LogTartarus, Warning, TEXT("%s: Failed to Pickup: Unable to pickup the item!"), *FString(__FUNCTION__));
 		}

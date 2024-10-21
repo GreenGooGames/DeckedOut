@@ -69,7 +69,7 @@ void UTartarusSwitcherWidget::OnMenuVisibilityChanged(int32 VisibleWidgetIndex)
 			const UTartarusActivatableWidget* const PreviousWidget = Cast<UTartarusActivatableWidget>(MenuVisibilitySwitcher->GetWidgetAtIndex(PreviousIndex));
 			const UTartarusActivatableWidget* const NextWidget = Cast<UTartarusActivatableWidget>(MenuVisibilitySwitcher->GetWidgetAtIndex(NextIndex));
 
-			if (!IsValid(PreviousWidget) && !IsValid(NextWidget))
+			if (!IsValid(PreviousWidget) || !IsValid(NextWidget))
 			{
 				UE_LOG(LogTartarus, Error, TEXT("%s: Visibility Switcher Previous and/or next widget is NULL?"), *FString(__FUNCTION__));
 				return;

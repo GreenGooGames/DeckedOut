@@ -80,6 +80,6 @@ private:
 	* @param EntryDefinition: The definition of the entry to search for.
 	* @return: A stackable entry of the provided EntryDefinition, nullptr if none was found.
 	*/
-	FCorrbolgInventoryEntry* FindDefaultEntry(const UCorrbolgInventoryEntryDefinition* const EntryDefinition);
+	FCorrbolgInventoryEntry* FindDefaultEntry();
 
 };

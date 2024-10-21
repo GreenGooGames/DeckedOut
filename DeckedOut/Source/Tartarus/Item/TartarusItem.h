@@ -25,9 +25,9 @@ class TARTARUS_API UTartarusItem : public UPrimaryDataAsset, public ICorrbolgInv
 	
 public:
 #pragma region General_Info
-// Name to represent the item.
+	// Name to represent the item.
 	UPROPERTY(EditDefaultsOnly, Category = "General")
-	FGuid Id = FGuid();
+		FGuid Id = FGuid();
 
 	// Name to represent the item.
 	UPROPERTY(EditDefaultsOnly, Category = "General")
@@ -78,7 +78,7 @@ public:
 
 #pragma region ICorrbolgInventoryEntryInterface
 public:
-	virtual UCorrbolgInventoryEntryDefinition* CreateEntryDefinition() const override;
+	virtual TObjectPtr<UCorrbolgInventoryEntryDefinition> CreateEntryDefinition() const override;
 
 #pragma endregion
 

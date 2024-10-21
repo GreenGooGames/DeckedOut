@@ -77,7 +77,7 @@ void UTartarusInventoryWidget::ConstructInventoryView()
 		return;
 	}
 
-	UTartarusInventoryComponent* const InventoryComponent = PlayerController->GetInventoryComponent();
+	UTartarusInventoryComponent* const InventoryComponent = PlayerController->GetTartarusInventoryComponent();
 	if (!IsValid(InventoryComponent))
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Construct inventory view failed: No inventory found!"), *FString(__FUNCTION__));
@@ -135,7 +135,7 @@ void UTartarusInventoryWidget::HandleSortAction()
 		return;
 	}
 
-	UTartarusInventoryComponent* const InventoryComponent = PlayerController->GetInventoryComponent();
+	UTartarusInventoryComponent* const InventoryComponent = PlayerController->GetTartarusInventoryComponent();
 	if (!IsValid(InventoryComponent))
 	{
 		UE_LOG(LogTartarus, Log, TEXT("%s: Failed to sort the inventory: No inventory found!"), *FString(__FUNCTION__));

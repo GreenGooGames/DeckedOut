@@ -14,7 +14,7 @@ class UCorrbolgInventorySettings;
 /**
 * Manages inventories and provides methods to manipulate them.
 */
-UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class CORRBOLG_API UCorrbolgInventoryManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()

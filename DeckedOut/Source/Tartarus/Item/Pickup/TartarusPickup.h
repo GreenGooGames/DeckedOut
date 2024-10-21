@@ -12,6 +12,7 @@
 class UTartarusInventoryComponent;
 class UTartarusItem;
 class UTartarusWidgetComponent;
+class UCorrbolgInventoryManagerComponent;
 
 #pragma region ASyncLoading
 USTRUCT()
@@ -21,13 +22,15 @@ struct FPickupRequestInfo : public FASyncLoadRequest
 
 public:
 	FPickupRequestInfo() {}
-	FPickupRequestInfo(UTartarusInventoryComponent* const InstigatorInventory, const bool bIsPickupRequest);
+	FPickupRequestInfo(UTartarusInventoryComponent* const InstigatorTartarusInventory, UCorrbolgInventoryManagerComponent* const InstigatorInventory, const bool bIsPickupRequest);
 
-	UTartarusInventoryComponent* GetInventory() const { return Inventory.Get(); }
+	UTartarusInventoryComponent* GetTartarusInventory() const { return TartarusInventory.Get(); }
+	UCorrbolgInventoryManagerComponent* GetInventory() const { return Inventory.Get(); }
 	bool ShouldPickup() { return bShouldPickup; }
 
 private:
-	TWeakObjectPtr<UTartarusInventoryComponent> Inventory = nullptr;
+	TWeakObjectPtr<UTartarusInventoryComponent> TartarusInventory = nullptr;
+	TWeakObjectPtr<UCorrbolgInventoryManagerComponent> Inventory = nullptr;
 	bool bShouldPickup = false;
 };
 #pragma endregion
@@ -55,7 +58,7 @@ protected:
 	* Return: Has the behavior been handles succesfully or not.
 	*/
 	virtual bool PickupItemAsync(const TObjectPtr<AController> InstigatorController);
-	bool PickupItem(UTartarusInventoryComponent* const Inventory, const UTartarusItem* const Item);
+	bool PickupItem(UTartarusInventoryComponent* const TartarusInventory, UCorrbolgInventoryManagerComponent* const Inventory, const UTartarusItem* const Item);
 
 #pragma region TartarusInteractableTargetInterface
 public:

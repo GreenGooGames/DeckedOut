@@ -4,14 +4,18 @@
 #include "Item/TartarusItem.h"
 
 #include "Inventory/CorrbolgInventoryEntryDefinition.h"
+#include "Inventory/Fragments/CorrbolgInventoryUIFragment.h"
 
-UCorrbolgInventoryEntryDefinition* UTartarusItem::CreateEntryDefinition() const
+TObjectPtr<UCorrbolgInventoryEntryDefinition> UTartarusItem::CreateEntryDefinition() const
 {
-    TArray<UCorrbolgInventoryEntryFragment*> EntryFragments = TArray<UCorrbolgInventoryEntryFragment*>();
-
     // Create a UI fragment.
+    UCorrbolgInventoryUIFragment* const UIFragment = NewObject<UCorrbolgInventoryUIFragment>();
+    UIFragment->Image = DisplayTexture;
 
-    UCorrbolgInventoryEntryDefinition* const Definition = NewObject<UCorrbolgInventoryEntryDefinition>();
+    TArray<UCorrbolgInventoryEntryFragment*> EntryFragments = TArray<UCorrbolgInventoryEntryFragment*>();
+    EntryFragments.Add(UIFragment);
+
+    TObjectPtr<UCorrbolgInventoryEntryDefinition> const Definition = NewObject<UCorrbolgInventoryEntryDefinition>();
     Definition->Init(Id, Name, Description, ItemTypeTag, EntryFragments);
 
     return Definition;

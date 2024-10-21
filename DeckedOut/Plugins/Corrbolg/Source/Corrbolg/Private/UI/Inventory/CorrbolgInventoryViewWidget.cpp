@@ -18,6 +18,11 @@ void UCorrbolgInventoryViewWidget::Init(const UCorrbolgInventorySettings& Settin
 	Refresh();
 }
 
+void UCorrbolgInventoryViewWidget::NativeOnActivated()
+{
+	Refresh();
+}
+
 void UCorrbolgInventoryViewWidget::Refresh() const
 {
 	UCorrbolgInventoryManagerComponent* const InventoryManager = FCorrbolgUtilities::FindInventoryComponent(GetOwningPlayer());

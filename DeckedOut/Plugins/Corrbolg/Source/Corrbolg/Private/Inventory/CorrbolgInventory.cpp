@@ -58,11 +58,11 @@ bool UCorrbolgInventory::StoreEntry(UCorrbolgInventoryEntryDefinition* const Ent
     // If the inventory size is limited, replace a default entry.
     if (bAreEntriesLimited)
     {
-        FCorrbolgInventoryEntry* const DefaultEntry = FindDefaultEntry(EntryDefinition);
+        FCorrbolgInventoryEntry* const DefaultEntry = FindDefaultEntry();
         if (DefaultEntry != nullptr)
         {
             DefaultEntry->EntryDefinition = EntryDefinition;
-            DefaultEntry->StackSize++;
+            DefaultEntry->StackSize = 1;
             return true;
         }
     }
@@ -141,9 +141,9 @@ FCorrbolgInventoryEntry* UCorrbolgInventory::FindStackableEntry(const UCorrbolgI
     return StackableEntry;
 }
 
-FCorrbolgInventoryEntry* UCorrbolgInventory::FindDefaultEntry(const UCorrbolgInventoryEntryDefinition* const EntryDefinition)
+FCorrbolgInventoryEntry* UCorrbolgInventory::FindDefaultEntry()
 {
-    FCorrbolgInventoryEntry* const DefaultEntry = Entries.FindByPredicate([&EntryDefinition](const FCorrbolgInventoryEntry& Entry)
+    FCorrbolgInventoryEntry* const DefaultEntry = Entries.FindByPredicate([](const FCorrbolgInventoryEntry& Entry)
         {
             if (Entry.EntryDefinition->IsDefault())
             {

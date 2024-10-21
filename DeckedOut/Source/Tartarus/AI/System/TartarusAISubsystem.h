@@ -25,7 +25,7 @@ public:
 	void RegisterSpawnLocation(const FGameplayTag& SpawnPointId, const FTransform& SpawnTransform);
 
 protected:
-	const FTransform& GetRandomSpawnPoint(const FGameplayTag& SpawnPointId) const;
+	const FTransform GetRandomSpawnPoint(const FGameplayTag& SpawnPointId) const;
 
 private:
 	TMap<FGameplayTag, TArray<FTransform>> SpawnPoints;
