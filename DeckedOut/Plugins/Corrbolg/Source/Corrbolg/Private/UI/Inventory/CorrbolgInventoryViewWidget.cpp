@@ -14,6 +14,7 @@
 void UCorrbolgInventoryViewWidget::Init(const UCorrbolgInventorySettings& Settings)
 {
 	Filter = Settings.GetFilter();
+	DisplayText = Settings.GetDisplayName();
 
 	Refresh();
 }
@@ -53,4 +54,3 @@ void UCorrbolgInventoryViewWidget::Refresh() const
 		TileView->AddItem(ListItem);
 	}
 }
-

@@ -23,6 +23,8 @@ class CORRBOLG_API UCorrbolgInventoryViewWidget : public UCommonActivatableWidge
 public:
 	void Init(const UCorrbolgInventorySettings& Settings);
 
+	const FText& GetDisplayText() const {return DisplayText;}
+
 protected:
 	/** TileView holding all display entries that represent the entry stored in the inventory. */
 	UPROPERTY(meta = (BindWidget))
@@ -37,4 +39,6 @@ private:
 	/** The inventory filter to show items for. */
 	FGameplayTag Filter = FGameplayTag::EmptyTag;
 
+	/** The text to display when identifying this widget. */
+	FText DisplayText = FText();
 };

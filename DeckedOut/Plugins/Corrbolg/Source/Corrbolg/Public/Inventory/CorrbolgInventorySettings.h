@@ -19,7 +19,7 @@ class CORRBOLG_API UCorrbolgInventorySettings : public UDataAsset
 	
 public:
 	const FGameplayTag& GetFilter() const { return Filter;}
-	const FText& GetName() const { return Name;}
+	const FText& GetDisplayName() const { return DisplayName;}
 	const int& GetEntryLimit() const {return EntryLimit;}
 
 protected:
@@ -33,5 +33,5 @@ protected:
 
 	/** Name of the inventory, used to identify in UI.*/
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	FText Name = FText();
+	FText DisplayName = FText();
 };
