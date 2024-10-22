@@ -47,6 +47,10 @@ protected:
 private:
 	/* Creates the inventory overview widgets for each inventory owned.	*/
 	void ConstructInventoryView();
+
+	/** Handles behavior to execute when the selected entry in the Tileview has changed.*/
+	UFUNCTION()
+	void HandleItemSelectionChanged(UObject* Item);
 #pragma endregion
 
 #pragma region Highlighted Entry Preview

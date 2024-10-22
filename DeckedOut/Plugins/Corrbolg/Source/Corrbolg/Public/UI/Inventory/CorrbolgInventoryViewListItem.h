@@ -23,12 +23,12 @@ public:
 	void Init(const FCorrbolgInventoryEntry& Entry);
 
 	const TSoftObjectPtr<UTexture2D>& GetTexture() const {return Texture;}
-	const int32& GetStackSize() const {return StackSize;}
+
+	const FCorrbolgInventoryEntry* const GetInventoryEntry() const {return InventoryEntry;}
 
 private:
 	/** The image to display for this item. */
 	TSoftObjectPtr<UTexture2D> Texture = nullptr;
 
-	/** The stacksize for this item. */
-	int32 StackSize = 0;
+	const FCorrbolgInventoryEntry* InventoryEntry = nullptr;
 };

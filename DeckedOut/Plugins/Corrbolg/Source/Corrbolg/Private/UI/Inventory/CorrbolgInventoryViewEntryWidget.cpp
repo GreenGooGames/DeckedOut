@@ -6,6 +6,7 @@
 #include "CommonLazyImage.h"
 #include "CommonTextBlock.h"
 #include "Engine/Texture2D.h"
+#include "Inventory/CorrbolgInventoryEntry.h"
 
 void UCorrbolgInventoryViewEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
@@ -24,6 +25,6 @@ void UCorrbolgInventoryViewEntryWidget::NativeOnListItemObjectSet(UObject* ListI
 	}
 
 	// TODO: Hide the text if the entry is an empty inventory entry.
-	const FText StackSizeToDisplay = FText::FromString(FString("x").Append(FString::FromInt(ListItem->GetStackSize())));
+	const FText StackSizeToDisplay = FText::FromString(FString("x").Append(FString::FromInt(ListItem->GetInventoryEntry()->StackSize)));
 	StackSizeText->SetText(StackSizeToDisplay);
 }

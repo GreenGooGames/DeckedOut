@@ -4,6 +4,7 @@
 #include "UI/Inventory/CorrbolgInventoryWidget.h"
 
 #include "GameFramework/Pawn.h"
+#include "CommonTileView.h"
 
 #include "Inventory/CorrbolgInventoryManagerComponent.h"
 #include "Logging/CorrbolgLogChannels.h"
@@ -12,6 +13,8 @@
 #include "UI/Inventory/CorrbolgInventoryViewWidget.h"
 #include "Inventory/CorrbolgInventorySettings.h"
 #include "Utilities/CorrbolgUtilities.h"
+#include "UI/Inventory/CorrbolgInventoryViewListItem.h"
+#include "UI/Inventory/CorrbolgEntryPreview.h"
 
 void UCorrbolgInventoryWidget::NativeOnInitialized()
 {
@@ -70,8 +73,19 @@ void UCorrbolgInventoryWidget::ConstructInventoryView()
 
 		InventorySwitcher->AddChild(InventoryView);
 
-		// link the tile view changed events to update the EntryPreview to the highligted slot.
 		InventoryView->Init(*Settings);
+		InventoryView->GetTileView()->OnItemSelectionChanged().AddUObject(this, &UCorrbolgInventoryWidget::HandleItemSelectionChanged);
 	}
+}
+
+void UCorrbolgInventoryWidget::HandleItemSelectionChanged(UObject* Item)
+{
+	UCorrbolgInventoryViewListItem* const ViewListItem = Cast<UCorrbolgInventoryViewListItem>(Item);
+	if (!IsValid(ViewListItem))
+	{
+		return;
+	}
+
+	EntryPreview->SetPreviewEntry(ViewListItem);
 }
 #pragma endregion

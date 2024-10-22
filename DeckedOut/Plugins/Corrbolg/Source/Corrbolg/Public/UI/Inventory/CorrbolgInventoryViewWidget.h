@@ -24,6 +24,7 @@ public:
 	void Init(const UCorrbolgInventorySettings& Settings);
 
 	const FText& GetDisplayText() const {return DisplayText;}
+	UCommonTileView* const GetTileView() const {return TileView;}
 
 protected:
 	/** TileView holding all display entries that represent the entry stored in the inventory. */

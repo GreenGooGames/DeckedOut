@@ -121,7 +121,7 @@ bool UCorrbolgInventory::AddEntry(UCorrbolgInventoryEntryDefinition* const Entry
 
     FCorrbolgInventoryEntry& NewEntry = Entries.AddDefaulted_GetRef();
     NewEntry.EntryDefinition = EntryDefinition;
-    NewEntry.StackSize++;
+    if(!EntryDefinition->IsDefault()) NewEntry.StackSize++;
 
     return true;
 }

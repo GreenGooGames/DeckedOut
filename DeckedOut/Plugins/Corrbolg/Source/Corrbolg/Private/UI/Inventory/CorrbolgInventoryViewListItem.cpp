@@ -9,6 +9,8 @@
 
 void UCorrbolgInventoryViewListItem::Init(const FCorrbolgInventoryEntry& Entry)
 {
+	InventoryEntry = &Entry;
+
 	UCorrbolgInventoryUIFragment* UIFragment = nullptr;
 	const bool bFoundUIFragment = Entry.EntryDefinition->GetFragments().FindItemByClass<UCorrbolgInventoryUIFragment>(&UIFragment);
 
@@ -17,6 +19,5 @@ void UCorrbolgInventoryViewListItem::Init(const FCorrbolgInventoryEntry& Entry)
 		return;
 	}
 
-	StackSize = Entry.StackSize;
 	Texture = UIFragment->Image;
 }
