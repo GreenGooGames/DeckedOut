@@ -15,5 +15,5 @@ class CORRBOLG_API UCorrbolgContextActionBase : public UObject
 	GENERATED_BODY()
 	
 public:
-	virtual void Execute(){};
+	virtual void Execute() PURE_VIRTUAL(UCorrbolgContextActionBase::Execute, return;);
 };
