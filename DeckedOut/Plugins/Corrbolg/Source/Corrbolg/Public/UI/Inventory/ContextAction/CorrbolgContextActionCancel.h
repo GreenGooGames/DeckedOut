@@ -15,6 +15,6 @@ class CORRBOLG_API UCorrbolgContextActionCancel : public UCorrbolgContextActionB
 	GENERATED_BODY()
 	
 public:
-	virtual void Execute();
+	virtual void Execute() override;
 
 };

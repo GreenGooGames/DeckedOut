@@ -15,5 +15,5 @@ class CORRBOLG_API UCorrbolgContextActionDelete : public UCorrbolgContextActionB
 	GENERATED_BODY()
 	
 public:
-	virtual void Execute();
+	virtual void Execute() override;
 };

@@ -9,11 +9,11 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class CORRBOLG_API UCorrbolgContextActionBase : public UObject
 {
 	GENERATED_BODY()
 	
 public:
-	virtual void Execute() = 0;
+	virtual void Execute(){};
 };
