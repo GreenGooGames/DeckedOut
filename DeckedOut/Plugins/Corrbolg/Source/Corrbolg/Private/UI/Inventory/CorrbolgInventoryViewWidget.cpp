@@ -10,11 +10,16 @@
 #include "Logging/CorrbolgLogChannels.h"
 #include "CommonTileView.h"
 #include "Utilities/CorrbolgUtilities.h"
+#include "UI/Inventory/ContextAction/CorrbolgContextActionWidget.h"
 
 void UCorrbolgInventoryViewWidget::Init(const UCorrbolgInventorySettings& Settings)
 {
 	Filter = Settings.GetFilter();
 	DisplayText = Settings.GetDisplayName();
+
+	TileView->OnItemClicked().AddUObject(this, &UCorrbolgInventoryViewWidget::HandleOnItemClicked);
+	ContextActionWidget->SetVisibility(ESlateVisibility::Collapsed);
+	ContextActionWidget->SetupActions(Settings);
 
 	Refresh();
 }
@@ -53,4 +58,10 @@ void UCorrbolgInventoryViewWidget::Refresh() const
 		ListItem->Init(Entry);
 		TileView->AddItem(ListItem);
 	}
+}
+
+void UCorrbolgInventoryViewWidget::HandleOnItemClicked(UObject* const Item)
+{
+	ContextActionWidget->SetVisibility(ESlateVisibility::Visible);
+
 }

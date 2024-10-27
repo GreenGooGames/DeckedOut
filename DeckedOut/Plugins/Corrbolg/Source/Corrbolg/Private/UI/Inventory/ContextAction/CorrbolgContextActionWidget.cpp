@@ -5,37 +5,17 @@
 
 #include "Inventory/CorrbolgInventorySettings.h"
 #include "UI/Inventory/ContextAction/CorrbolgContextActionDefinition.h"
-#include "UI/Inventory/ContextAction/CorrbolgContextActionBase.h"
-#include "UI/Prefabs/CorrbolgTextButton.h"
+#include "UI/Inventory/ContextAction/CorrbolgContextActionListItem.h"
+#include "CommonListView.h"
 
 void UCorrbolgContextActionWidget::SetupActions(const UCorrbolgInventorySettings& Settings)
 {
-	Cleanup();
-
 	for (const TSoftObjectPtr<UCorrbolgContextActionDefinition>& ContextActionDefinition : Settings.GetContextActions())
 	{
-		// Create a button for the context action.
-		UCorrbolgTextButton* const NewActionButton = NewObject<UCorrbolgTextButton>(this, ActionButtonClass.LoadSynchronous());
-		if (!IsValid(NewActionButton))
-		{
-			return;
-		}
+		UCorrbolgContextActionListItem* const ListItem = NewObject<UCorrbolgContextActionListItem>(this);
+		ListItem->SetupContextAction(ContextActionDefinition.LoadSynchronous());
 
-		NewActionButton->SetText(ContextActionDefinition.LoadSynchronous()->GetActionName());
-
-		ContextActionHolder->AddChild(NewActionButton);
-
-		// When the button is clicked, execute the contect action behavior.
-		UCorrbolgContextActionBase* const ContextAction = NewObject<UCorrbolgContextActionBase>(this, ContextActionDefinition.LoadSynchronous()->GetContextActionClass().LoadSynchronous());
-		ActiveContextActions.Add(ContextAction);
-
-		NewActionButton->OnClicked().AddUObject(ContextAction, &UCorrbolgContextActionBase::Execute);
+		ContextActionHolder->AddItem(ListItem);
 	}
 }
 
-void UCorrbolgContextActionWidget::Cleanup()
-{
-	ContextActionHolder->ClearChildren();
-
-	ActiveContextActions.Empty();
-}

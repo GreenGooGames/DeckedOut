@@ -9,6 +9,7 @@
 class UCorrbolgTextButton;
 class UCorrbolgInventorySettings;
 class UCorrbolgContextActionBase;
+class UCommonListView;
 
 /**
  * 
@@ -22,15 +23,6 @@ public:
 	void SetupActions(const UCorrbolgInventorySettings& Settings);
 	
 protected:
-	UPROPERTY(EditDefaultsOnly)
-	TSoftClassPtr<UCorrbolgTextButton> ActionButtonClass = nullptr;
-
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UPanelWidget> ContextActionHolder = nullptr;
-
-private:
-	UPROPERTY()
-	TArray<TObjectPtr<UCorrbolgContextActionBase>> ActiveContextActions = TArray<TObjectPtr<UCorrbolgContextActionBase>>();
-
-	void Cleanup();
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	TObjectPtr<UCommonListView> ContextActionHolder = nullptr;
 };

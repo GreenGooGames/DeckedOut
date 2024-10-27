@@ -11,6 +11,7 @@
 class UCommonTileView;
 class UCorrbolgInventoryManagerComponent;
 class UCorrbolgInventorySettings;
+class UCorrbolgContextActionWidget;
 
 /**
  * 
@@ -42,4 +43,9 @@ private:
 
 	/** The text to display when identifying this widget. */
 	FText DisplayText = FText();
+
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	TObjectPtr<UCorrbolgContextActionWidget> ContextActionWidget = nullptr;
+
+	void HandleOnItemClicked(UObject* const Item);
 };

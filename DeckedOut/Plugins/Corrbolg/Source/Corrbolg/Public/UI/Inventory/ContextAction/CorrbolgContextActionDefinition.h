@@ -4,10 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "UI/Inventory/ContextAction/CorrbolgContextActionBase.h"
 
 #include "CorrbolgContextActionDefinition.generated.h"
-
-class UCorrbolgContextActionBase;
 
 /**
  * 
