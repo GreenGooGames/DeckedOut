@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "UI/Inventory/ContextAction/CorrbolgContextActionData.h"
+
 #include "CorrbolgContextActionBase.generated.h"
 
 /**
@@ -15,5 +17,5 @@ class CORRBOLG_API UCorrbolgContextActionBase : public UObject
 	GENERATED_BODY()
 	
 public:
-	virtual void Execute() PURE_VIRTUAL(UCorrbolgContextActionBase::Execute, return;);
+	virtual void Execute(const FCorrbolgContextActionData& Context) PURE_VIRTUAL(UCorrbolgContextActionBase::Execute, return;);
 };

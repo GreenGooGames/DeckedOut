@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UI/Inventory/ContextAction/CorrbolgContextActionBase.h"
+#include "UI/Inventory/ContextAction/CorrbolgContextActionData.h"
+
 #include "CorrbolgContextActionCancel.generated.h"
 
 /**
@@ -15,6 +17,6 @@ class CORRBOLG_API UCorrbolgContextActionCancel : public UCorrbolgContextActionB
 	GENERATED_BODY()
 	
 public:
-	virtual void Execute() override;
+	virtual void Execute(const FCorrbolgContextActionData& Context) override;
 
 };

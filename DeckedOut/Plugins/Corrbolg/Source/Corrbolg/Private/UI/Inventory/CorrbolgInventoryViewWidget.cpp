@@ -63,5 +63,5 @@ void UCorrbolgInventoryViewWidget::Refresh() const
 void UCorrbolgInventoryViewWidget::HandleOnItemClicked(UObject* const Item)
 {
 	ContextActionWidget->SetVisibility(ESlateVisibility::Visible);
-
+	ContextActionWidget->SetCurrentContext(Item);
 }
