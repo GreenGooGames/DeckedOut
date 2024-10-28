@@ -4,7 +4,7 @@
 
 #include "Blueprint/IUserObjectListEntry.h"
 #include "CoreMinimal.h"
-#include "CommonUserWidget.h"
+#include "CommonButtonBase.h"
 
 #include "CorrbolgContextActionEntryWidget.generated.h"
 
@@ -14,7 +14,7 @@ class UCommonTextBlock;
  * 
  */
 UCLASS()
-class CORRBOLG_API UCorrbolgContextActionEntryWidget : public UCommonUserWidget, public IUserObjectListEntry
+class CORRBOLG_API UCorrbolgContextActionEntryWidget : public UCommonButtonBase, public IUserObjectListEntry
 {
 	GENERATED_BODY()
 	

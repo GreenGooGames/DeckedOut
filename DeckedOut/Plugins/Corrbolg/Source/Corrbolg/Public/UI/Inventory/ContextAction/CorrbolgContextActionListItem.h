@@ -21,6 +21,7 @@ public:
 	void SetupContextAction(UCorrbolgContextActionDefinition* const Definition);
 
 	const FText& GetDisplayText() {return DisplayText;}
+	UCorrbolgContextActionBase* GetContextAction() const {return ContextAction;}
 
 private:
 	UPROPERTY(Transient)

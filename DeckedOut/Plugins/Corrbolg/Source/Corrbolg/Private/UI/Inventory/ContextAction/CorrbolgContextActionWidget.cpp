@@ -17,5 +17,13 @@ void UCorrbolgContextActionWidget::SetupActions(const UCorrbolgInventorySettings
 
 		ContextActionHolder->AddItem(ListItem);
 	}
+
+	ContextActionHolder->OnItemClicked().AddUObject(this, &UCorrbolgContextActionWidget::HandleOnItemClicked);
+}
+
+void UCorrbolgContextActionWidget::HandleOnItemClicked(UObject* const Item)
+{
+	UCorrbolgContextActionListItem* const ListItem = Cast<UCorrbolgContextActionListItem>(Item);
+	ListItem->GetContextAction()->Execute();
 }
 

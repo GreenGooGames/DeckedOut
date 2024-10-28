@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CommonActivatableWidget.h"
+#include "CommonUserWidget.h"
 #include "CorrbolgContextActionWidget.generated.h"
 
 class UCorrbolgTextButton;
@@ -15,7 +15,7 @@ class UCommonListView;
  * 
  */
 UCLASS()
-class CORRBOLG_API UCorrbolgContextActionWidget : public UCommonActivatableWidget
+class CORRBOLG_API UCorrbolgContextActionWidget : public UCommonUserWidget
 {
 	GENERATED_BODY()
 
@@ -25,4 +25,7 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	TObjectPtr<UCommonListView> ContextActionHolder = nullptr;
+
+private:
+	void HandleOnItemClicked(UObject* const Item);
 };
