@@ -26,14 +26,15 @@ set SPEED_PARAMS=-FastCook -iterate
 set SIZE_PARAMS=-compressed "-AdditionalCookerOptions=\"-nodev\""
 
 REM Data validation inputs, DO NOT MODIFY.
-set VALID_PRESETS=w64bug w64buggame w64dev w64devpak w64ship w64shippak configure
-set VALID_PLATFORMS=win64 ps4 ps5 xboxone xsx
+set VALID_PRESETS=w64bug w64buggame w64dev w64devpak w64ship w64shippak LnxDevServer configure
+set VALID_PLATFORMS=win64 ps4 ps5 xboxone xsx Linux
 set VALID_CONFIGS=Debug DebugGame Development Test Shipping Server
 set VALID_YESNO=y n
 
 REM Leave these params empty, will be filled later depending on the configuration, DO NOT MODIFY.
 set PLATFORM=
 set CONFIG=
+set CLIENT_PARAMS=
 set SERVER_PARAMS=
 set PAK_PARAMS=
 set CLEAN_PARAMS=
@@ -41,13 +42,14 @@ set ARCHIVE_PARAMS=
 set BUILDCONFIG_PARAMS=
 
 REM Setup params for presets, DO NOT MODIFY.
-set PRESET_w64bug=win64 debug n n
-set PRESET_w64buggame=win64 debuggame n n
-set PRESET_w64dev=win64 development n n
-set PRESET_w64devpak=win64 development n y
-set PRESET_w64ship=win64 shipping n n
-set PRESET_w64shippak=win64 shipping n y
-
+REM Preset_Name=[Platform] [Config] [Clean] [Pak] [Server]
+set PRESET_w64bug=win64 debug n n n
+set PRESET_w64buggame=win64 debuggame n n n
+set PRESET_w64dev=win64 development n n n
+set PRESET_w64devpak=win64 development n y n
+set PRESET_w64ship=win64 shipping n n n
+set PRESET_w64shippak=win64 shipping n y n
+set PRESET_LnxDevServer=linux development n n y
 
 REM /////////////////////////////////////////
 REM Main body
@@ -61,6 +63,7 @@ REM /////////////////////////////////////////
         call :PlatformInput
         call :ConfigurationInput
         call :PakInput
+	call :ServerInput
     )
     
     :: Setup build variables based on the input.
@@ -197,6 +200,20 @@ REM Allow the user to pick if they want a .pak file.
 
     exit /b 0
 
+REM should we build a server?
+:ServerInput
+    echo -------------------------------------------------------------
+    echo Do you want to build a server?
+    echo -------------------------------------------------------------
+    
+    set /p SERVER_INPUT=y (yes) or n (no): 
+    call :ValidateInput !SERVER_INPUT! !VALID_YESNO!
+    
+    if errorlevel 1 (
+        call :ServerInput
+    )
+
+    exit /b 0
 
 REM /////////////////////////////////////////
 REM Execution
@@ -206,14 +223,14 @@ REM Run the UAT tool with the defined parameters
 :PackageCommand
     %DRIVE_LETTER%
     cd %ENGINE_DIRECTORY%
-    cmd /k !UAT_PATH! BuildCookRun -project="!PROJECT_DIRECTORY!\!UPROJECT_PATH!" -platform=!PLATFORM! -clientconfig=!CONFIG! !BASE_PARAMS! !BUILD_PARAMS! !ARCHIVE_PARAMS! !PAK_PARAMS! !SPEED_PARAMS! !SIZE_PARAMS! !SERVER_PARAMS! !CLEAN_PARAMS!
-    ::echo !UAT_PATH! BuildCookRun -project="!PROJECT_DIRECTORY!\!UPROJECT_PATH!" -platform=!PLATFORM! -clientconfig=!CONFIG! !BASE_PARAMS! !BUILD_PARAMS! !ARCHIVE_PARAMS! !PAK_PARAMS! !SPEED_PARAMS! !SIZE_PARAMS! !SERVER_PARAMS! !CLEAN_PARAMS!
+    cmd /k !UAT_PATH! BuildCookRun -project="!PROJECT_DIRECTORY!\!UPROJECT_PATH!" !CLIENT_PARAMS! !SERVER_PARAMS! !BASE_PARAMS! !BUILD_PARAMS! !ARCHIVE_PARAMS! !PAK_PARAMS! !SPEED_PARAMS! !SIZE_PARAMS! !CLEAN_PARAMS!
+    ::echo !UAT_PATH! BuildCookRun -project="!PROJECT_DIRECTORY!\!UPROJECT_PATH!" !CLIENT_PARAMS! !SERVER_PARAMS! !BASE_PARAMS! !BUILD_PARAMS! !ARCHIVE_PARAMS! !PAK_PARAMS! !SPEED_PARAMS! !SIZE_PARAMS! !CLEAN_PARAMS!
     exit /b 0
 
 REM Gather all build params based on preset or input
 :GatherBuildParams
     if %PRESET_INPUT%==configure (
-        set BUILDCONFIG_PARAMS=!PLATFORM_INPUT! !CONFIG_INPUT! !CLEAN_INPUT! !PAK_INPUT!
+        set BUILDCONFIG_PARAMS=!PLATFORM_INPUT! !CONFIG_INPUT! !CLEAN_INPUT! !PAK_INPUT! !SERVER_INPUT!
         exit /b 0
     ) else (
         set PRESETNAME=PRESET_!PRESET_INPUT!
@@ -227,10 +244,6 @@ REM Sets up all build parameters required.
     :: Add the platform.
     set PLATFORM=%1
 
-    if "%PLATFORM%"=="server" (
-        set SERVER_PARAMS=-server -serverplatform=%PLATFORM% -serverconfig=!CONFIG!
-    )
-
     :: Add the configuration.
     set CONFIG=%2
 
@@ -242,6 +255,13 @@ REM Sets up all build parameters required.
     :: Add pak assets
     if "%4"=="y" (
         set PAK_PARAMS=-pak
+    )
+
+    :: Add server vars
+    if "%5"=="y" (
+        set SERVER_PARAMS=-server -serverplatform=%PLATFORM% -serverconfig=!CONFIG!
+    ) else (
+        set CLIENT_PARAMS=-clientplatform=%PLATFORM% -clientconfig=!CONFIG!
     )
 
     exit /b 0
