@@ -14,6 +14,7 @@
 #include "TartarusTreasureChest.h"
 #include "UI/Gameplay/TartarusInteractionWidget.h"
 #include "UI/Foundation/TartarusWidgetComponent.h"
+#include "Loot/GleipnirLootComponent.h"
 
 ATartarusTreasureChest::ATartarusTreasureChest()
 {
@@ -22,7 +23,8 @@ ATartarusTreasureChest::ATartarusTreasureChest()
 	// Interaction
 	CreateInteractionWidgetComponent();
 
-	LootComponent = CreateDefaultSubobject<UTartarusLootComponent>(TEXT("LootComponent"));
+	TartarusLootComponent = CreateDefaultSubobject<UTartarusLootComponent>(TEXT("LootComponent_Deprecated"));
+	LootComponent = CreateDefaultSubobject<UGleipnirLootComponent>(TEXT("LootComponent"));
 	NoiseSourceComponent = CreateDefaultSubobject<UTartarusNoiseSourceComponent>(TEXT("Noise Source Component"));
 }
 
@@ -76,7 +78,8 @@ bool ATartarusTreasureChest::StartInteraction(const TObjectPtr<AController> Inst
 	FDropLootRequestCompletedEvent OnRequestCompleted;
 	OnRequestCompleted.AddUObject(this, &ATartarusTreasureChest::HandleLootDropped);
 
-	LootComponent->AsyncRequestDropLoot(GetActorTransform(), OnRequestCompleted);
+	//LootComponent_DEPRECATED->AsyncRequestDropLoot(GetActorTransform(), OnRequestCompleted);
+	LootComponent->DropLoot(GetActorTransform());
 
 	// Play sound of the chest opening.
 	NoiseSourceComponent->GenerateNoise(LootingSound, GetActorLocation());

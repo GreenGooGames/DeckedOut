@@ -15,6 +15,7 @@ class UTartarusLootComponent;
 class UTartarusNoiseSourceComponent;
 class UTartarusInteractionWidget;
 class UTartarusWidgetComponent;
+class UGleipnirLootComponent;
 
 DECLARE_EVENT_OneParam(ATartarusTreasureChest, FLootedEvent, ATartarusTreasureChest* const /*LootedTreasure*/);
 
@@ -39,7 +40,11 @@ protected:
 
 	// The component responsible for awarding loot.
 	UPROPERTY(EditDefaultsOnly)
-		TObjectPtr<UTartarusLootComponent> LootComponent = nullptr;
+		TObjectPtr<UTartarusLootComponent> TartarusLootComponent = nullptr;	
+	
+	// The component responsible for awarding loot.
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UGleipnirLootComponent> LootComponent = nullptr;
 	
 	// Fired when the loot is spawned into the world.
 	void HandleLootDropped(FGuid RequestId, TArray<TWeakObjectPtr<ATartarusItemInstance>> SpawnedLoot);
