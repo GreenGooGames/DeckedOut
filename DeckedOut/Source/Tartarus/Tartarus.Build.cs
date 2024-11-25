@@ -30,6 +30,7 @@ public class Tartarus : ModuleRules
 				"GameplayStateTreeModule",
 				"NavigationSystem",
 				"AIModule",
-				"Corrbolg"});
+				"Corrbolg",
+				"Gleipnir"});
 	}
 }
