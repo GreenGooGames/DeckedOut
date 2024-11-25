@@ -6532,6 +6532,18 @@
 		{
 			"Path": "$(ProjectDir)/Plugins/Corrbolg/Binaries/Win64/UnrealEditor-Win64-DebugGame.modules",
 			"Type": "RequiredResource"
+		},
+		{
+			"Path": "$(ProjectDir)/Plugins/Gleipnir/Binaries/Win64/UnrealEditor-Gleipnir-Win64-DebugGame.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(ProjectDir)/Plugins/Gleipnir/Binaries/Win64/UnrealEditor-Gleipnir-Win64-DebugGame.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(ProjectDir)/Plugins/Gleipnir/Binaries/Win64/UnrealEditor-Win64-DebugGame.modules",
+			"Type": "RequiredResource"
 		}
 	],
 	"RuntimeDependencies": [
@@ -29580,6 +29592,10 @@
 			"Type": "UFS"
 		},
 		{
+			"Path": "$(ProjectDir)/Plugins/Gleipnir/Gleipnir.uplugin",
+			"Type": "UFS"
+		},
+		{
 			"Path": "$(ProjectDir)/Tartarus.uproject",
 			"Type": "UFS"
 		}
@@ -29663,6 +29679,7 @@
 		"GeometryMode",
 		"GeometryProcessing",
 		"GitSourceControl",
+		"Gleipnir",
 		"GoogleCloudMessaging",
 		"GooglePAD",
 		"IKRig",
