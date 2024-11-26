@@ -58,6 +58,10 @@
 		{
 			"Name": "Gleipnir",
 			"Enabled": true
+		},
+		{
+			"Name": "GameplayAbilities",
+			"Enabled": true
 		}
 	]
 }

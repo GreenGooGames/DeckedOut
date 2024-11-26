@@ -4370,6 +4370,18 @@
 			"Type": "RequiredResource"
 		},
 		{
+			"Path": "$(EngineDir)/Plugins/Runtime/DataRegistry/Binaries/Win64/UnrealEditor-DataRegistry.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Runtime/DataRegistry/Binaries/Win64/UnrealEditor-DataRegistryEditor.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Runtime/DataRegistry/Binaries/Win64/UnrealEditor.modules",
+			"Type": "RequiredResource"
+		},
+		{
 			"Path": "$(EngineDir)/Plugins/Runtime/Database/SQLiteCore/Binaries/Win64/UnrealEditor-SQLiteCore.dll",
 			"Type": "DynamicLibrary"
 		},
@@ -4383,6 +4395,18 @@
 		},
 		{
 			"Path": "$(EngineDir)/Plugins/Runtime/ExampleDeviceProfileSelector/Binaries/Win64/UnrealEditor.modules",
+			"Type": "RequiredResource"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Runtime/GameplayAbilities/Binaries/Win64/UnrealEditor-GameplayAbilities.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Runtime/GameplayAbilities/Binaries/Win64/UnrealEditor-GameplayAbilitiesEditor.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Runtime/GameplayAbilities/Binaries/Win64/UnrealEditor.modules",
 			"Type": "RequiredResource"
 		},
 		{
@@ -30432,11 +30456,19 @@
 			"Type": "UFS"
 		},
 		{
+			"Path": "$(EngineDir)/Plugins/Runtime/DataRegistry/DataRegistry.uplugin",
+			"Type": "UFS"
+		},
+		{
 			"Path": "$(EngineDir)/Plugins/Runtime/Database/SQLiteCore/SQLiteCore.uplugin",
 			"Type": "UFS"
 		},
 		{
 			"Path": "$(EngineDir)/Plugins/Runtime/ExampleDeviceProfileSelector/ExampleDeviceProfileSelector.uplugin",
+			"Type": "UFS"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Runtime/GameplayAbilities/GameplayAbilities.uplugin",
 			"Type": "UFS"
 		},
 		{
@@ -30637,6 +30669,7 @@
 		"CryptoKeys",
 		"CurveEditorTools",
 		"CustomMeshComponent",
+		"DataRegistry",
 		"DataValidation",
 		"Dataflow",
 		"DatasmithContent",
@@ -30657,6 +30690,7 @@
 		"Fracture",
 		"FullBodyIK",
 		"GLTFExporter",
+		"GameplayAbilities",
 		"GameplayCameras",
 		"GameplayStateTree",
 		"GameplayTagsEditor",
