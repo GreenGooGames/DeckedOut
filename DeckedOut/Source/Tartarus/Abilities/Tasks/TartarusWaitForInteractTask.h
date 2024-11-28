@@ -8,13 +8,13 @@
 
 #include "Interaction/TartarusInteractableTargetInterface.h"
 
-#include "TaratusWaitForInteractTask.generated.h"
+#include "TartarusWaitForInteractTask.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class TARTARUS_API UTaratusWaitForInteractTask : public UAbilityTask
+class TARTARUS_API UTartarusWaitForInteractTask : public UAbilityTask
 {
 	GENERATED_BODY()
 	

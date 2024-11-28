@@ -1,20 +1,20 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Abilities/TaratusWaitForInteractTask.h"
+#include "Abilities/Tasks/TartarusWaitForInteractTask.h"
 
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "Kismet/KismetSystemLibrary.h"
 
-void UTaratusWaitForInteractTask::Activate()
+void UTartarusWaitForInteractTask::Activate()
 {
 	Super::Activate();
 
-	GetWorld()->GetTimerManager().SetTimer(GatherInteractablesTimerHandle, this, &UTaratusWaitForInteractTask::GatherInteractables, GatherInteractiblesTimerInterval);
+	GetWorld()->GetTimerManager().SetTimer(GatherInteractablesTimerHandle, this, &UTartarusWaitForInteractTask::GatherInteractables, GatherInteractiblesTimerInterval);
 }
 
-void UTaratusWaitForInteractTask::OnDestroy(bool AbilityEnded)
+void UTartarusWaitForInteractTask::OnDestroy(bool AbilityEnded)
 {
 	Super::OnDestroy(AbilityEnded);
 
@@ -22,7 +22,7 @@ void UTaratusWaitForInteractTask::OnDestroy(bool AbilityEnded)
 }
 
 #pragma region Execution
-void UTaratusWaitForInteractTask::GatherInteractables()
+void UTartarusWaitForInteractTask::GatherInteractables()
 {
 	const AActor* const SourceActor = Ability->GetCurrentActorInfo()->AvatarActor.Get();
 	if (!IsValid(SourceActor))
@@ -63,7 +63,7 @@ void UTaratusWaitForInteractTask::GatherInteractables()
 	}
 }
 
-bool UTaratusWaitForInteractTask::ScanForInteractables(const FVector& Origin, const float Radius, TArray<TObjectPtr<AActor>>& OutInteractableActors) const
+bool UTartarusWaitForInteractTask::ScanForInteractables(const FVector& Origin, const float Radius, TArray<TObjectPtr<AActor>>& OutInteractableActors) const
 {
 	OutInteractableActors.Empty();
 
@@ -89,7 +89,7 @@ bool UTaratusWaitForInteractTask::ScanForInteractables(const FVector& Origin, co
 	return OutInteractableActors.Num() > 0;
 }
 
-ITartarusInteractableTargetInterface* UTaratusWaitForInteractTask::GetBestInteractableTarget(TArray<TObjectPtr<AActor>>& InteractableObjects, const FTransform& OriginTransform) const
+ITartarusInteractableTargetInterface* UTartarusWaitForInteractTask::GetBestInteractableTarget(TArray<TObjectPtr<AActor>>& InteractableObjects, const FTransform& OriginTransform) const
 {
 	TObjectPtr<AActor> BestTarget = nullptr;
 	float BestScore = -1.0f;
@@ -107,7 +107,7 @@ ITartarusInteractableTargetInterface* UTaratusWaitForInteractTask::GetBestIntera
 	return Cast<ITartarusInteractableTargetInterface>(BestTarget);
 }
 
-float UTaratusWaitForInteractTask::EvaluateInteractableActor(const TObjectPtr<AActor>& Interactable, const FTransform& OriginTransform) const
+float UTartarusWaitForInteractTask::EvaluateInteractableActor(const TObjectPtr<AActor>& Interactable, const FTransform& OriginTransform) const
 {
 	if (Interactable)
 	{
