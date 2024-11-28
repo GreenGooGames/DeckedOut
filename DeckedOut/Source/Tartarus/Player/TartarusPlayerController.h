@@ -2,16 +2,19 @@
 
 #pragma once
 
+#include "AbilitySystemInterface.h"
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-
+#include "GameplayAbilitySpecHandle.h"
 #include "TartarusPlayerController.generated.h"
 
+class UAbilitySystemComponent;
 class UInputAction;
 class UTartarusInventoryComponent;
 class UTartarusInteractableSourceComponent;
 class UTartarusPrimaryGameLayout;
 class UCorrbolgInventoryManagerComponent;
+class UGameplayAbility;
 
 struct FStreamableHandle;
 
@@ -19,13 +22,28 @@ struct FStreamableHandle;
  * 
  */
 UCLASS()
-class TARTARUS_API ATartarusPlayerController : public APlayerController
+class TARTARUS_API ATartarusPlayerController : public APlayerController, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 	
 public:
 	ATartarusPlayerController();
 	virtual void SetupInputComponent() override;
+
+protected:
+	virtual void OnPossess(APawn* aPawn) override;
+	virtual void OnUnPossess() override;
+
+#pragma region GameplayAbility
+public:
+	/** Returns the Ability System Component. */
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+protected:
+	/** Ability System Component. Required to use Gameplay Attributes and Gameplay Abilities. */
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent = nullptr;
+#pragma endregion
 
 #pragma region Interaction
 public:
@@ -40,6 +58,13 @@ protected:
 	/** Interact Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		UInputAction* InteractAction;
+
+	/** Ability that gives the player the ability to interact with objects. */
+	UPROPERTY(EditDefaultsOnly, Category = Input)
+	TSoftObjectPtr<UGameplayAbility> InteractAbility = nullptr;
+
+	UPROPERTY(Transient)
+	FGameplayAbilitySpecHandle InteractAbilityHandle = FGameplayAbilitySpecHandle();
 #pragma endregion
 
 #pragma region Inventory

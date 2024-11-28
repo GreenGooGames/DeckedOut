@@ -3,6 +3,7 @@
 
 #include "Player/TartarusPlayerController.h"
 
+#include "AbilitySystemComponent.h"
 #include "Engine/Engine.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -20,6 +21,8 @@ ATartarusPlayerController::ATartarusPlayerController()
 	CorrbolgInventoryComponent = CreateDefaultSubobject<UCorrbolgInventoryManagerComponent>("Corrbolg Inventory component", false);
 	
 	InteractableComponent = CreateDefaultSubobject<UTartarusInteractableSourceComponent>("InteractableComponent", false);
+	
+	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>("AbilitySystemComponent", false);
 }
 
 void ATartarusPlayerController::SetupInputComponent()
@@ -33,6 +36,34 @@ void ATartarusPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &ATartarusPlayerController::TryInteract);
 	}
 }
+
+void ATartarusPlayerController::OnPossess(APawn* aPawn)
+{
+	Super::OnPossess(aPawn);
+
+	if (IsValid(AbilitySystemComponent))
+	{
+		InteractAbilityHandle = AbilitySystemComponent->GiveAbility(InteractAbility.LoadSynchronous());
+		//AbilitySystemComponent->FindAbilitySpecFromHandle(InteractAbilityHandle)->GetAbilityInstances()[0]->GetCurrentActorInfo()->AvatarActor = aPawn;
+	}
+}
+
+void ATartarusPlayerController::OnUnPossess()
+{
+	Super::OnUnPossess();
+
+	if (IsValid(AbilitySystemComponent))
+	{
+		AbilitySystemComponent->ClearAbility(InteractAbilityHandle);
+	}
+}
+
+#pragma region GameplayAbility
+UAbilitySystemComponent* ATartarusPlayerController::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
+}
+#pragma endregion
 
 #pragma region Interaction
 void ATartarusPlayerController::TryInteract()
