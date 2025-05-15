@@ -261,7 +261,7 @@ REM Sets up all build parameters required.
     if "%5"=="y" (
         set SERVER_PARAMS=-server -serverplatform=%PLATFORM% -serverconfig=!CONFIG!
     ) else (
-        set CLIENT_PARAMS=-clientplatform=%PLATFORM% -clientconfig=!CONFIG!
+        set CLIENT_PARAMS=-platform=%PLATFORM% -clientconfig=!CONFIG!
     )
 
     exit /b 0
