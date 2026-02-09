@@ -121,7 +121,7 @@ void ATartarusCardReader::ApplyModifiers(const TMap<UTartarusItem*, int32>& Card
 #if WITH_EDITOR
 			FString EnumToString = "";
 
-			const UEnum* const ModiferTypePtr = FindObject<UEnum>(FTopLevelAssetPath(TEXT("/Script/Tartarus.EGameModifier")), true);
+			const UEnum* const ModiferTypePtr = FindObject<UEnum>(FTopLevelAssetPath(TEXT("/Script/Tartarus.EGameModifier")), EFindObjectFlags::ExactClass);
 			if (IsValid(ModiferTypePtr))
 			{
 				EnumToString = ModiferTypePtr->GetNameStringByValue(static_cast<int64>(ModifierWeight.Value));

@@ -68,7 +68,7 @@ public:
 
 #pragma region Equip_Info
 	// To which slots can this be equipped to.
-	UPROPERTY(EditDefaultsOnly, Category = "Equip", meta = (Bitmask, BitmaskEnum = "EEquipmentSlot"))
+	UPROPERTY(EditDefaultsOnly, Category = "Equip", meta = (Bitmask, BitmaskEnum = "/Script/Tartarus.EEquipmentSlot"))
 		uint8 EquipableSlots = 0;
 
 	// Should this item be auto-equipped if possible when received?
